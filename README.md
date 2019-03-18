@@ -1,7 +1,7 @@
 # noma
 noma - node management
 
-"""
+```
 Usage:
   noma (info|start|stop|restart|logs|check|status)
   noma (temp|swap|ram)
@@ -29,7 +29,7 @@ Usage:
 Options:
   -h --help     Show this screen.
   --version     Show version.
-"""
+```
 
 ### build instructions
 
