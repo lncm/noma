@@ -7,11 +7,11 @@ import time
 
 
 def get_swap():
-    print(round(psutil.swap_memory().total / 1048576))
+    return round(psutil.swap_memory().total / 1048576)
 
 
 def get_ram():
-    print(round(psutil.virtual_memory().total / 1048576))
+    return round(psutil.virtual_memory().total / 1048576)
 
 
 def check():
