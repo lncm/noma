@@ -225,5 +225,6 @@ def create_wallet():
     else:
         print("Error: cannot proceed, wallet data is not defined")
 
+
 if __name__ == "__main__":
     print("This file is not meant to be run directly")
