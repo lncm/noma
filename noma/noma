@@ -13,6 +13,7 @@ Usage:
   noma bitcoind get <key>
   noma bitcoind set <key> <value>
   noma bitcoind logs [--tail]
+  noma bitcoind rpcauth <username> [<password>]
   noma lnd (start|stop|info)
   noma lnd logs [--tail]
   noma lnd connect <address>
@@ -70,6 +71,9 @@ def bitcoind(args):
 
     elif args['get']:
         bitcoind.get_kv(args['<first>'], "/media/archive/archive/bitcoin_big/bitcoin.conf")
+
+    elif args['rpcauth']:
+        bitcoind.gen_rpcauth(args['<username>'], args['<password>'])
 
 
 def lnd(args):

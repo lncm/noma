@@ -1,6 +1,7 @@
 from subprocess import call
 import os
 import pathlib
+from noma import rpcauth
 
 
 def start():
@@ -17,6 +18,10 @@ def stop():
         call(["docker", "exec", "compose_bitcoind_1", "bitcoin-cli", "stop"])
     else:
         print("bitcoind is already stopped")
+
+
+def gen_rpcauth(username, password):
+    rpcauth.main(username, password)
 
 
 def fastsync():
