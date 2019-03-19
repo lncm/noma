@@ -12,6 +12,49 @@ def create_mount_points():
     Path('/media/archive').mkdir()
 
 
+def check_installed():
+    installed = "/media/mmcblk0p1/installed"
+    if Path(installed).is_file():
+        with open(installed, 'r') as file:
+            lines = file.readlines()
+            for line in lines:
+                print(line)
+        return True
+    else:
+        return False
+
+
+def move_cache():
+    print("Let apk cache live on persistent volume")
+    cache_dir = Path("/media/mmcblk0p1/cache")
+    if cache_dir.is_dir():
+        copy(cache_dir, "/var/cache/apk/")
+        call(["setup-apkcache", "/var/cache/apk"])
+
+
+def enable_swap():
+    print("Enable swap at boot")
+    call(["rc-update", "add", "swap", "boot"])
+
+
+def install_firmware():
+    print("Install raspberry-pi firmware")
+    call(["apk", "add", "raspberrypi"])
+
+
+def apk_update():
+    print("Update package repository")
+    call(["apk", "update"])
+
+
+def install_apk_deps():
+    print("Install curl and jq")
+    call(["apk", "add", "curl", "jq"])
+
+
+
+
+
 def mnt_ext4(device, path):
     call(["mount", "-t ext4 /dev/" + device, path])
 
