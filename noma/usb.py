@@ -134,7 +134,7 @@ def sort_partitions():
     return sorted_partitions
 
 
-def largest_usb_partition():
+def largest_partition():
     try:
         usb_partitions = sort_partitions()
         last = len(usb_partitions) - 1
@@ -146,7 +146,7 @@ def largest_usb_partition():
         return str(largest[0])
 
 
-def smallest_usb_partition():
+def smallest_partition():
     try:
         usb_partitions = sort_partitions()
         smallest = usb_partitions[0]
@@ -157,7 +157,7 @@ def smallest_usb_partition():
         return str(smallest[0])
 
 
-def medium_usb_partition():
+def medium_partition():
     try:
         usb_partitions = sort_partitions()
         usb_partitions.pop(0)   # remove smallest
@@ -169,8 +169,8 @@ def medium_usb_partition():
         return str(usb_partitions[0][0])
 
 
-def largest_usb_part_size():
-    return usb_part_size(largest_usb_partition())
+def largest_part_size():
+    return usb_part_size(largest_partition())
 
 
 def uuid_table():
@@ -189,9 +189,9 @@ def get_uuid(device):
 
 
 def usb_setup():
-    largest = largest_usb_partition()
-    medium = medium_usb_partition()
-    smallest = smallest_usb_partition()
+    largest = largest_partition()
+    medium = medium_partition()
+    smallest = smallest_partition()
 
     print('Starting USB installation')
     print('Using %s as archive storage') % largest
@@ -207,7 +207,7 @@ def usb_setup():
                                get_uuid(largest),
                                get_uuid(medium),
                                get_uuid(smallest),
-                               str(largest_usb_part_size())])
+                               str(largest_part_size())])
 
     call([cli_invocation])
 
