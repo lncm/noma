@@ -3,7 +3,7 @@ setup(
     name="noma",
     version="0.1",
     packages=["noma"],
-    install_requires=['psutil', 'docopt', 'requests', 'docker'],
+    install_requires=['psutil', 'docopt', 'requests', 'docker', 'docker-compose'],
     entry_points={
         "console_scripts": [
             "noma = noma.noma:main",
