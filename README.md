@@ -31,7 +31,15 @@ Options:
   --version     Show version.
 ```
 
-### build instructions
+### Dependencies
+To get the most out of this tool we highly recommend to have `docker` installed.
 
+Currently, some third-party components needs to be installed and configured separately when not using `noma` in combination with https://github.com/lncm/pi-factory to enable all functionality.
+
+Some `noma` functions are specific to Raspberry Pi hardware.
+
+
+### Build instructions
+0. pip3 install wheel
 1. `python3 setup.py bdist_wheel`
 2. `pip install dist/noma-0.1-py3-none-any.whl`
