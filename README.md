@@ -40,6 +40,6 @@ Some `noma` functions are specific to Raspberry Pi hardware.
 
 
 ### Build instructions
-0. pip3 install wheel
+0. `pip3 install wheel`
 1. `python3 setup.py bdist_wheel`
 2. `pip install dist/noma-0.1-py3-none-any.whl`
