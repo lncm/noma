@@ -194,22 +194,22 @@ def usb_setup():
     smallest = smallest_partition()
 
     print('Starting USB installation')
-    print('Using %s as archive storage') % largest
-    print('Using %s as volatile storage') % medium
-    print('Using %s as important storage') % smallest
+    print('Using {} as archive storage'.format(largest))
+    print('Using {} as volatile storage'.format(medium))
+    print('Using {} as important storage'.format(smallest))
 
     lncm_usb = "/usr/local/sbin/lncm-usb"
 
-    cli_invocation = ' '.join([lncm_usb,
-                               largest,
-                               medium,
-                               smallest,
-                               get_uuid(largest),
-                               get_uuid(medium),
-                               get_uuid(smallest),
-                               str(largest_part_size())])
+    cli_invocation = [lncm_usb,
+                      largest,
+                      medium,
+                      smallest,
+                      get_uuid(largest),
+                      get_uuid(medium),
+                      get_uuid(smallest),
+                      str(largest_part_size())]
 
-    call([cli_invocation])
+    call(cli_invocation)
 
 
 if __name__ == "__main__":
