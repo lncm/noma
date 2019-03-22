@@ -1,7 +1,7 @@
 from setuptools import setup
 setup(
     name="noma",
-    version="0.1",
+    version="0.1.1",
     packages=["noma"],
     install_requires=['psutil', 'docopt', 'requests', 'docker', 'docker-compose'],
     entry_points={
