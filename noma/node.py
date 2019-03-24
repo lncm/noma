@@ -7,12 +7,12 @@ import time
 
 
 def get_swap():
-    """Get swap"""
+    """Return amount of swap"""
     return round(psutil.swap_memory().total / 1048576)
 
 
 def get_ram():
-    """Get RAM"""
+    """Return amount of RAM"""
     return round(psutil.virtual_memory().total / 1048576)
 
 
