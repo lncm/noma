@@ -320,33 +320,30 @@ def install_box():
     install_apk_deps()  # curl & jq; are these really necessary?
     install_tor()
     enable_tor()
-def install_box():
-    import noma.node
-    import noma.lnd
-    is_installed = check_installed()
-    if is_installed:
-        print("Box installation detected!")
-
-    move_cache()  # from FAT to ext4 on /var
-
-    # apk
-    apk_update()
-    install_firmware()  # for raspberry-pi
-    install_apk_deps()  # curl & jq; are these really necessary?
 
     # html
     check_to_fetch("/home/lncm/public_html/pos/index.html",
                    "https://raw.githubusercontent.com/lncm/invoicer-ui/master/dist/index.html")
-    check_to_fetch("home/lncm/public_html/wifi/index.html",
-                   "https://raw.githubusercontent.com/lncm/iotwifi-ui/master/dist/index.html")
+    # check_to_fetch("home/lncm/public_html/wifi/index.html",
+    #                "https://raw.githubusercontent.com/lncm/iotwifi-ui/master/dist/index.html")
 
     # containers
+    print("Starting usb-setup")
     usb_setup()
     enable_compose()
+    print("Starting docker-compose")
     noma.node.start()
     install_crontab()
     if noma.lnd.check():
+        print("Checking lnd wallet")
         noma.lnd.check_wallet()
+    if noma.node.check():
+        print("Backup system state (apkovl) to important usb device")
+        noma.node.backup()
+
+    # remove lncm-post from default runlevel
+    print("Removing lncm-post from default runlevel")
+    call(["rc-update", "del", "lncm-post", "default"])
 
 
 if __name__ == "__main__":
