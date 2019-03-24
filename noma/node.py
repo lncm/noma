@@ -228,7 +228,7 @@ def reinstall():
     shutil.copy(supplicant_sd, supplicant_gh, )
     call(["./make_apkovl.sh"])
     call(["mount", "-o", "remount,ro", "/dev/mmcblk0p1", "/media/mmcblk0p1"])
-    shutil.copy("box.apkovl.tar.gz", "/media/mmcbkl0p1")
+    shutil.copy("box.apkovl.tar.gz", "/media/mmcbkl0p1/")
     os.remove("/media/mmcblk0p1/installed")
     call(["mount", "-o", "remount,ro", "/dev/mmcblk0p1", "/media/mmcblk0p1"])
     print("Done")

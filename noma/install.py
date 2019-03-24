@@ -31,7 +31,7 @@ def move_cache():
     print("Let apk cache live on persistent volume")
     cache_dir = Path("/media/mmcblk0p1/cache")
     if cache_dir.is_dir():
-        shutil.copy(cache_dir, "/var/cache/apk/")
+        shutil.copytree(cache_dir, "/var/cache/apk/")
         call(["setup-apkcache", "/var/cache/apk"])
 
 
@@ -85,7 +85,7 @@ def setup_nginx():
         print("Copying nginx config to important media")
         destination = Path("/media/important/important/nginx")
         origin = Path("/etc/nginx")
-        shutil.copy(origin, destination)
+        shutil.copytree(origin, destination)
 
 
 def check_for_destruction(device):
