@@ -207,8 +207,8 @@ def node(args):
         node.tunnel(args['<port>'], args['<host>'])
 
     elif args['usb-setup']:
-        from noma import usb
-        usb.usb_setup()
+        import noma.install
+        noma.install.usb_setup()
 
     elif args['check']:
         node.check()
