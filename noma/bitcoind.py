@@ -5,6 +5,7 @@ from noma import rpcauth
 
 
 def start():
+    """Start bitcoind docker compose container"""
     from noma.node import is_running
     if is_running("bitcoind"):
         print("bitcoind is running already")
@@ -13,6 +14,7 @@ def start():
 
 
 def stop():
+    """Stop bitcoind docker compose container, if running"""
     from noma.node import is_running
     if is_running("bitcoind"):
         call(["docker", "exec", "compose_bitcoind_1", "bitcoin-cli", "stop"])
@@ -21,14 +23,15 @@ def stop():
 
 
 def gen_rpcauth(username, password):
+    """Generate rpcauth username and password for bitcoind"""
     rpcauth.main(username, password)
 
 
 def fastsync():
     """
-    download blocks and chainstate snapshot
+    Download blocks and chainstate snapshot
 
-    :return:
+    :return str: Status
     """
     bitcoind_dir_path = "/media/archive/archive/bitcoin/"
     location = "http://utxosets.blob.core.windows.net/public/"
@@ -64,7 +67,7 @@ def fastsync():
 
 
 def check():
-    """check bitcoind filesystem structure"""
+    """Check bitcoind filesystem structure"""
     bitcoind_dir = "/media/archive/archive/bitcoin"
     bitcoind_dir_exists = pathlib.Path(bitcoind_dir).is_dir()
 
@@ -105,10 +108,10 @@ def set_kv(key, value, config_path):
     Set key to value in path
     kv pairs are separated by "="
 
-    :param key:
-    :param value:
-    :param config_path:
-    :return:
+    :param key: key to set
+    :param value: value to set
+    :param config_path: config file path
+    :return str: string written
     """
     from fileinput import FileInput
     import pathlib
