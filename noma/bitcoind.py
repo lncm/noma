@@ -78,13 +78,13 @@ def set_prune(prune_target, config_path=''):
 
 def set_rpcauth(config_path):
     """Write new rpc auth to bitcoind and lnd config"""
+    import noma.lnd
     # TODO: Generate usernames too
     if not config_path:
         config_path = "/media/archive/archive/bitcoin/bitcoin.conf"
     if pathlib.Path(config_path).is_file():
         auth_value, password = generate_rpcauth("lncm")
         set_kv("rpcauth", auth_value, config_path)
-        import noma.lnd
         noma.lnd.set_bitcoind(password)
 
 
@@ -95,6 +95,14 @@ def generate_rpcauth(username, password=''):
     salt = rpcauth.generate_salt(16)
     password_hmac = rpcauth.password_to_hmac(salt, password)
     auth_value = '{0}:{1}${2}'.format(username, salt, password_hmac)
+    try:
+        with open("/media/important/important/rpc.txt", "a") as file:
+            file.write('rpcauth={}'.format(auth_value)+'\n'
+                       'username={}'.format(username)+'\n'
+                       'password={}'.format(password))
+    except Exception as error:
+        print(error.__class__.__name__, ':', error)
+
     return auth_value, password
 
 
@@ -115,6 +123,10 @@ def check():
         print("bitcoin.conf exists")
     else:
         print("bitcoin.conf missing")
+
+    if bitcoind_conf_exists and bitcoind_dir_exists:
+        return True
+    return False
 
 
 def get_kv(key, config_path):
