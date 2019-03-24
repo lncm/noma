@@ -1,5 +1,7 @@
 # noma
-noma - node management
+[![Documentation Status](https://readthedocs.org/projects/noma/badge/?version=latest)](https://noma.readthedocs.io/en/latest/?badge=latest)
+
+Noma - node management tool
 
 ```
 Usage:
@@ -30,6 +32,10 @@ Options:
   -h --help     Show this screen.
   --version     Show version.
 ```
+
+### API documentation
+[Read the Docs](https://noma.readthedocs.io/en/latest/)
+
 
 ### Dependencies
 To get the most out of this tool we highly recommend to have `docker` installed.
