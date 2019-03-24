@@ -55,9 +55,9 @@ def apk_update():
 
 
 def install_apk_deps():
-    """Install dependencies curl and jq"""
-    print("Install curl and jq")
-    call(["apk", "add", "curl", "jq"])
+    """Install misc dependencies"""
+    print("Install deps")
+    call(["apk", "add", "curl", "jq", "autossh"])
 
 
 def mnt_ext4(device, path):
@@ -291,6 +291,11 @@ def install_crontab():
     call(["/usr/bin/crontab", "/home/lncm/crontab"])
 
 
+def install_compose():
+    print("Installing docker-compose")
+    call(["apk", "add", "docker-compose"])
+
+
 def enable_compose():
     print("Enable docker-compose at boot")
     call(["rc-update", "add", "docker-compose", "default"])
@@ -330,6 +335,7 @@ def install_box():
     # containers
     print("Starting usb-setup")
     usb_setup()
+    install_compose()
     enable_compose()
     print("Starting docker-compose")
     noma.node.start()
