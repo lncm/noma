@@ -5,9 +5,13 @@ import shutil
 
 
 def check_wallet():
-    # This will either import an existing seed (or our own generated one),
-    # or use LND to create one.
-    # It will also create a password either randomly or use an existing password provided)
+    """
+    This will either import an existing seed (or our own generated one),
+    or use LND to create one.
+    It will also create a password either randomly or use an existing password provided)
+
+    :return str: Status
+    """
     if path.exists("/media/important/important/lnd"):
         if not path.exists("/media/important/important/lnd/data/chain"):
             create_wallet()
@@ -19,6 +23,7 @@ def check_wallet():
 
 
 def autounlock():
+    """Autounlock lnd using sesame.txt, tls.cert"""
     from json import dumps
     from requests import post
     from base64 import b64encode
@@ -94,6 +99,7 @@ def set_kv(key, value, section='', config_path=''):
 
 
 def autoconnect(list_path=''):
+    """Autoconnect to a list of nodes in autoconnect.txt"""
     print("Connecting to:")
     if not list_path:
         list_path = '/media/important/important/autoconnect.txt'
@@ -105,6 +111,7 @@ def autoconnect(list_path=''):
 
 
 def check():
+    """Check lnd filesystem structure"""
     import pathlib
     # check lnd filesystem structure
     lnd_dir = pathlib.Path("/media/important/important/lnd").is_dir()
@@ -120,6 +127,7 @@ def check():
 
 
 def randompass(string_length=10):
+    """Generate random password"""
     from random import choice
     from string import ascii_letters
 
