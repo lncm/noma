@@ -296,6 +296,30 @@ def enable_compose():
     call(["rc-update", "add", "docker-compose", "default"])
 
 
+def install_tor():
+    call(["apk", "add", "tor"])
+    call(["/sbin/service", "tor", "start"])
+
+
+def enable_tor():
+    call(["rc-update", "add", "tor", "default"])
+
+
+def install_box():
+    import noma.node
+    import noma.lnd
+    is_installed = check_installed()
+    if is_installed:
+        print("Box installation detected!")
+
+    move_cache()  # from FAT to ext4 on /var
+
+    # apk
+    apk_update()
+    install_firmware()  # for raspberry-pi
+    install_apk_deps()  # curl & jq; are these really necessary?
+    install_tor()
+    enable_tor()
 def install_box():
     import noma.node
     import noma.lnd
