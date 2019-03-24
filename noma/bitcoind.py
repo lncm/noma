@@ -2,7 +2,7 @@ from subprocess import call
 import os
 import pathlib
 from noma import rpcauth
-
+import shutil
 
 def start():
     """Start bitcoind docker compose container"""
@@ -66,6 +66,12 @@ def fastsync():
             exit(1)
 
 
+def create():
+    """Create bitcoind directory structure and config file"""
+    bitcoind_dir = "/media/archive/archive/bitcoin"
+    bitcoind_config = "/home/lncm/bitcoin/bitcoin.conf"
+    pathlib.Path(bitcoind_dir).mkdir()
+    shutil.copyfile(pathlib.Path(bitcoind_config), bitcoind_dir)
 def check():
     """Check bitcoind filesystem structure"""
     bitcoind_dir = "/media/archive/archive/bitcoin"
