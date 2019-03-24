@@ -98,6 +98,16 @@ def set_kv(key, value, section='', config_path=''):
             file.close()
 
 
+def setup_tor(version=''):
+    """Add tor hidden service to lnd"""
+    if not version:
+        version = "v3"
+    hostname_path = "/var/lib/tor/lnd-{}/hostname".format(version)
+    try:
+        with open(hostname_path, 'r') as hostname:
+            set_kv("externalip", hostname, "Application Options")
+    except Exception as error:
+        print(error.__class__.__name__, ':', error)
 def autoconnect(list_path=''):
     """Autoconnect to a list of nodes in autoconnect.txt"""
     print("Connecting to:")
