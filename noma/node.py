@@ -7,10 +7,12 @@ import time
 
 
 def get_swap():
+    """Get swap"""
     return round(psutil.swap_memory().total / 1048576)
 
 
 def get_ram():
+    """Get RAM"""
     return round(psutil.virtual_memory().total / 1048576)
 
 
@@ -41,20 +43,26 @@ def check():
 
 
 def start():
+    """Start default docker compose"""
     os.chdir("/home/lncm/compose")
     call(["docker-compose", "up", "-d"])
 
 
 def backup():
+    """Backup apkovl to important usb device"""
     call(["lbu", "pkg", "-v", "/media/important/important/"])
 
 
 def devtools():
+    """Install common development tools, nano, tmux, git, etc"""
     call(["apk", "update"])
     call(["apk", "add", "tmux", "sudo", "git", "rsync", "htop", "iotop", "nmap", "nano"])
 
 
 def is_running(node=''):
+    """Check if container is running
+
+    :return bool: container is running"""
     from docker import from_env
 
     if not node:
@@ -68,7 +76,7 @@ def is_running(node=''):
 
 
 def stop_daemons():
-    """check and wait for clean shutdown"""
+    """Check and wait for clean shutdown of both bitcoind and lnd"""
     if not is_running("bitcoind") and not is_running("lnd"):
         return print("bitcoind and lnd are already stopped")
 
@@ -101,10 +109,10 @@ def stop_daemons():
 
 def voltage(device=""):
     """
-    chip voltage (default: core)
+    Get chip voltage (default: core)
 
     :param device: core, sdram_c, sdram_i, sdram_p
-    :return: voltage
+    :return str: voltage
     """
     if not device:
         device = 'core'
@@ -113,7 +121,9 @@ def voltage(device=""):
 
 def temp():
     """
-    :return: cpu temperature
+    Get CPU temperature
+
+    :return str: CPU temperature
     """
     cpu_temp_path = "/sys/class/thermal/thermal_zone0/temp"
     with open(cpu_temp_path, 'r') as file:
@@ -123,10 +133,10 @@ def temp():
 
 def freq(device=""):
     """
-    chip clock (default: arm)
+    Get chip clock (default: arm)
 
-    :device: arm, core, h264, isp, v3d, uart, pwm, emmc, pixel, vec, hdmi, dpi
-    :return: frequency
+    :device str: arm, core, h264, isp, v3d, uart, pwm, emmc, pixel, vec, hdmi, dpi
+    :return str: chip frequency
     """
     if device:
         call(["/opt/vc/bin/vcgencmd", "measure_clock", device])
@@ -136,10 +146,10 @@ def freq(device=""):
 
 def memory(device=""):
     """
-    memory allocation split between cpu and gpu
+    Get memory allocation split between cpu and gpu
 
-    :param device: arm, gpu
-    :return: memory allocated
+    :param str device: arm, gpu
+    :return str: memory allocated
     """
     if device:
         call(["/opt/vc/bin/vcgencmd", "get_mem", device])
@@ -147,6 +157,9 @@ def memory(device=""):
 
 
 def logs(node=''):
+    """Show logs of node specified, defaults to bitcoind
+
+    return str: tailling logs"""
     if node:
         container_name = "compose_" + node + "_1"
         call(["docker", "logs", "-f", container_name])
@@ -156,6 +169,7 @@ def logs(node=''):
 
 
 def install_git():
+    """Install git"""
     if shutil.which("git"):
         pass
     else:
@@ -164,6 +178,7 @@ def install_git():
 
 
 def get_source():
+    """Get latest pi-factory source code or update"""
     install_git()
 
     factory_path = pathlib.Path("/home/lncm/pi-factory")
@@ -178,7 +193,7 @@ def get_source():
 
 
 def tunnel(port, host):
-    """Keep the tunnel open, no matter what"""
+    """Keep the SSH tunnel open, no matter what"""
     while True:
         try:
             print("Tunneling local port 22 to " + host + ":" + port)
@@ -230,6 +245,7 @@ def full_reinstall():
 
 
 def do_diff():
+    """Diff current system configuration state with original git repository"""
     install_git()
 
     factory = pathlib.Path("/home/lncm/pi-factory")
