@@ -72,6 +72,15 @@ def create():
     bitcoind_config = "/home/lncm/bitcoin/bitcoin.conf"
     pathlib.Path(bitcoind_dir).mkdir()
     shutil.copyfile(pathlib.Path(bitcoind_config), bitcoind_dir)
+
+
+def set_prune(prune_target, config_path=''):
+    """Set bitcoind prune target, minimum 550"""
+    if not config_path:
+        config_path = "/media/archive/archive/bitcoin/bitcoin.conf"
+    set_kv("prune", prune_target, config_path)
+
+
 def check():
     """Check bitcoind filesystem structure"""
     bitcoind_dir = "/media/archive/archive/bitcoin"
