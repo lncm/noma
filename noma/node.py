@@ -41,6 +41,10 @@ def check():
     else:
         print("volatile usb device is missing")
 
+    if archive_exists and important_exists and volatile_exists:
+        return True
+    return False
+
 
 def start():
     """Start default docker compose"""
