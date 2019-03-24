@@ -1,5 +1,7 @@
 from os import path
 from subprocess import call
+import pathlib
+import shutil
 
 
 def check_wallet():
@@ -123,6 +125,13 @@ def randompass(string_length=10):
 
     letters = ascii_letters
     return ''.join(choice(letters) for i in range(string_length))
+
+
+def create():
+    """Create lnd directory structure and config file"""
+    lnd_path = '/media/important/important/lnd/'
+    pathlib.Path(lnd_path).mkdir()
+    shutil.copyfile('/home/lncm/lnd/lnd.conf', lnd_path)
 
 
 def create_wallet():
