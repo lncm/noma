@@ -16,6 +16,13 @@ sd_part_pattern = ['mmcblk.p[1-9]*']
 
 
 def is_mounted(device):
+    """Check if a device is already mounted
+
+    :param device: device or device + partition number
+    :type device: string, e.g. "sda1"
+    :return: True/False if device is mounted or not
+    :rtype: bool
+    """
     import psutil
     partitions = psutil.disk_partitions()
     device_path = "/dev/" + device
@@ -26,7 +33,13 @@ def is_mounted(device):
 
 
 def dev_size(device):
-    # return device size in bytes
+    """Return device size in bytes
+
+    :param device: device
+    :type device: string, e.g. "sda"
+    :return: device size in bytes
+    :rtype: int
+    """
     device_path = '/sys/block/'
     num_sectors = open(device_path + device + '/size').read().rstrip('\n')
     sector_size = open(device_path + device + '/queue/hw_sector_size').read().rstrip('\n')
@@ -34,8 +47,14 @@ def dev_size(device):
 
 
 def usb_part_size(partition):
+    """Return USB partition size in bytes
+
+    :param partition: device
+    :type partition: string, e.g. "sda"
+    :return: partition size in bytes
+    :rtype: int
+    """
     try:
-        # return partition size in bytes
         device_path = '/sys/block/'
         device = partition[:-1]
         num_sectors = open(device_path + device + '/' + partition + '/size').read().rstrip('\n')
@@ -48,8 +67,14 @@ def usb_part_size(partition):
 
 
 def sd_part_size(partition):
+    """Return SD partition size in bytes
+
+    :param partition: device
+    :type partition: string, e.g. "sda"
+    :return: partition size in bytes
+    :rtype: int
+    """
     try:
-        # return partition size in bytes
         device_path = '/sys/block/'
         device = partition[:-2]
         num_sectors = open(device_path + device + '/' + partition + '/size').read().rstrip('\n')
@@ -62,6 +87,7 @@ def sd_part_size(partition):
 
 
 def usb_devs():
+    """list usb devices"""
     devices = []
     for device in glob.glob('/sys/block/*'):
         for pattern in usb_dev_pattern:
@@ -71,6 +97,7 @@ def usb_devs():
 
 
 def sd_devs():
+    """list sd devices"""
     devices = []
     for device in glob.glob('/sys/block/*'):
         for pattern in sd_dev_pattern:
@@ -80,6 +107,7 @@ def sd_devs():
 
 
 def usb_partitions():
+    """list usb partitions"""
     partitions = []
     for device in usb_devs():
         for partition in glob.glob('/sys/block/' + str(device) + '/*'):
@@ -90,6 +118,7 @@ def usb_partitions():
 
 
 def sd_partitions():
+    """list sd partitions"""
     partitions = []
     for device in sd_devs():
         for partition in glob.glob('/sys/block/' + str(device) + '/*'):
@@ -100,6 +129,7 @@ def sd_partitions():
 
 
 def usb_partition_table():
+    """list usb partition sizes"""
     table = {}
     for partition in usb_partitions():
         table[partition] = int(usb_part_size(partition))
@@ -107,6 +137,7 @@ def usb_partition_table():
 
 
 def sd_partition_table():
+    """list sd partition sizes"""
     table = {}
     for partition in sd_partitions():
         table[partition] = sd_part_size(partition)
@@ -114,6 +145,7 @@ def sd_partition_table():
 
 
 def sd_device_table():
+    """list sd devices"""
     table = {}
     for device in sd_devs():
         table[device] = dev_size(device)
@@ -121,6 +153,7 @@ def sd_device_table():
 
 
 def usb_device_table():
+    """list usb devices"""
     table = {}
     for device in usb_devs():
         table[device] = dev_size(device)
@@ -128,13 +161,14 @@ def usb_device_table():
 
 
 def sort_partitions():
-    # sort partitions from smallest to largest
+    """sort partitions from smallest to largest"""
     usb_partitions = usb_partition_table()
     sorted_partitions = sorted(usb_partitions.items(), key=lambda x: x[1])
     return sorted_partitions
 
 
 def largest_partition():
+    """get largest device and partition name"""
     try:
         usb_partitions = sort_partitions()
         last = len(usb_partitions) - 1
@@ -147,6 +181,7 @@ def largest_partition():
 
 
 def smallest_partition():
+    """get third largest device and partition name"""
     try:
         usb_partitions = sort_partitions()
         smallest = usb_partitions[0]
@@ -158,6 +193,7 @@ def smallest_partition():
 
 
 def medium_partition():
+    """get second largest device and partition name"""
     try:
         usb_partitions = sort_partitions()
         usb_partitions.pop(0)   # remove smallest
@@ -170,10 +206,12 @@ def medium_partition():
 
 
 def largest_part_size():
+    """get partition size in bytes of largest partition"""
     return usb_part_size(largest_partition())
 
 
 def uuid_table():
+    """list uuids of devices"""
     device_table = popen('blkid').read().splitlines()
     devices = {}
     for device in device_table:
@@ -184,11 +222,13 @@ def uuid_table():
 
 
 def get_uuid(device):
+    """get uuid of device"""
     uuids = uuid_table()
     return str(uuids[device])
 
 
 def usb_setup():
+    """start usb-setup with 3 devices"""
     largest = largest_partition()
     medium = medium_partition()
     smallest = smallest_partition()
