@@ -22,11 +22,6 @@ def stop():
         print("bitcoind is already stopped")
 
 
-def gen_rpcauth(username, password):
-    """Generate rpcauth username and password for bitcoind"""
-    rpcauth.main(username, password)
-
-
 def fastsync():
     """
     Download blocks and chainstate snapshot
@@ -79,6 +74,28 @@ def set_prune(prune_target, config_path=''):
     if not config_path:
         config_path = "/media/archive/archive/bitcoin/bitcoin.conf"
     set_kv("prune", prune_target, config_path)
+
+
+def set_rpcauth(config_path):
+    """Write new rpc auth to bitcoind and lnd config"""
+    # TODO: Generate usernames too
+    if not config_path:
+        config_path = "/media/archive/archive/bitcoin/bitcoin.conf"
+    if pathlib.Path(config_path).is_file():
+        auth_value, password = generate_rpcauth("lncm")
+        set_kv("rpcauth", auth_value, config_path)
+        import noma.lnd
+        noma.lnd.set_bitcoind(password)
+
+
+def generate_rpcauth(username, password=''):
+    """Generate bitcoind rpcauth string from username and optional password"""
+    if not password:
+        password = rpcauth.generate_password()
+    salt = rpcauth.generate_salt(16)
+    password_hmac = rpcauth.password_to_hmac(salt, password)
+    auth_value = '{0}:{1}${2}'.format(username, salt, password_hmac)
+    return auth_value, password
 
 
 def check():
