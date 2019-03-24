@@ -6,6 +6,7 @@ from noma import usb
 
 
 def create_mount_points():
+    """Create mount points for important, volatile and archive"""
     print("Create mount points")
     Path('/media/important').mkdir()
     Path('/media/volatile').mkdir()
@@ -13,6 +14,7 @@ def create_mount_points():
 
 
 def check_installed():
+    """Check if LNCM-Box is installed"""
     installed = "/media/mmcblk0p1/installed"
     if Path(installed).is_file():
         with open(installed, 'r') as file:
@@ -25,6 +27,7 @@ def check_installed():
 
 
 def move_cache():
+    """Let apk cache live on persistent volume"""
     print("Let apk cache live on persistent volume")
     cache_dir = Path("/media/mmcblk0p1/cache")
     if cache_dir.is_dir():
@@ -33,43 +36,48 @@ def move_cache():
 
 
 def enable_swap():
+    """Enable swap at boot"""
     print("Enable swap at boot")
     call(["rc-update", "add", "swap", "boot"])
 
 
 def install_firmware():
+    """Install raspberry-pi firmware"""
     print("Install raspberry-pi firmware")
     call(["apk", "add", "raspberrypi"])
 
 
 def apk_update():
+    """Update apk mirror repositories"""
     print("Update package repository")
     call(["apk", "update"])
 
 
 def install_apk_deps():
+    """Install dependencies curl and jq"""
     print("Install curl and jq")
     call(["apk", "add", "curl", "jq"])
 
 
-
-
-
 def mnt_ext4(device, path):
+    """Mount device at path using ext4"""
     call(["mount", "-t ext4 /dev/" + device, path])
 
 
 def mnt_any(device, path):
+    """Mount device at path using any filesystem"""
     call(["mount", "/dev/" + device, path])
 
 
 def mount_usb_devices():
+    """Mount all three usb partitions"""
     mount_usb_dev(usb.largest_partition(), "/media/archive")
     mount_usb_dev(usb.medium_partition(), "/media/volatile")
     mount_usb_dev(usb.smallest_partition(), "/media/important")
 
 
 def setup_nginx():
+    """Setup nginx paths and config files"""
     nginx_volatile = Path("/media/volatile/volatile/nginx/").is_dir()
     if nginx_volatile:
         print("Nginx volatile directory found")
@@ -87,6 +95,7 @@ def setup_nginx():
 
 
 def check_and_destroy(device):
+    """Check devices for destruction flag. If so, format with ext4"""
     print("Check devices for destruction flag")
     destroy = Path("/media/" + device + "DESTROY_ALL_DATA_ON_THIS_DEVICE.txt").is_file()
     if destroy:
@@ -99,13 +108,15 @@ def check_and_destroy(device):
 
 
 def check_all():
+    """Check and destroy all 3 drives"""
     check_and_destroy("archive")
     check_and_destroy("important")
     check_and_destroy("volatile")
 
 
 def mount_usb_dev(partition, path):
-    print("Mount ext4 storage devices")
+    """Attempt to mount partition at path"""
+    print("Mount ext4 storage device:")
     print(partition)
 
     mnt_ext4(partition, path)
@@ -122,6 +133,7 @@ def mount_usb_dev(partition, path):
 
 
 def setup_fstab(device):
+    """Add device to fstab"""
     # TODO: check mount status with psutil instead
     ext4_mounted = Path("/media/" + device + "/lost+found").is_dir()
     if ext4_mounted:
@@ -134,12 +146,14 @@ def setup_fstab(device):
 
 
 def setup_fstab_all():
+    """Add all three devices to fstab"""
     setup_fstab("archive")
     setup_fstab("volatile")
     setup_fstab("important")
 
 
 def create_swap():
+    """Create swap on volatile usb device"""
     print("Create swap on volatile usb device")
     volatile_path = Path("/media/volatile/volatile")
     volatile_path.mkdir()
