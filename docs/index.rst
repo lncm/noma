@@ -3,12 +3,16 @@
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
-Noma documentation
-================================
+.. toctree::
+   :maxdepth: 4
+   :caption: Contents:
 
-Command-line Usage:
-###################
+Noma
+==================
+CLI utility and Python API to manage bitcoin lightning nodes.
 
+Command-line Usage
+==================
 **node**::
 
   noma (info|start|stop|restart|logs|check|status)
@@ -47,12 +51,38 @@ Command-line Usage:
   -h --help     Show this screen.
   --version     Show version.
 
+API Modules
+===========
 
-.. toctree::
-   :maxdepth: 2
-   :caption: Contents:
+node
+----
+.. automodule:: noma.node
+   :members:
 
+bitcoind
+--------
+.. automodule:: noma.bitcoind
+   :members:
 
+lnd
+---
+.. automodule:: noma.lnd
+   :members:
+
+install
+-------
+.. automodule:: noma.install
+   :members:
+
+usb
+---
+.. automodule:: noma.usb
+   :members:
+
+rpcauth
+-------
+.. automodule:: noma.rpcauth
+   :members:
 
 Indices and tables
 ==================
@@ -60,22 +90,3 @@ Indices and tables
 * :ref:`genindex`
 * :ref:`modindex`
 * :ref:`search`
-
-.. automodule:: noma.node
-   :members:
-
-.. automodule:: noma.bitcoind
-   :members:
-
-.. automodule:: noma.lnd
-   :members:
-
-.. automodule:: noma.install
-   :members:
-
-.. automodule:: noma.usb
-   :members:
-
-.. automodule:: noma.rpcauth
-   :members:
-
