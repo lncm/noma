@@ -94,24 +94,24 @@ def setup_nginx():
         copy(origin, destination)
 
 
-def check_and_destroy(device):
+def check_for_destruction(device):
     """Check devices for destruction flag. If so, format with ext4"""
     print("Check devices for destruction flag")
     destroy = Path("/media/" + device + "DESTROY_ALL_DATA_ON_THIS_DEVICE.txt").is_file()
     if destroy:
         print("Going to destroy all data on /dev/%s in 3 seconds...") % device
         sleep(3)
-        call(["mkfs.ext4", "-F", "/dev/" + usb.largest_partition()])
-        mnt_ext4("/dev/" + usb.largest_partition(), "/media/" + device)
+        call(["mkfs.ext4", "-F", "/dev/" + device])
+        mnt_ext4("/dev/" + device, "/media/" + device)
     else:
         print("Device is not flagged for being wiped")
 
 
 def check_all():
     """Check and destroy all 3 drives"""
-    check_and_destroy("archive")
-    check_and_destroy("important")
-    check_and_destroy("volatile")
+    check_for_destruction("archive")
+    check_for_destruction("important")
+    check_for_destruction("volatile")
 
 
 def mount_usb_dev(partition, path):
@@ -120,11 +120,13 @@ def mount_usb_dev(partition, path):
     print(partition)
 
     mnt_ext4(partition, path)
+    sleep(2)
     ext4_mountable = usb.is_mounted(partition)
 
     if not ext4_mountable:
         print("Warning: %s usb is not mountable as ext4") % partition
         mnt_any(partition, path)
+        sleep(2)
         mountable = usb.is_mounted(partition)
         if not mountable:
             print("Error: %s usb is not mountable as any supported format") % partition
@@ -134,8 +136,7 @@ def mount_usb_dev(partition, path):
 
 def setup_fstab(device):
     """Add device to fstab"""
-    # TODO: check mount status with psutil instead
-    ext4_mounted = Path("/media/" + device + "/lost+found").is_dir()
+    ext4_mounted = usb.is_mounted(device)
     if ext4_mounted:
         with open("/etc/fstab", 'a') as file:
             fstab = "\nUUID=%s /media/%s ext4 defaults,noatime 0 0" % usb.get_uuid(device), device
