@@ -108,6 +108,8 @@ def setup_tor(version=''):
             set_kv("externalip", hostname, "Application Options")
     except Exception as error:
         print(error.__class__.__name__, ':', error)
+
+
 def set_bitcoind(password, user='', lnd_config=''):
     """Add bitcoind rpc username and password to lnd"""
     if not user:
@@ -117,6 +119,8 @@ def set_bitcoind(password, user='', lnd_config=''):
     if pathlib.Path(lnd_config).is_file():
         set_kv("bitcoind.rpcuser", user, "Bitcoind", lnd_config)
         set_kv("bitcoind.rpcpass", password, "Bitcoind", lnd_config)
+
+
 def autoconnect(list_path=''):
     """Autoconnect to a list of nodes in autoconnect.txt"""
     print("Connecting to:")
