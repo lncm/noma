@@ -229,6 +229,7 @@ def get_uuid(device):
 
 def usb_setup():
     """start usb-setup with 3 devices"""
+    print("Warning: using deprecated usb_setup routine!")
     largest = largest_partition()
     medium = medium_partition()
     smallest = smallest_partition()
