@@ -142,11 +142,16 @@ def check():
         print("lnd directory exists")
     else:
         print("lnd directory missing")
+
     lnd_conf = pathlib.Path("/media/important/important/lnd/lnd.conf").is_file()
     if lnd_conf:
         print("lnd conf exists")
     else:
         print("lnd conf missing")
+
+    if lnd_dir and lnd_conf:
+        return True
+    return False
 
 
 def randompass(string_length=10):
