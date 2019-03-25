@@ -51,7 +51,7 @@ def fastsync():
     else:
         print("Bitcoin directory does not exist, creating")
         if pathlib.Path("/media/archive/archive").is_dir():
-            pathlib.Path(bitcoind_dir).mkdir()
+            pathlib.Path(bitcoind_dir).mkdir(exist_ok=True)
             os.chdir(bitcoind_dir)
             call(["wget", "-c", url])
             call(["tar", "xvf", snapshot])
@@ -65,7 +65,7 @@ def create():
     """Create bitcoind directory structure and config file"""
     bitcoind_dir = "/media/archive/archive/bitcoin"
     bitcoind_config = "/home/lncm/bitcoin/bitcoin.conf"
-    pathlib.Path(bitcoind_dir).mkdir()
+    pathlib.Path(bitcoind_dir).mkdir(exist_ok=True)
     shutil.copyfile(pathlib.Path(bitcoind_config), bitcoind_dir)
 
 

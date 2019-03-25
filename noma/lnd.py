@@ -166,7 +166,7 @@ def randompass(string_length=10):
 def create():
     """Create lnd directory structure and config file"""
     lnd_path = '/media/important/important/lnd/'
-    pathlib.Path(lnd_path).mkdir()
+    pathlib.Path(lnd_path).mkdir(exist_ok=True)
     shutil.copyfile('/home/lncm/lnd/lnd.conf', lnd_path)
 
 

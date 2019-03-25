@@ -7,7 +7,7 @@ import requests
 
 
 def create_dir(path):
-    Path(path).mkdir()
+    Path(path).mkdir(exist_ok=True)
     if Path(path).is_dir():
         return True
     return False
@@ -77,7 +77,7 @@ def setup_nginx():
         print("Nginx volatile directory found")
     else:
         print("Creating nginx volatile directory")
-        Path("/media/volatile/volatile/nginx").mkdir()
+        Path("/media/volatile/volatile/nginx").mkdir(exist_ok=True)
     nginx_important = Path("/media/important/important/nginx").is_dir()
     if nginx_important:
         print("Nginx important directory found")
@@ -165,7 +165,7 @@ def create_swap():
     """Create swap on volatile usb device"""
     print("Create swap on volatile usb device")
     volatile_path = Path("/media/volatile/volatile")
-    volatile_path.mkdir()
+    volatile_path.mkdir(exist_ok=True)
 
     if not volatile_path.is_dir():
         print("Warning: volatile directory inaccessible")
@@ -220,7 +220,7 @@ def check_to_fetch(file_path, url):
             return True
     else:
         try:
-            Path(dir_path).mkdir()
+            Path(dir_path).mkdir(exist_ok=True)
 
             r = requests.get(url, stream=True)
             with open(filename, 'wb') as f:
