@@ -93,7 +93,7 @@ def check_for_destruction(device):
     print("Check devices for destruction flag")
     destroy = Path("/media/" + device + "DESTROY_ALL_DATA_ON_THIS_DEVICE.txt").is_file()
     if destroy:
-        print("Going to destroy all data on /dev/%s in 3 seconds...") % device
+        print("Going to destroy all data on /dev/{} in 3 seconds...").format(device)
         sleep(3)
         call(["umount", "/dev/" + device])
         sleep(1)
@@ -137,12 +137,12 @@ def fallback_mount(partition, path):
     ext4_mountable = usb.is_mounted(partition)
 
     if not ext4_mountable:
-        print("Warning: %s usb is not mountable as ext4") % partition
+        print("Warning: {} usb is not mountable as ext4").format(partition)
         mnt_any(partition, path)
         sleep(1)
         mountable = usb.is_mounted(partition)
         if not mountable:
-            print("Error: %s usb is not mountable as any supported format") % partition
+            print("Error: {} usb is not mountable as any supported format").format(partition)
             print("Cannot continue without all USB storage devices")
             return False
     else:
@@ -154,11 +154,11 @@ def setup_fstab(device):
     ext4_mounted = usb.is_mounted(device)
     if ext4_mounted:
         with open("/etc/fstab", 'a') as file:
-            fstab = str("\nUUID=%s /media/%s ext4 defaults,noatime 0 0" % usb.get_uuid(device), device)
+            fstab = "\nUUID={u} /media/{d} ext4 defaults,noatime 0 0".format(u=usb.get_uuid(device), d=device)
             file.write(fstab)
     else:
-        print("Warning: %s usb does not seem to be ext4 formatted") % device
-        print("%s will not be added to /etc/fstab") % device
+        print("Warning: {} usb does not seem to be ext4 formatted").format(device)
+        print("{} will not be added to /etc/fstab").format(device)
 
 
 def create_swap():

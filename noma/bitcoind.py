@@ -174,13 +174,13 @@ def set_kv(key, value, config_path):
         print(err)
     if value == current_val:
         # nothing to do
-        print("%s already set to %s" % (key, value))
+        print("{k} already set to {v}".format(k=key, v=value))
         return
     if current_val is None:
         # key does not exist yet
         with open(config_path, 'a') as file:
             # append kv pair to file
-            file.write("\n%s=%s" % (key, value))
+            file.write("\n{k}={v}".format(k=key, v=value))
     else:
         with FileInput(config_path, inplace=True, backup='.bak') as file:
             for line in file:
