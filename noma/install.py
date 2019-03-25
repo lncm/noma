@@ -64,7 +64,7 @@ def install_apk_deps():
 
 def mnt_ext4(device, path):
     """Mount device at path using ext4"""
-    call(["mount", "-t ext4 /dev/" + device, path])
+    call(["mount", "-t ext4", "/dev/" + device, path])
 
 
 def mnt_any(device, path):
@@ -131,8 +131,7 @@ def fallback_mount(partition, path):
 
     :return bool: success
     """
-    print("Mount ext4 storage device:")
-    print(partition)
+    print("Mount ext4 storage device: {}".format(partition))
 
     mnt_ext4(partition, path)
     sleep(1)
@@ -151,12 +150,12 @@ def fallback_mount(partition, path):
         return True
 
 
-def setup_fstab(device):
+def setup_fstab(device, mount):
     """Add device to fstab"""
     ext4_mounted = usb.is_mounted(device)
     if ext4_mounted:
         with open("/etc/fstab", 'a') as file:
-            fstab = "\nUUID={u} /media/{d} ext4 defaults,noatime 0 0".format(u=usb.get_uuid(device), d=device)
+            fstab = "\nUUID={u} /media/{m} ext4 defaults,noatime 0 0".format(u=usb.get_uuid(device), m=mount)
             file.write(fstab)
     else:
         print("Warning: {} usb does not seem to be ext4 formatted".format(device))
@@ -250,7 +249,7 @@ def usb_setup():
                         print("Mounting {d} at {p} successful".format(d=device, p=mountpoint))
                         # All good with mount and mount-point
                         if check_for_destruction(device):
-                            setup_fstab(device)
+                            setup_fstab(device, mountpoint)
                     else:
                         print('Error: {d} is not mounted'.format(d=device))
                         exit(1)
