@@ -66,7 +66,7 @@ def create():
     bitcoind_dir = "/media/archive/archive/bitcoin"
     bitcoind_config = "/home/lncm/bitcoin/bitcoin.conf"
     pathlib.Path(bitcoind_dir).mkdir(exist_ok=True)
-    shutil.copyfile(bitcoind_config, bitcoind_dir + "/bitcoin.conf")
+    shutil.copy(bitcoind_config, bitcoind_dir + "/bitcoin.conf")
 
 
 def set_prune(prune_target, config_path=''):
