@@ -90,31 +90,32 @@ def setup_nginx():
         shutil.copytree(origin, destination)
 
 
-def check_for_destruction(device):
+def check_for_destruction(device, path):
     """Check devices for destruction flag. If so, format with ext4"""
     print("Check devices for destruction flag")
-    destroy = Path("/media/" + device + "DESTROY_ALL_DATA_ON_THIS_DEVICE.txt").is_file()
+    destroy = Path(path + "/DESTROY_ALL_DATA_ON_THIS_DEVICE.txt").is_file()
     if destroy:
+        print("Destruction flag found!")
         print("Going to destroy all data on /dev/{} in 3 seconds...".format(device))
         sleep(3)
         call(["umount", "/dev/" + device])
-        sleep(1)
+        sleep(2)
         if not usb.is_mounted(device):
             print("Going to format {d} with ext4 now".format(d=device))
             call(["mkfs.ext4", "-F", "/dev/" + device])
-            mnt_ext4("/dev/" + device, "/media/" + device)
-            sleep(1)
+            mnt_ext4("/dev/" + device, path)
+            sleep(2)
             if usb.is_mounted(device):
                 print("{d} formatted with ext4 successfully and mounted.".format(d=device))
                 return True
         else:
             call(["umount", "-f", "/dev/" + device])
-            sleep(1)
+            sleep(2)
             if not usb.is_mounted(device):
                 print("Going to format {d} with ext4 now".format(d=device))
                 call(["mkfs.ext4", "-F", "/dev/" + device])
-                mnt_ext4("/dev/" + device, "/media/" + device)
-                sleep(1)
+                mnt_ext4("/dev/" + device, path)
+                sleep(2)
                 if usb.is_mounted(device):
                     print("{d} formatted with ext4 successfully and mounted.".format(d=device))
                     return True
@@ -122,7 +123,7 @@ def check_for_destruction(device):
                 print("Error mounting {}".format(device))
                 return False
     else:
-        print("Device is not flagged for being wiped")
+        print("{} is not flagged for being wiped".format(device))
         return True
 
 
@@ -134,18 +135,21 @@ def fallback_mount(partition, path):
     print("Mount ext4 storage device: {}".format(partition))
 
     mnt_ext4(partition, path)
-    sleep(1)
+    sleep(2)
     ext4_mountable = usb.is_mounted(partition)
 
     if not ext4_mountable:
         print("Warning: {} usb is not mountable as ext4".format(partition))
         mnt_any(partition, path)
-        sleep(1)
+        sleep(2)
         mountable = usb.is_mounted(partition)
         if not mountable:
             print("Error: {} usb is not mountable as any supported format".format(partition))
             print("Cannot continue without all USB storage devices")
             return False
+        else:
+            print("{d} mounted at {p} with any filesystem".format(d=partition, p=path))
+            return True
     else:
         return True
 
@@ -241,23 +245,23 @@ def usb_setup():
     mountpoints = ["/media/archive", "/media/volatile", "/media/important"]
 
     for device in devices:
-        for mountpoint in mountpoints:
-            if create_dir(mountpoint):
-                if fallback_mount(device, mountpoint):
-                    sleep(1)
-                    if usb.is_mounted(device):
-                        print("Mounting {d} at {p} successful".format(d=device, p=mountpoint))
-                        # All good with mount and mount-point
-                        if check_for_destruction(device):
-                            setup_fstab(device, mountpoint)
-                    else:
-                        print('Error: {d} is not mounted'.format(d=device))
-                        exit(1)
+        num = devices.index(device)
+        if create_dir(mountpoints[num]):
+            if fallback_mount(device, mountpoints[num]):
+                sleep(1)
+                if usb.is_mounted(device):
+                    print("Mounting {d} at {p} successful".format(d=device, p=mountpoints[num]))
+                    # All good with mount and mount-point
+                    if check_for_destruction(device, mountpoints[num]):
+                        setup_fstab(device, mountpoints[num])
                 else:
-                    print('Mounting {d} with any filesystem unsuccessful'.format(d=device))
+                    print('Error: {d} is not mounted'.format(d=device))
                     exit(1)
             else:
-                print("Error: {p} directory not available".format(p=mountpoint))
+                print('Mounting {d} with any filesystem unsuccessful'.format(d=device))
+                exit(1)
+        else:
+            print("Error: {p} directory not available".format(p=mountpoints[num]))
 
     # volatile
     if usb.is_mounted(medium):
