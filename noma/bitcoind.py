@@ -37,22 +37,27 @@ def fastsync():
     print("Checking if snapshot archive exists")
     if bitcoind_dir_exists:
         print("Bitcoin directory exists")
-        snapshot_file = bitcoind_dir / 'snapshot'
+        snapshot_file = bitcoind_dir / snapshot
         if snapshot_file.is_file():
             print("Snapshot archive exists")
             if pathlib.Path(bitcoind_dir + "blocks").is_dir():
                 print("Bitcoin blocks directory exists, exiting")
-                exit(0)
+                return True
             else:
                 # Assumes download was interrupted
                 print("Continue downloading snapshot")
                 call(["wget", "-c", url])
                 call(["tar", "xvf", snapshot])
+        else:
+            print("Downloading snapshot")
+            call(["wget", "-c", url])
+            call(["tar", "xvf", snapshot])
     else:
         print("Bitcoin directory does not exist, creating")
         if pathlib.Path("/media/archive/archive").is_dir():
             pathlib.Path(bitcoind_dir).mkdir(exist_ok=True)
             os.chdir(bitcoind_dir)
+            print("Downloading snapshot")
             call(["wget", "-c", url])
             call(["tar", "xvf", snapshot])
         else:
