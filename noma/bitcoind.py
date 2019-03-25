@@ -97,9 +97,7 @@ def generate_rpcauth(username, password=''):
     auth_value = '{0}:{1}${2}'.format(username, salt, password_hmac)
     try:
         with open("/media/important/important/rpc.txt", "a") as file:
-            file.write('rpcauth={}'.format(auth_value)+'\n'
-                       'username={}'.format(username)+'\n'
-                       'password={}'.format(password))
+            file.write('rpcauth={r}\nusername={u}\npassword={p}'.format(r=auth_value, u=username, p=password))
     except Exception as error:
         print(error.__class__.__name__, ':', error)
 
