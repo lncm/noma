@@ -167,7 +167,7 @@ def create():
     """Create lnd directory structure and config file"""
     lnd_path = '/media/important/important/lnd/'
     pathlib.Path(lnd_path).mkdir(exist_ok=True)
-    shutil.copyfile('/home/lncm/lnd/lnd.conf', lnd_path)
+    shutil.copyfile('/home/lncm/lnd/lnd.conf', lnd_path + "/lnd.conf")
 
 
 def create_wallet():
