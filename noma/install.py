@@ -290,12 +290,14 @@ def usb_setup():
     # important
     if usb.is_mounted(smallest):
         import noma.bitcoind
+        print("Creating bitcoind files")
         noma.bitcoind.create()
         if noma.bitcoind.check():
             noma.bitcoind.set_prune("550")
             noma.bitcoind.set_rpcauth("/media/archive/archive/bitcoin/bitcoin.conf")
 
         import noma.lnd
+        print("Creating lnd files")
         noma.lnd.create()
         if noma.lnd.check():
             noma.lnd.setup_tor()
