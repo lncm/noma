@@ -133,25 +133,29 @@ def fallback_mount(partition, path):
     :return bool: success
     """
     print("Mount ext4 storage device: {}".format(partition))
-
+    mounted = usb.is_mounted(partition)
+    if mounted:
+        return True
     mnt_ext4(partition, path)
     sleep(2)
     ext4_mountable = usb.is_mounted(partition)
 
-    if not ext4_mountable:
+    if ext4_mountable:
+        print("{d} is mounted as ext4 at {p}".format(d=partition, p=path))
+        return True
+    else:
         print("Warning: {} usb is not mountable as ext4".format(partition))
+        print("Attempting to mount with any filesystem...")
         mnt_any(partition, path)
         sleep(2)
         mountable = usb.is_mounted(partition)
-        if not mountable:
-            print("Error: {} usb is not mountable as any supported format".format(partition))
-            print("Cannot continue without all USB storage devices")
-            return False
-        else:
+        if mountable:
             print("{d} mounted at {p} with any filesystem".format(d=partition, p=path))
             return True
-    else:
-        return True
+        else:
+            print("Error: {} usb is not mountable with any supported format".format(partition))
+            print("Cannot continue without all USB storage devices")
+            return False
 
 
 def setup_fstab(device, mount):
@@ -168,6 +172,7 @@ def setup_fstab(device, mount):
 
 def create_swap():
     """Create swap on volatile usb device"""
+    # TODO: make sure dd runs in foreground and is blocking
     print("Create swap on volatile usb device")
     volatile_path = Path("/media/volatile/volatile")
     volatile_path.mkdir(exist_ok=True)
@@ -253,7 +258,12 @@ def usb_setup():
                     print("Mounting {d} at {p} successful".format(d=device, p=mountpoints[num]))
                     # All good with mount and mount-point
                     if check_for_destruction(device, mountpoints[num]):
-                        setup_fstab(device, mountpoints[num])
+                        device_name = mountpoints[num].split('/')[2]
+                        mount_path = Path('{p}/{n}'.format(p=mountpoints[num], n=device_name))
+                        mount_path.mkdir(exist_ok=True)
+                        if mount_path.is_dir():
+                            # We confirmed device is mountable, readable, writable
+                            setup_fstab(device, mountpoints[num])
                 else:
                     print('Error: {d} is not mounted'.format(d=device))
                     exit(1)
