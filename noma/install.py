@@ -170,6 +170,11 @@ def setup_fstab(device, mount):
         print("{} will not be added to /etc/fstab".format(device))
 
 
+def install_compose():
+    print("Installing docker-compose, if necessary")
+    call(["pip", "install", "docker-compose"])
+
+
 def create_swap():
     """Create swap on volatile usb device"""
     # TODO: make sure dd runs in foreground and is blocking
@@ -304,11 +309,6 @@ def usb_setup():
 def install_crontab():
     print("Installing crontab")
     call(["/usr/bin/crontab", "/home/lncm/crontab"])
-
-
-def install_compose():
-    print("Installing docker-compose")
-    call(["apk", "add", "docker-compose"])
 
 
 def enable_compose():
