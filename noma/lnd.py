@@ -104,6 +104,7 @@ def setup_tor(version=''):
         version = "v3"
     hostname_path = "/var/lib/tor/lnd-{}/hostname".format(version)
     try:
+        print("Adding externalip directive to lnd for tor")
         with open(hostname_path, 'r') as hostname:
             set_kv("externalip", hostname, "Application Options")
     except Exception as error:
