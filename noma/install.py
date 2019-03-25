@@ -103,7 +103,7 @@ def check_for_destruction(device, path):
         if not usb.is_mounted(device):
             print("Going to format {d} with ext4 now".format(d=device))
             call(["mkfs.ext4", "-F", "/dev/" + device])
-            mnt_ext4("/dev/" + device, path)
+            mnt_ext4(device, path)
             sleep(2)
             if usb.is_mounted(device):
                 print("{d} formatted with ext4 successfully and mounted.".format(d=device))
@@ -114,7 +114,7 @@ def check_for_destruction(device, path):
             if not usb.is_mounted(device):
                 print("Going to format {d} with ext4 now".format(d=device))
                 call(["mkfs.ext4", "-F", "/dev/" + device])
-                mnt_ext4("/dev/" + device, path)
+                mnt_ext4(device, path)
                 sleep(2)
                 if usb.is_mounted(device):
                     print("{d} formatted with ext4 successfully and mounted.".format(d=device))
