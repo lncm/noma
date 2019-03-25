@@ -280,10 +280,11 @@ def usb_setup():
 
     # volatile
     if usb.is_mounted(medium):
-        if create_swap():
-            enable_swap()
-        else:
-            print("Warning: Cannot create and enable swap!")
+        # TODO: swap disabled until it is blocking!
+        # if create_swap():
+        #     enable_swap()
+        # else:
+        #     print("Warning: Cannot create and enable swap!")
         setup_nginx()
 
     # important
