@@ -30,9 +30,11 @@ def move_cache():
     """Let apk cache live on persistent volume"""
     print("Let apk cache live on persistent volume")
     cache_dir = Path("/media/mmcblk0p1/cache")
+    var_cache = "/var/cache/apk"
     if cache_dir.is_dir():
-        shutil.copytree(cache_dir, "/var/cache/apk/")
-        call(["setup-apkcache", "/var/cache/apk"])
+        shutil.rmtree(var_cache)
+        shutil.copytree(cache_dir, var_cache)
+        call(["setup-apkcache", var_cache])
 
 
 def enable_swap():
