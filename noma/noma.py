@@ -74,7 +74,7 @@ def bitcoind(args):
         bitcoind.get_kv(args['<first>'], "/media/archive/archive/bitcoin_big/bitcoin.conf")
 
     elif args['rpcauth']:
-        bitcoind.gen_rpcauth(args['<username>'], args['<password>'])
+        bitcoind.generate_rpcauth(args['<username>'], args['<password>'])
 
 
 def lnd(args):
