@@ -64,7 +64,7 @@ Some `noma` functions are specific to Raspberry Pi hardware.
 ### Build instructions
 0. `pip3 install wheel docker docker-compose`
 1. `python3 setup.py bdist_wheel`
-2. `pip install dist/noma-0.1-py3-none-any.whl`
+2. `pip install dist/noma-0.2.1-py3-none-any.whl`
 
 ### Build docs
 0. `pip3 install sphinx sphinx-rtd-theme`
