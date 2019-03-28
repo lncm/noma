@@ -61,6 +61,12 @@ Currently, some third-party components needs to be installed and configured sepa
 Some `noma` functions are specific to Raspberry Pi hardware.
 
 
+### Pre-build Instructions
+
+#### Alpine Linux
+
+* ```apk add gcc```
+
 ### Build instructions
 0. `pip3 install wheel docker docker-compose`
 1. `python3 setup.py bdist_wheel`
