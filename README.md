@@ -65,11 +65,7 @@ Some `noma` functions are specific to Raspberry Pi hardware.
 
 #### Alpine Linux
 
-* ```apk add gcc```
-* ```apk add python3-dev```
-* ```apk add linux-headers```
-* ```apk add py-configobj```
-* ```apk add libusb python-dev```
+* ```apk add gcc python3-dev linux-headers py-configobj libusb python-dev musl-dev```
 
 ### Build instructions
 0. `pip3 install wheel docker docker-compose`
