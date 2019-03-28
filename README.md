@@ -69,6 +69,7 @@ Some `noma` functions are specific to Raspberry Pi hardware.
 * ```apk add python3-dev```
 * ```apk add linux-headers```
 * ```apk add py-configobj```
+* ```apk add libusb python-dev```
 
 ### Build instructions
 0. `pip3 install wheel docker docker-compose`
