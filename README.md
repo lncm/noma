@@ -52,14 +52,18 @@ noma --version
 ### API documentation
 [Read the Docs](https://noma.readthedocs.io/en/latest/)
 
-
 ### Dependencies
 To get the most out of this tool we highly recommend to have `docker` and `docker-compose` installed.
 
-Currently, some third-party components needs to be installed and configured separately when not using `noma` in combination with https://github.com/lncm/pi-factory to enable all functionality.
+Currently, some third-party components need to be installed and configured separately when not using `noma` in combination with https://github.com/lncm/pi-factory to enable all functionality.
 
 Some `noma` functions are specific to Raspberry Pi hardware.
 
+### Installation
+0. `apk add docker docker-compose` or OS equivalent
+1. `pip install -r https://raw.githubusercontent.com/lncm/noma/master/requirements.txt`
+2. `pip install https://github.com/lncm/noma/releases/download/v0.2.1/noma-0.2.1-py3-none-any.whl`
+ 
 
 ### Pre-build Instructions
 
