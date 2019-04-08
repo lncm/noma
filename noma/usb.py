@@ -211,12 +211,15 @@ def largest_part_size():
 
 
 def uuid_table():
-    """list uuids of devices"""
+    """list UUIDs of all block devices
+    e.g. {'sdc1': 'd641d2b9-4fcd-4c83-9415-7ca4e7553a5d'}
+
+    :return: dictionary of device names and UUIDs"""
     device_table = popen('blkid').read().splitlines()
     devices = {}
     for device in device_table:
         dev = device.split(":")[0].split("/")[2]
-        uuid = device.split('"')[1]
+        uuid = device.split('UUID="')[1].split('"')[0]
         devices[dev] = uuid
     return devices
 
