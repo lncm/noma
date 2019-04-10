@@ -6,6 +6,16 @@ import pathlib
 import time
 
 
+MEDIA_PATH = pathlib.Path("/media")
+ARCHIVE_PATH = MEDIA_PATH / pathlib.Path("archive/archive")
+VOLATILE_PATH = MEDIA_PATH / pathlib.Path("volatile/volatile")
+IMPORTANT_PATH = MEDIA_PATH / pathlib.Path("important/important")
+
+HOME_PATH = pathlib.Path("/home/lncm")
+COMPOSE_PATH = HOME_PATH / pathlib.Path("compose")
+FACTORY_PATH = HOME_PATH / pathlib.Path("pi-factory")
+
+
 def get_swap():
     """Return amount of swap"""
     return round(psutil.swap_memory().total / 1048576)
@@ -18,13 +28,9 @@ def get_ram():
 
 def check():
     """check box filesystem structure"""
-    archive_path = pathlib.Path("/media/archive/archive")
-    important_path = pathlib.Path("/media/important/important")
-    volatile_path = pathlib.Path("/media/volatile/volatile")
-
-    archive_exists = archive_path.is_dir()
-    important_exists = important_path.is_dir()
-    volatile_exists = volatile_path.is_dir()
+    archive_exists = ARCHIVE_PATH.is_dir()
+    important_exists = IMPORTANT_PATH.is_dir()
+    volatile_exists = VOLATILE_PATH.is_dir()
 
     if archive_exists:
         print("archive usb device exists")
@@ -48,13 +54,13 @@ def check():
 
 def start():
     """Start default docker compose"""
-    os.chdir("/home/lncm/compose")
+    os.chdir(COMPOSE_PATH)
     call(["docker-compose", "up", "-d"])
 
 
 def backup():
     """Backup apkovl to important usb device"""
-    call(["lbu", "pkg", "-v", "/media/important/important/"])
+    call(["lbu", "pkg", "-v", IMPORTANT_PATH])
 
 
 def devtools():
@@ -188,14 +194,13 @@ def get_source():
     """Get latest pi-factory source code or update"""
     install_git()
 
-    factory_path = pathlib.Path("/home/lncm/pi-factory")
-    if factory_path.is_dir():
+    if FACTORY_PATH.is_dir():
         print("source directory already exists")
         print("going to update with git pull")
-        os.chdir("/home/lncm/pi-factory")
+        os.chdir(FACTORY_PATH)
         call(["git", "pull"])
     else:
-        os.chdir("/home/lncm")
+        os.chdir(HOME_PATH)
         call(["git", "clone", "https://github.com/lncm/pi-factory.git"])
 
 
@@ -223,7 +228,7 @@ def reinstall():
     install_git()
     get_source()
 
-    os.chdir("/home/lncm/pi-factory")
+    os.chdir(FACTORY_PATH)
     call(["git", "pull"])
     print("Migrating current WiFi credentials")
     supplicant_sd = pathlib.Path("/etc/wpa_supplicant/wpa_supplicant.conf")
@@ -246,7 +251,7 @@ def full_reinstall():
     print("Starting upgrade...")
     install_git()
     get_source()
-    os.chdir("/home/lncm/pi-factory")
+    os.chdir(FACTORY_PATH)
     call(["git", "pull"])
     call(["make_upgrade.sh"])
 
@@ -254,8 +259,6 @@ def full_reinstall():
 def do_diff():
     """Diff current system configuration state with original git repository"""
     install_git()
-
-    factory = pathlib.Path("/home/lncm/pi-factory")
 
     def make_diff():
         print("Generating /home/lncm/etc.diff")
@@ -265,7 +268,7 @@ def do_diff():
         print("Generating /home/lncm/home.diff")
         call(["diff", "-r", "home", "/home/lncm/pi-factory/home"])
 
-    if factory.is_dir():
+    if FACTORY_PATH.is_dir():
         os.chdir("/home/lncm/pi-factory")
         print("Getting latest sources")
         call(["git", "pull"])
