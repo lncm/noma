@@ -73,9 +73,12 @@ def is_running(node=''):
         node = 'bitcoind'
     docker_host = from_env()
     compose_name = "compose_{}_1".format(node)
-    for container in docker_host.containers.list():
-        if compose_name in container.name:
-            return True
+    try:
+        for container in docker_host.containers.list():
+            if compose_name in container.name:
+                return True
+    except AttributeError:
+        return
     return False
 
 
