@@ -63,7 +63,7 @@ Some `noma` functions are specific to Raspberry Pi hardware.
 ### Installation
 0. `apk add docker docker-compose` or OS equivalent
 1. `pip install -r https://raw.githubusercontent.com/lncm/noma/master/requirements.txt`
-2. `pip install https://github.com/lncm/noma/releases/download/v0.2.1/noma-0.2.1-py3-none-any.whl`
+2. `pip install https://github.com/lncm/noma/releases/download/v0.2.2/noma-0.2.2-py3-none-any.whl`
  
 
 ### Pre-build Instructions
