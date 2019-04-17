@@ -58,8 +58,8 @@ def apk_update():
 
 def install_apk_deps():
     """Install misc dependencies"""
-    print("Install deps")
-    call(["apk", "add", "curl", "jq", "autossh"])
+    print("Install dependencies")
+    call(["apk", "add", "curl", "jq", "autossh", "gcc", "libc-dev", "make", "python3-dev", "libffi-dev", "openssl-dev"])
 
 
 def mnt_ext4(device, path):
