@@ -172,7 +172,7 @@ def setup_fstab(device, mount):
 
 def install_compose():
     print("Installing docker-compose, if necessary")
-    call(["pip", "install", "docker-compose"])
+    call(["pip3", "install", "docker-compose"])
 
 
 def create_swap():
