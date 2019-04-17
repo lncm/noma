@@ -40,7 +40,7 @@ def fastsync():
         snapshot_file = bitcoind_dir / snapshot
         if snapshot_file.is_file():
             print("Snapshot archive exists")
-            if pathlib.Path(bitcoind_dir + "blocks").is_dir():
+            if pathlib.Path(bitcoind_dir / "blocks").is_dir():
                 print("Bitcoin blocks directory exists, exiting")
                 return True
             else:
