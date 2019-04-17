@@ -1,7 +1,7 @@
 from setuptools import setup
 setup(
     name="noma",
-    version="0.2.1",
+    version="0.2.2",
     packages=["noma"],
     install_requires=['psutil', 'docopt', 'requests'],
     entry_points={
