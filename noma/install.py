@@ -163,7 +163,7 @@ def setup_fstab(device, mount):
     ext4_mounted = usb.is_mounted(device)
     if ext4_mounted:
         with open("/etc/fstab", 'a') as file:
-            fstab = "\nUUID={u} /media/{m} ext4 defaults,noatime 0 0".format(u=usb.get_uuid(device), m=mount)
+            fstab = "\nUUID={u} {m} ext4 defaults,noatime 0 0".format(u=usb.get_uuid(device), m=mount)
             file.write(fstab)
     else:
         print("Warning: {} usb does not seem to be ext4 formatted".format(device))
