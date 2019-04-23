@@ -14,7 +14,7 @@ deploy:
   user: another_droog
   password:
     secure: Hk8LELpajHqGPfSUMHrXQTS+nmraaaQLXnI8of5IJkcVdM2xBOrT7K80L/wJ5uG7sExhHQX0VKghqd+A1E4W4yeElzHdT+I7iKH205D+9WHdUjdqsTAt/xpBMJ3ADkwzpBUG2Kql+u9mfYXwPkSRFSL+85ktx+kklb8YfnS+IL63B/iQzCOM0/1qlx4dwwylWQtK2T1UUnl+eMIfuCGxFH4nbm1Xy63MdIbVZmDhyUQcGJfyarsQPwAqYGADOWEMKj0kBmuS5w7CBi7rEmOVhUaSs+QNKPh3/cxu9Xxwgum9iP592FBN/SnghloEa0YRXKSm385jyETrx+ozV0a2TyJwVcOt9Ct1cyilWp4F8sTY131k1FH/GBymcdWTYhQ+6ie5OyMsAw3RMSSkG3oaw0WrZFvjNd6xfboAo54aT1yHyaqoNHxaiSs9zOj2/V9shREuC4djr60YYNfWTQNTMzgYgAvks78ERcVIXpOaPOmLygwy3N2cgc6BS+kPIVa3wenLM3/2GdA5YwiekVklERt/awPU6xRaw20nHh0nsiOvT2wdsxaI9FOD9OKGHsvoUVt62qS2bWqGrHeG1dPp5ji8We4MrXOvm5ziTuyx+oavD4VZZLm9av1reGAoUWk4K2walCKZZmgQpUdP/zXBJNm0BLP1rFQhDLRCFny/nqY=
-  distributions: sdist bdist_wheel
+  distributions: "sdist bdist_wheel"
   on:
     tags: true
-  server: https://test.pypi.org
+  server: https://test.pypi.org/legacy/
