@@ -1,20 +1,16 @@
-dist: xenial   # required for Python >= 3.7
+dist: xenial
 language: python
 python:
-  - "3.7"
-
+- '3.7'
 install:
-  - python3 setup.py bdist_wheel sdist
-  - pip3 install dist/noma*.whl
-
+- python3 setup.py bdist_wheel sdist
+- pip3 install dist/noma*.whl
 script: return 0
-
 deploy:
   provider: pypi
-  user: "another_droog"
+  user: another_droog
   password:
-    secure: Hk8LELpajHqGPfSUMHrXQTS+nmraaaQLXnI8of5IJkcVdM2xBOrT7K80L/wJ5uG7sExhHQX0VKghqd+A1E4W4yeElzHdT+I7iKH205D+9WHdUjdqsTAt/xpBMJ3ADkwzpBUG2Kql+u9mfYXwPkSRFSL+85ktx+kklb8YfnS+IL63B/iQzCOM0/1qlx4dwwylWQtK2T1UUnl+eMIfuCGxFH4nbm1Xy63MdIbVZmDhyUQcGJfyarsQPwAqYGADOWEMKj0kBmuS5w7CBi7rEmOVhUaSs+QNKPh3/cxu9Xxwgum9iP592FBN/SnghloEa0YRXKSm385jyETrx+ozV0a2TyJwVcOt9Ct1cyilWp4F8sTY131k1FH/GBymcdWTYhQ+6ie5OyMsAw3RMSSkG3oaw0WrZFvjNd6xfboAo54aT1yHyaqoNHxaiSs9zOj2/V9shREuC4djr60YYNfWTQNTMzgYgAvks78ERcVIXpOaPOmLygwy3N2cgc6BS+kPIVa3wenLM3/2GdA5YwiekVklERt/awPU6xRaw20nHh0nsiOvT2wdsxaI9FOD9OKGHsvoUVt62qS2bWqGrHeG1dPp5ji8We4MrXOvm5ziTuyx+oavD4VZZLm9av1reGAoUWk4K2walCKZZmgQpUdP/zXBJNm0BLP1rFQhDLRCFny/nqY=
-  distributions: "sdist bdist_wheel"
+    secure: PAEulMiErEZH17npqZYzXKUAWOZNJYSeW7iIwd/SbrGLa/SzTvhUEWAZlBdz34NymP+KM3cFftm+G1eZLP8RXU+HxF+rb24qUepACKTGUlxCK8Hhx6SjIzMOP4nI19Ini5SzyB7QjTGNCwWj3Pl0j/SC15aoHJU7CjjNyXZvROFrASbR7zwqprQmO1v6zQ/eLUleAM7cr1taBxtRERToV9KI6bAm8Bt55WUDxmilaZpBLGjnaX7F13+l79ghVxjSagglwDswglJfwUvkGZUAkHRkVKAa4iU+KcWtkAGDP5HwGcbr6MWoZ+55fli9YpDmeMpgDhoPEEJsexRv95N6lYGzAEEYFvZlmaAP30dJ526Hglb4h6rFYSvgsPBGPvPtTtZJRVCceSMfHHNHME32x02d4bXAd7K5K71f1hzphDMi2grp3bG6y3+w72IfHoUGcG/aq5LFREOPcVtYaIfoWEwK7N2mD6qt6gPYUdoCHIp/+6GMKe3RDf0ZfvtUdOEi5CXuxTDAU4jAEg2zv1hNMaWvs5fkCRufok6V+VM5bMFCPDqbcejBhVdR9v7SrUVyYI2NiviJI2fvZRr7qvrQWzHnODrmYjOq5AAwSuq0idp0zkNS+y0RGnNmSoR11gMQa01xUxM8mP9vUu9aIhaFYPeK1vZBYioEJHzuJ+SxjdQ=
+  distributions: sdist bdist_wheel
   on:
     tags: true
-  server: https://test.pypi.org/legacy/
