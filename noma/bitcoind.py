@@ -1,8 +1,11 @@
+"""
+bitcoind related functionality
+"""
 from subprocess import call
 import os
 import pathlib
-from noma import rpcauth
 import shutil
+from noma import rpcauth
 
 
 def start():
@@ -41,12 +44,12 @@ def fastsync():
     def set_permissions(working_path):
         print("Setting file and directory permissions")
         for path, dirs, files in os.walk(working_path):
-            LNCM_UID, LNCM_GID = 1001, 1001
+            lncm_uid, lncm_gid = 1001, 1001
             for directory in dirs:
-                os.chown(os.path.join(path, directory), LNCM_UID, LNCM_GID)
+                os.chown(os.path.join(path, directory), lncm_uid, lncm_gid)
                 os.chmod(os.path.join(path, directory), 0o755)
             for file in files:
-                os.chown(os.path.join(path, file), LNCM_UID, LNCM_GID)
+                os.chown(os.path.join(path, file), lncm_uid, lncm_gid)
                 os.chmod(os.path.join(path, file), 0o744)
 
     print("Checking if snapshot archive exists")
@@ -57,34 +60,28 @@ def fastsync():
             print("Snapshot archive exists")
             if pathlib.Path(bitcoind_dir / "blocks").is_dir():
                 print("Bitcoin blocks directory exists, exiting")
-                return True
-            else:
-                # Assumes download was interrupted
-                os.chdir(bitcoind_dir_path)
-                print("Continue downloading snapshot")
-                call(["wget", "-c", url])
-                call(["tar", "xvf", snapshot])
-                set_permissions(bitcoind_dir_path)
-
-        else:
-            print("Downloading snapshot")
+            # Assumes download was interrupted
             os.chdir(bitcoind_dir_path)
+            print("Continue downloading snapshot")
             call(["wget", "-c", url])
             call(["tar", "xvf", snapshot])
             set_permissions(bitcoind_dir_path)
-    else:
-        print("Bitcoin directory does not exist, creating")
-        if pathlib.Path("/media/archive/archive").is_dir():
-            pathlib.Path(bitcoind_dir).mkdir(exist_ok=True)
-            os.chdir(bitcoind_dir_path)
-            print("Downloading snapshot")
-            call(["wget", "-c", url])
-            call(["tar", "xvf", snapshot])
-            set_permissions(bitcoind_dir_path)
-        else:
-            print("Error: archive directory does not exist on your usb device")
-            print("Are you sure it was installed correctly?")
-            exit(1)
+        print("Downloading snapshot")
+        os.chdir(bitcoind_dir_path)
+        call(["wget", "-c", url])
+        call(["tar", "xvf", snapshot])
+        set_permissions(bitcoind_dir_path)
+    print("Bitcoin directory does not exist, creating")
+    if pathlib.Path("/media/archive/archive").is_dir():
+        pathlib.Path(bitcoind_dir).mkdir(exist_ok=True)
+        os.chdir(bitcoind_dir_path)
+        print("Downloading snapshot")
+        call(["wget", "-c", url])
+        call(["tar", "xvf", snapshot])
+        set_permissions(bitcoind_dir_path)
+    print("Error: archive directory does not exist on your usb device")
+    print("Are you sure it was installed correctly?")
+    exit(1)
 
 
 def create():
@@ -189,14 +186,13 @@ def set_kv(key, value, config_path):
     :return str: string written
     """
     from fileinput import FileInput
-    import pathlib
 
-    p = pathlib.Path(config_path)
-    config_exists = p.is_file()
+    path = pathlib.Path(config_path)
+    config_exists = path.is_file()
 
     if not config_exists:
         # create empty config file
-        p.touch()
+        path.touch()
 
     current_val = None
     try:
