@@ -2,7 +2,7 @@
 
 CLI utility and Python API to manage bitcoin lightning nodes.
 
-
+[![Build Status](https://travis-ci.com/lncm/noma.svg?branch=master)](https://travis-ci.com/lncm/noma)
 [![Documentation Status](https://readthedocs.org/projects/noma/badge/?version=latest)](https://noma.readthedocs.io/en/latest/?badge=latest)
 [![Maintainability](https://api.codeclimate.com/v1/badges/fd95275314bd4f680140/maintainability)](https://codeclimate.com/github/lncm/noma/maintainability)
 
@@ -63,7 +63,7 @@ Some `noma` functions are specific to Raspberry Pi hardware.
 ### Installation
 0. `apk add docker docker-compose` or OS equivalent
 1. `pip install -r https://raw.githubusercontent.com/lncm/noma/master/requirements.txt`
-2. `pip install https://github.com/lncm/noma/releases/download/v0.2.2/noma-0.2.2-py3-none-any.whl`
+2. `pip install noma`
  
 
 ### Pre-build Instructions
