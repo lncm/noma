@@ -1,3 +1,6 @@
+"""
+LND related functionality
+"""
 from os import path
 from subprocess import call
 import pathlib
@@ -38,13 +41,13 @@ def autounlock():
     password_bytes = str(password_str).encode("utf-8")
     data = {"wallet_password": b64encode(password_bytes).decode()}
     try:
-        r = post(url, verify=cert_path, data=dumps(data))
+        response = post(url, verify=cert_path, data=dumps(data))
     except Exception:
         # Silence connection errors when lnd is not running
         pass
     else:
         try:
-            print(r.json())
+            print(response.json())
         except Exception:
             # JSON will fail to decode when unlocked already since response is empty
             pass
@@ -147,7 +150,6 @@ def autoconnect(list_path=""):
 
 def check():
     """Check lnd filesystem structure"""
-    import pathlib
 
     # check lnd filesystem structure
     lnd_dir = pathlib.Path("/media/important/important/lnd").is_dir()
@@ -265,7 +267,6 @@ def create_wallet():
         if r.status_code == 200:
             json_seed_creation = r.json()
             json_seed_mnemonic = json_seed_creation["cipher_seed_mnemonic"]
-            json_enciphered_seed = json_seed_creation["enciphered_seed"]
             seed_file = open(seed_filename, "w")
             for word in json_seed_mnemonic:
                 seed_file.write(word + "\n")

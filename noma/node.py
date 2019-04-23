@@ -1,9 +1,12 @@
+"""
+Node hardware and software management related functionality
+"""
 import os
 import shutil
 from subprocess import call
-import psutil
 import pathlib
 import time
+import psutil
 
 
 MEDIA_PATH = pathlib.Path("/media")
@@ -97,14 +100,14 @@ def is_running(node=""):
             if compose_name in container.name:
                 return True
     except AttributeError:
-        return
+        return None
     return False
 
 
 def stop_daemons():
     """Check and wait for clean shutdown of both bitcoind and lnd"""
     if not is_running("bitcoind") and not is_running("lnd"):
-        return print("bitcoind and lnd are already stopped")
+        print("bitcoind and lnd are already stopped")
 
     for i in range(5):
         if not is_running("bitcoind") and not is_running("lnd"):

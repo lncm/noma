@@ -1,3 +1,6 @@
+"""
+Node installation related functionality
+"""
 from pathlib import Path
 import shutil
 from subprocess import call, Popen, PIPE
