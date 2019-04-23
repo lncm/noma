@@ -72,6 +72,8 @@ def install_apk_deps():
             "python3-dev",
             "libffi-dev",
             "openssl-dev",
+            "python-dev",
+            "py-pip"
         ]
     )
 
