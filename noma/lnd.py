@@ -16,10 +16,12 @@ def check_wallet():
         if not path.exists("/media/important/important/lnd/data/chain"):
             create_wallet()
         else:
-            print('Wallet already exists!')
-            print('Please delete /media/important/important/lnd/data/chain and then restart lnd')
+            print("Wallet already exists!")
+            print(
+                "Please delete /media/important/important/lnd/data/chain and then restart lnd"
+            )
     else:
-        print('lnd directory does not exist!')
+        print("lnd directory does not exist!")
 
 
 def autounlock():
@@ -28,13 +30,13 @@ def autounlock():
     from requests import post
     from base64 import b64encode
 
-    url = 'https://localhost:8181/v1/unlockwallet'
-    cert_path = '/media/important/important/lnd/tls.cert'
-    password_str = open('/media/important/important/lnd/sesame.txt', 'r').read().rstrip()
-    password_bytes = str(password_str).encode('utf-8')
-    data = {
-        'wallet_password': b64encode(password_bytes).decode(),
-    }
+    url = "https://localhost:8181/v1/unlockwallet"
+    cert_path = "/media/important/important/lnd/tls.cert"
+    password_str = (
+        open("/media/important/important/lnd/sesame.txt", "r").read().rstrip()
+    )
+    password_bytes = str(password_str).encode("utf-8")
+    data = {"wallet_password": b64encode(password_bytes).decode()}
     try:
         r = post(url, verify=cert_path, data=dumps(data))
     except Exception:
@@ -48,7 +50,7 @@ def autounlock():
             pass
 
 
-def get_kv(key, section='', config_path=''):
+def get_kv(key, section="", config_path=""):
     """
     Parse key-value config files and print out values
 
@@ -70,7 +72,7 @@ def get_kv(key, section='', config_path=''):
         return parser.get(section, key)
 
 
-def set_kv(key, value, section='', config_path=''):
+def set_kv(key, value, section="", config_path=""):
     """
     Parse key-value config files and write them out with a key-value change
 
@@ -93,25 +95,25 @@ def set_kv(key, value, section='', config_path=''):
     with open(config_path) as lines:
         parser.read_file(lines)
         parser.set(section, key, value)
-        with open(config_path, 'w') as file:
+        with open(config_path, "w") as file:
             parser.write(file, space_around_delimiters=False)
             file.close()
 
 
-def setup_tor(version=''):
+def setup_tor(version=""):
     """Add tor hidden service to lnd"""
     if not version:
         version = "v3"
     hostname_path = "/var/lib/tor/lnd-{}/hostname".format(version)
     try:
         print("Adding externalip directive to lnd for tor")
-        with open(hostname_path, 'r') as hostname:
+        with open(hostname_path, "r") as hostname:
             set_kv("externalip", hostname.read(), "Application Options")
     except Exception as error:
-        print(error.__class__.__name__, ':', error)
+        print(error.__class__.__name__, ":", error)
 
 
-def set_bitcoind(password, user='', lnd_config=''):
+def set_bitcoind(password, user="", lnd_config=""):
     """Add bitcoind rpc username and password to lnd"""
     if not user:
         user = "lncm"
@@ -122,21 +124,24 @@ def set_bitcoind(password, user='', lnd_config=''):
         set_kv("bitcoind.rpcpass", password, "Bitcoind", lnd_config)
 
 
-def autoconnect(list_path=''):
+def autoconnect(list_path=""):
     """Autoconnect to a list of nodes in autoconnect.txt"""
     print("Connecting to:")
     if not list_path:
-        list_path = '/media/important/important/autoconnect.txt'
+        list_path = "/media/important/important/autoconnect.txt"
 
     with open(list_path) as address_list:
         for address in address_list:
             print(address.strip())
-            call(["docker", "exec", "compose_lnd_1", "lncli", "connect", address.strip()])
+            call(
+                ["docker", "exec", "compose_lnd_1", "lncli", "connect", address.strip()]
+            )
 
 
 def check():
     """Check lnd filesystem structure"""
     import pathlib
+
     # check lnd filesystem structure
     lnd_dir = pathlib.Path("/media/important/important/lnd").is_dir()
     if lnd_dir:
@@ -161,14 +166,14 @@ def randompass(string_length=10):
     from string import ascii_letters
 
     letters = ascii_letters
-    return ''.join(choice(letters) for i in range(string_length))
+    return "".join(choice(letters) for i in range(string_length))
 
 
 def create():
     """Create lnd directory structure and config file"""
-    lnd_path = '/media/important/important/lnd/'
+    lnd_path = "/media/important/important/lnd/"
     pathlib.Path(lnd_path).mkdir(exist_ok=True)
-    shutil.copy('/home/lncm/lnd/lnd.conf', lnd_path + "/lnd.conf")
+    shutil.copy("/home/lncm/lnd/lnd.conf", lnd_path + "/lnd.conf")
 
 
 def create_wallet():
@@ -177,10 +182,13 @@ def create_wallet():
 
     1. Check if there's already a wallet. If there is, then exit.
     2. Check for sesame.txt
-    3. If doesn't exist then check for whether we should save the password (save_password_control_file exists) or not
+    3. If doesn't exist then check for whether we should save the password
+    (save_password_control_file exists) or not
     4. If sesame.txt exists import password in.
-    5. If sesame.txt doesn't exist ans we don't save the password,create a password and save it in temporary path as defined in temp_password_file_path
-    6. Now start the wallet creation. Look for a seed defined in seed_filename , if not existing then generate a wallet based on the seed by LND.
+    5. If sesame.txt doesn't exist ans we don't save the password, create a
+    password and save it in temporary path as defined in temp_password_file_path
+    6. Now start the wallet creation. Look for a seed defined in seed_filename,
+    if not existing then generate a wallet based on the seed by LND.
 
     Main entrypoint function
 
@@ -188,24 +196,26 @@ def create_wallet():
     rm /home/lncm/seed.txt
     rm /media/important/important/lnd/sesame.txt
 
-    docker stop compose_lndbox_1 ; rm -fr /media/important/important/lnd/data/chain/ ; docker start compose_lndbox_1
+    docker stop compose_lndbox_1
+    rm -fr /media/important/important/lnd/data/chain/
+    docker start compose_lndbox_1
     """
     from requests import get, post
     from base64 import b64encode
     from json import dumps
 
     # Generate seed
-    url = 'https://localhost:8181/v1/genseed'
+    url = "https://localhost:8181/v1/genseed"
     # Initialize wallet
-    url2 = 'https://localhost:8181/v1/initwallet'
-    cert_path = '/media/important/important/lnd/tls.cert'
-    seed_filename = '/home/lncm/seed.txt'
+    url2 = "https://localhost:8181/v1/initwallet"
+    cert_path = "/media/important/important/lnd/tls.cert"
+    seed_filename = "/home/lncm/seed.txt"
     data = None
 
     # save password control file (Add this file if we want to save passwords)
-    save_password_control_file = '/home/lncm/save_password'
+    save_password_control_file = "/home/lncm/save_password"
     # Create password for writing
-    temp_password_file_path = '/home/lncm/password.txt'
+    temp_password_file_path = "/home/lncm/password.txt"
 
     if not path.exists(save_password_control_file):
         # Generate password but dont save it in usual spot
@@ -227,10 +237,12 @@ def create_wallet():
             password_file.close()
     else:
         # Get password from file if sesame file already exists
-        password_str = open('/media/important/important/lnd/sesame.txt', 'r').read().rstrip()
+        password_str = (
+            open("/media/important/important/lnd/sesame.txt", "r").read().rstrip()
+        )
 
     # Convert password to byte encoded
-    password_bytes = str(password_str).encode('utf-8')
+    password_bytes = str(password_str).encode("utf-8")
 
     # Step 1 get seed from web or file
 
@@ -239,14 +251,16 @@ def create_wallet():
         r = get(url, verify=cert_path)
         if r.status_code == 200:
             json_seed_creation = r.json()
-            json_seed_mnemonic = json_seed_creation['cipher_seed_mnemonic']
-            json_enciphered_seed = json_seed_creation['enciphered_seed']
+            json_seed_mnemonic = json_seed_creation["cipher_seed_mnemonic"]
+            json_enciphered_seed = json_seed_creation["enciphered_seed"]
             seed_file = open(seed_filename, "w")
             for word in json_seed_mnemonic:
                 seed_file.write(word + "\n")
             seed_file.close()
-            data = {'cipher_seed_mnemonic': json_seed_mnemonic,
-                    'wallet_password': b64encode(password_bytes).decode()}
+            data = {
+                "cipher_seed_mnemonic": json_seed_mnemonic,
+                "wallet_password": b64encode(password_bytes).decode(),
+            }
         # Data doesnt get set if cant create the seed but that is fine, handle it later
     else:
         # Seed exists
@@ -256,7 +270,10 @@ def create_wallet():
         for importword in seed_file_words:
             import_file_array.append(importword.replace("\n", ""))
         # Generate init wallet file from what was posted
-        data = {'cipher_seed_mnemonic': import_file_array, 'wallet_password': b64encode(password_bytes).decode()}
+        data = {
+            "cipher_seed_mnemonic": import_file_array,
+            "wallet_password": b64encode(password_bytes).decode(),
+        }
 
     # Step 2: Create wallet
 

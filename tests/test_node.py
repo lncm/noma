@@ -7,7 +7,7 @@ import requests
 class TestNode(unittest.TestCase):
     def testIsRunning(self):
         try:
-            result = noma.node.is_running('bitcoind')
+            result = noma.node.is_running("bitcoind")
             self.assertFalse(result)
         except FileNotFoundError as e:
             print("Error: file not found")
@@ -24,7 +24,7 @@ class TestNode(unittest.TestCase):
 
     def testVoltage(self):
         try:
-            result = noma.node.voltage('core')
+            result = noma.node.voltage("core")
             self.assertIsInstance(result, str)
         except FileNotFoundError as e:
             print("Error: file not found")

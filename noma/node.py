@@ -66,17 +66,19 @@ def backup():
 def devtools():
     """Install common development tools, nano, tmux, git, etc"""
     call(["apk", "update"])
-    call(["apk", "add", "tmux", "sudo", "git", "rsync", "htop", "iotop", "nmap", "nano"])
+    call(
+        ["apk", "add", "tmux", "sudo", "git", "rsync", "htop", "iotop", "nmap", "nano"]
+    )
 
 
-def is_running(node=''):
+def is_running(node=""):
     """Check if container is running
 
     :return bool: container is running"""
     from docker import from_env
 
     if not node:
-        node = 'bitcoind'
+        node = "bitcoind"
     docker_host = from_env()
     compose_name = "compose_{}_1".format(node)
     try:
@@ -94,20 +96,21 @@ def stop_daemons():
         return print("bitcoind and lnd are already stopped")
 
     for i in range(5):
-            if not is_running("bitcoind") and not is_running("lnd"):
-                break
-            if is_running("bitcoind"):
-                # stop bitcoind
-                call(["docker", "exec", "compose_bitcoind_1", "bitcoin-cli", "stop"])
-            if is_running("lnd"):
-                # stop lnd
-                call(["docker", "exec", "compose_lnd_1", "lncli", "stop"])
+        if not is_running("bitcoind") and not is_running("lnd"):
+            break
+        if is_running("bitcoind"):
+            # stop bitcoind
+            call(["docker", "exec", "compose_bitcoind_1", "bitcoin-cli", "stop"])
+        if is_running("lnd"):
+            # stop lnd
+            call(["docker", "exec", "compose_lnd_1", "lncli", "stop"])
 
-            time.sleep(2)
-            i -= 1
+        time.sleep(2)
+        i -= 1
 
     for i in range(5):
         import docker
+
         client = docker.from_env()
 
         if not is_running("bitcoind") and not is_running("lnd"):
@@ -128,7 +131,7 @@ def voltage(device=""):
     :return str: voltage
     """
     if not device:
-        device = 'core'
+        device = "core"
     call(["/opt/vc/bin/vcgencmd", "measure_volts", device])
 
 
@@ -139,7 +142,7 @@ def temp():
     :return str: CPU temperature
     """
     cpu_temp_path = "/sys/class/thermal/thermal_zone0/temp"
-    with open(cpu_temp_path, 'r') as file:
+    with open(cpu_temp_path, "r") as file:
         cpu_temp = file.read()
     return str(int(cpu_temp) / 1000) + "C"
 
@@ -169,7 +172,7 @@ def memory(device=""):
         call(["/opt/vc/bin/vcgencmd", "get_mem", "arm"])
 
 
-def logs(node=''):
+def logs(node=""):
     """Show logs of node specified, defaults to bitcoind
 
     return str: tailling logs"""
@@ -210,7 +213,16 @@ def tunnel(port, host):
         try:
             print("Tunneling local port 22 to " + host + ":" + port)
             port_str = "-R " + port + ":localhost:22"
-            call(["autossh", "-M 0", "-o ServerAliveInterval=60", "-o ServerAliveCountMax=10", port_str, host])
+            call(
+                [
+                    "autossh",
+                    "-M 0",
+                    "-o ServerAliveInterval=60",
+                    "-o ServerAliveCountMax=10",
+                    port_str,
+                    host,
+                ]
+            )
         except Exception as error:
             print(error)
 

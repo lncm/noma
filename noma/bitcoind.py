@@ -4,9 +4,11 @@ import pathlib
 from noma import rpcauth
 import shutil
 
+
 def start():
     """Start bitcoind docker compose container"""
     from noma.node import is_running
+
     if is_running("bitcoind"):
         print("bitcoind is running already")
     else:
@@ -16,6 +18,7 @@ def start():
 def stop():
     """Stop bitcoind docker compose container, if running"""
     from noma.node import is_running
+
     if is_running("bitcoind"):
         call(["docker", "exec", "compose_bitcoind_1", "bitcoin-cli", "stop"])
     else:
@@ -92,7 +95,7 @@ def create():
     shutil.copy(bitcoind_config, bitcoind_dir + "/bitcoin.conf")
 
 
-def set_prune(prune_target, config_path=''):
+def set_prune(prune_target, config_path=""):
     """Set bitcoind prune target, minimum 550"""
     if not config_path:
         config_path = "/media/archive/archive/bitcoin/bitcoin.conf"
@@ -102,6 +105,7 @@ def set_prune(prune_target, config_path=''):
 def set_rpcauth(config_path):
     """Write new rpc auth to bitcoind and lnd config"""
     import noma.lnd
+
     # TODO: Generate usernames too
     if not config_path:
         config_path = "/media/archive/archive/bitcoin/bitcoin.conf"
@@ -111,18 +115,22 @@ def set_rpcauth(config_path):
         noma.lnd.set_bitcoind(password)
 
 
-def generate_rpcauth(username, password=''):
+def generate_rpcauth(username, password=""):
     """Generate bitcoind rpcauth string from username and optional password"""
     if not password:
         password = rpcauth.generate_password()
     salt = rpcauth.generate_salt(16)
     password_hmac = rpcauth.password_to_hmac(salt, password)
-    auth_value = '{0}:{1}${2}'.format(username, salt, password_hmac)
+    auth_value = "{0}:{1}${2}".format(username, salt, password_hmac)
     try:
         with open("/media/important/important/rpc.txt", "a") as file:
-            file.write('rpcauth={r}\nusername={u}\npassword={p}'.format(r=auth_value, u=username, p=password))
+            file.write(
+                "rpcauth={r}\nusername={u}\npassword={p}".format(
+                    r=auth_value, u=username, p=password
+                )
+            )
     except Exception as error:
-        print(error.__class__.__name__, ':', error)
+        print(error.__class__.__name__, ":", error)
 
     return auth_value, password
 
@@ -163,9 +171,9 @@ def get_kv(key, config_path):
 
     parser = configparser.ConfigParser(strict=False)
     with open(config_path) as lines:
-        lines = itertools.chain(("[main]",), lines)   # workaround: prepend dummy section
+        lines = itertools.chain(("[main]",), lines)  # workaround: prepend dummy section
         parser.read_file(lines)
-        return parser.get('main', key)
+        return parser.get("main", key)
 
 
 def set_kv(key, value, config_path):
@@ -199,13 +207,13 @@ def set_kv(key, value, config_path):
         return
     if current_val is None:
         # key does not exist yet
-        with open(config_path, 'a') as file:
+        with open(config_path, "a") as file:
             # append kv pair to file
             file.write("\n{k}={v}".format(k=key, v=value))
     else:
-        with FileInput(config_path, inplace=True, backup='.bak') as file:
+        with FileInput(config_path, inplace=True, backup=".bak") as file:
             for line in file:
-                print(line.replace(current_val, value), end='')
+                print(line.replace(current_val, value), end="")
 
 
 if __name__ == "__main__":

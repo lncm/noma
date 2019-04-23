@@ -1,14 +1,11 @@
 from setuptools import setup
+
 setup(
     name="noma",
     version="0.2.10",
     packages=["noma"],
-    install_requires=['psutil', 'docopt', 'requests'],
-    entry_points={
-        "console_scripts": [
-            "noma = noma.noma:main",
-        ],
-    },
+    install_requires=["psutil", "docopt", "requests"],
+    entry_points={"console_scripts": ["noma = noma.noma:main"]},
     # metadata to display on PyPI
     zip_safe=True,
     author="AnotherDroog",
