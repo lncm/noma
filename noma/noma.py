@@ -53,7 +53,9 @@ def bitcoind(args):
             node.logs("bitcoind")
 
     elif args["info"]:
-        call(["docker", "exec", "compose_bitcoind_1", "bitcoin-cli", "-getinfo"])
+        call(
+            ["docker", "exec", "compose_bitcoind_1", "bitcoin-cli", "-getinfo"]
+        )
 
     elif args["fastsync"]:
         bitcoind.fastsync()
@@ -155,7 +157,9 @@ def lnd(args):
         lnd.check()
 
     elif args["set"]:
-        lnd.set_kv(args["<key>"], args["<value>"], args["<section>"], args["<path>"])
+        lnd.set_kv(
+            args["<key>"], args["<value>"], args["<section>"], args["<path>"]
+        )
 
     elif args["get"]:
         print(lnd.get_kv(args["<key>"], args["<section>"], args["<path>"]))
@@ -166,7 +170,9 @@ def node(args):
     from subprocess import call
 
     if args["info"]:
-        call(["docker", "exec", "compose_bitcoind_1", "bitcoin-cli", "-getinfo"])
+        call(
+            ["docker", "exec", "compose_bitcoind_1", "bitcoin-cli", "-getinfo"]
+        )
         call(["docker", "exec", "compose_lnd_1", "lncli", "getinfo"])
 
     elif args["start"]:

@@ -23,12 +23,16 @@ def generate_password():
 
 
 def password_to_hmac(salt, password):
-    m = hmac.new(bytearray(salt, "utf-8"), bytearray(password, "utf-8"), "SHA256")
+    m = hmac.new(
+        bytearray(salt, "utf-8"), bytearray(password, "utf-8"), "SHA256"
+    )
     return m.hexdigest()
 
 
 def main():
-    parser = ArgumentParser(description="Create login credentials for a JSON-RPC user")
+    parser = ArgumentParser(
+        description="Create login credentials for a JSON-RPC user"
+    )
     parser.add_argument("username", help="the username for authentication")
     parser.add_argument(
         "password",

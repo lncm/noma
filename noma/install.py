@@ -110,7 +110,11 @@ def check_for_destruction(device, path):
     destroy = Path(path + "/DESTROY_ALL_DATA_ON_THIS_DEVICE.txt").is_file()
     if destroy:
         print("Destruction flag found!")
-        print("Going to destroy all data on /dev/{} in 3 seconds...".format(device))
+        print(
+            "Going to destroy all data on /dev/{} in 3 seconds...".format(
+                device
+            )
+        )
         sleep(3)
         call(["umount", "/dev/" + device])
         sleep(2)
@@ -121,7 +125,9 @@ def check_for_destruction(device, path):
             sleep(2)
             if usb.is_mounted(device):
                 print(
-                    "{d} formatted with ext4 successfully and mounted.".format(d=device)
+                    "{d} formatted with ext4 successfully and mounted.".format(
+                        d=device
+                    )
                 )
                 return True
         else:
@@ -170,7 +176,11 @@ def fallback_mount(partition, path):
         sleep(2)
         mountable = usb.is_mounted(partition)
         if mountable:
-            print("{d} mounted at {p} with any filesystem".format(d=partition, p=path))
+            print(
+                "{d} mounted at {p} with any filesystem".format(
+                    d=partition, p=path
+                )
+            )
             return True
         else:
             print(
@@ -192,7 +202,9 @@ def setup_fstab(device, mount):
             )
             file.write(fstab)
     else:
-        print("Warning: {} usb does not seem to be ext4 formatted".format(device))
+        print(
+            "Warning: {} usb does not seem to be ext4 formatted".format(device)
+        )
         print("{} will not be added to /etc/fstab".format(device))
 
 
@@ -239,7 +251,9 @@ def create_swap():
         return False
 
     swapon = Popen(
-        ["swapon", "/media/volatile/volatile/swap", "-p 100"], stdout=PIPE, stderr=PIPE
+        ["swapon", "/media/volatile/volatile/swap", "-p 100"],
+        stdout=PIPE,
+        stderr=PIPE,
     )
 
     if swapon.returncode:
@@ -313,10 +327,16 @@ def usb_setup():
                     print("Error: {d} is not mounted".format(d=device))
                     exit(1)
             else:
-                print("Mounting {d} with any filesystem unsuccessful".format(d=device))
+                print(
+                    "Mounting {d} with any filesystem unsuccessful".format(
+                        d=device
+                    )
+                )
                 exit(1)
         else:
-            print("Error: {p} directory not available".format(p=mountpoints[num]))
+            print(
+                "Error: {p} directory not available".format(p=mountpoints[num])
+            )
 
     # volatile
     if usb.is_mounted(medium):
@@ -335,7 +355,9 @@ def usb_setup():
         noma.bitcoind.create()
         if noma.bitcoind.check():
             noma.bitcoind.set_prune("550")
-            noma.bitcoind.set_rpcauth("/media/archive/archive/bitcoin/bitcoin.conf")
+            noma.bitcoind.set_rpcauth(
+                "/media/archive/archive/bitcoin/bitcoin.conf"
+            )
 
         import noma.lnd
 

@@ -171,7 +171,9 @@ def get_kv(key, config_path):
 
     parser = configparser.ConfigParser(strict=False)
     with open(config_path) as lines:
-        lines = itertools.chain(("[main]",), lines)  # workaround: prepend dummy section
+        lines = itertools.chain(
+            ("[main]",), lines
+        )  # workaround: prepend dummy section
         parser.read_file(lines)
         return parser.get("main", key)
 

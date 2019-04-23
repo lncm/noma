@@ -67,7 +67,18 @@ def devtools():
     """Install common development tools, nano, tmux, git, etc"""
     call(["apk", "update"])
     call(
-        ["apk", "add", "tmux", "sudo", "git", "rsync", "htop", "iotop", "nmap", "nano"]
+        [
+            "apk",
+            "add",
+            "tmux",
+            "sudo",
+            "git",
+            "rsync",
+            "htop",
+            "iotop",
+            "nmap",
+            "nano",
+        ]
     )
 
 
@@ -100,7 +111,9 @@ def stop_daemons():
             break
         if is_running("bitcoind"):
             # stop bitcoind
-            call(["docker", "exec", "compose_bitcoind_1", "bitcoin-cli", "stop"])
+            call(
+                ["docker", "exec", "compose_bitcoind_1", "bitcoin-cli", "stop"]
+            )
         if is_running("lnd"):
             # stop lnd
             call(["docker", "exec", "compose_lnd_1", "lncli", "stop"])

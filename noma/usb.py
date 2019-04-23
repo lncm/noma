@@ -44,7 +44,9 @@ def dev_size(device):
     device_path = "/sys/block/"
     num_sectors = open(device_path + device + "/size").read().rstrip("\n")
     sector_size = (
-        open(device_path + device + "/queue/hw_sector_size").read().rstrip("\n")
+        open(device_path + device + "/queue/hw_sector_size")
+        .read()
+        .rstrip("\n")
     )
     return int(num_sectors) * int(sector_size)
 
@@ -61,10 +63,14 @@ def usb_part_size(partition):
         device_path = "/sys/block/"
         device = partition[:-1]
         num_sectors = (
-            open(device_path + device + "/" + partition + "/size").read().rstrip("\n")
+            open(device_path + device + "/" + partition + "/size")
+            .read()
+            .rstrip("\n")
         )
         sector_size = (
-            open(device_path + device + "/queue/hw_sector_size").read().rstrip("\n")
+            open(device_path + device + "/queue/hw_sector_size")
+            .read()
+            .rstrip("\n")
         )
     except TypeError:
         print("Not enough USB devices available")
@@ -85,10 +91,14 @@ def sd_part_size(partition):
         device_path = "/sys/block/"
         device = partition[:-2]
         num_sectors = (
-            open(device_path + device + "/" + partition + "/size").read().rstrip("\n")
+            open(device_path + device + "/" + partition + "/size")
+            .read()
+            .rstrip("\n")
         )
         sector_size = (
-            open(device_path + device + "/queue/hw_sector_size").read().rstrip("\n")
+            open(device_path + device + "/queue/hw_sector_size")
+            .read()
+            .rstrip("\n")
         )
     except TypeError:
         print("Not enough USB devices available")

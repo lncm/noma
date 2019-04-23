@@ -134,7 +134,14 @@ def autoconnect(list_path=""):
         for address in address_list:
             print(address.strip())
             call(
-                ["docker", "exec", "compose_lnd_1", "lncli", "connect", address.strip()]
+                [
+                    "docker",
+                    "exec",
+                    "compose_lnd_1",
+                    "lncli",
+                    "connect",
+                    address.strip(),
+                ]
             )
 
 
@@ -149,7 +156,9 @@ def check():
     else:
         print("lnd directory missing")
 
-    lnd_conf = pathlib.Path("/media/important/important/lnd/lnd.conf").is_file()
+    lnd_conf = pathlib.Path(
+        "/media/important/important/lnd/lnd.conf"
+    ).is_file()
     if lnd_conf:
         print("lnd conf exists")
     else:
@@ -232,13 +241,17 @@ def create_wallet():
             temp_password_file.close()
         else:
             # Use sesame.txt if password_control_file exists
-            password_file = open("/media/important/important/lnd/sesame.txt", "w")
+            password_file = open(
+                "/media/important/important/lnd/sesame.txt", "w"
+            )
             password_file.write(password_str)
             password_file.close()
     else:
         # Get password from file if sesame file already exists
         password_str = (
-            open("/media/important/important/lnd/sesame.txt", "r").read().rstrip()
+            open("/media/important/important/lnd/sesame.txt", "r")
+            .read()
+            .rstrip()
         )
 
     # Convert password to byte encoded
