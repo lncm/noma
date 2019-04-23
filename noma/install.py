@@ -25,8 +25,7 @@ def check_installed():
             for line in lines:
                 print(line)
         return True
-    else:
-        return False
+    return False
 
 
 def move_cache():
@@ -174,27 +173,25 @@ def fallback_mount(partition, path):
     if ext4_mountable:
         print("{d} is mounted as ext4 at {p}".format(d=partition, p=path))
         return True
-    else:
-        print("Warning: {} usb is not mountable as ext4".format(partition))
-        print("Attempting to mount with any filesystem...")
-        mnt_any(partition, path)
-        sleep(2)
-        mountable = usb.is_mounted(partition)
-        if mountable:
-            print(
-                "{d} mounted at {p} with any filesystem".format(
-                    d=partition, p=path
-                )
+    print("Warning: {} usb is not mountable as ext4".format(partition))
+    print("Attempting to mount with any filesystem...")
+    mnt_any(partition, path)
+    sleep(2)
+    mountable = usb.is_mounted(partition)
+    if mountable:
+        print(
+            "{d} mounted at {p} with any filesystem".format(
+                d=partition, p=path
             )
-            return True
-        else:
-            print(
-                "Error: {} usb is not mountable with any supported format".format(
-                    partition
-                )
-            )
-            print("Cannot continue without all USB storage devices")
-            return False
+        )
+        return True
+    print(
+        "Error: {} usb is not mountable with any supported format".format(
+            partition
+        )
+    )
+    print("Cannot continue without all USB storage devices")
+    return False
 
 
 def setup_fstab(device, mount):
