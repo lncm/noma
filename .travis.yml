@@ -17,4 +17,4 @@ deploy:
   distributions: "sdist bdist_wheel"
   on:
     tags: true
-  server: https://test.pypi.org/legacy
+  server: https://test.pypi.org/legacy/
