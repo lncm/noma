@@ -34,6 +34,18 @@ def fastsync():
     url = location + snapshot
     bitcoind_dir = pathlib.Path(bitcoind_dir_path)
     bitcoind_dir_exists = bitcoind_dir.is_dir()
+
+    def set_permissions(working_path):
+        print("Setting file and directory permissions")
+        for path, dirs, files in os.walk(working_path):
+            LNCM_UID, LNCM_GID = 1001, 1001
+            for directory in dirs:
+                os.chown(os.path.join(path, directory), LNCM_UID, LNCM_GID)
+                os.chmod(os.path.join(path, directory), 0o755)
+            for file in files:
+                os.chown(os.path.join(path, file), LNCM_UID, LNCM_GID)
+                os.chmod(os.path.join(path, file), 0o744)
+
     print("Checking if snapshot archive exists")
     if bitcoind_dir_exists:
         print("Bitcoin directory exists")
@@ -49,11 +61,14 @@ def fastsync():
                 print("Continue downloading snapshot")
                 call(["wget", "-c", url])
                 call(["tar", "xvf", snapshot])
+                set_permissions(bitcoind_dir_path)
+
         else:
             print("Downloading snapshot")
             os.chdir(bitcoind_dir_path)
             call(["wget", "-c", url])
             call(["tar", "xvf", snapshot])
+            set_permissions(bitcoind_dir_path)
     else:
         print("Bitcoin directory does not exist, creating")
         if pathlib.Path("/media/archive/archive").is_dir():
@@ -62,6 +77,7 @@ def fastsync():
             print("Downloading snapshot")
             call(["wget", "-c", url])
             call(["tar", "xvf", snapshot])
+            set_permissions(bitcoind_dir_path)
         else:
             print("Error: archive directory does not exist on your usb device")
             print("Are you sure it was installed correctly?")
