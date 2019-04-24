@@ -21,7 +21,7 @@ def check_wallet():
         else:
             print("Wallet already exists!")
             print(
-                "Please delete /media/important/important/lnd/data/chain and then restart lnd"
+                "Please backup and move /media/important/important/lnd/data/chain and then restart lnd"
             )
     else:
         print("lnd directory does not exist!")
