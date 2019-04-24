@@ -68,14 +68,6 @@ def install_apk_deps():
             "curl",
             "jq",
             "autossh",
-            "gcc",
-            "libc-dev",
-            "make",
-            "python3-dev",
-            "libffi-dev",
-            "openssl-dev",
-            "python-dev",
-            "py-pip"
         ]
     )
 
@@ -212,7 +204,7 @@ def setup_fstab(device, mount):
 
 def install_compose():
     print("Installing docker-compose, if necessary")
-    call(["pip3", "install", "docker-compose"])
+    call(["pip3", "install", "docker-compose==1.23.2"])
 
 
 def create_swap():
