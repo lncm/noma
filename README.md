@@ -61,10 +61,7 @@ Currently, some third-party components need to be installed and configured separ
 Some `noma` functions are specific to Raspberry Pi hardware.
 
 ### Installation
-0. `apk add docker docker-compose` or OS equivalent
-1. `pip install -r https://raw.githubusercontent.com/lncm/noma/master/requirements.txt`
-2. `pip install noma`
- 
+1. `pip install noma`
 
 ### Pre-build Instructions
 
