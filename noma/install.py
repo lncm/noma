@@ -61,15 +61,7 @@ def apk_update():
 def install_apk_deps():
     """Install misc dependencies"""
     print("Install dependencies")
-    call(
-        [
-            "apk",
-            "add",
-            "curl",
-            "jq",
-            "autossh",
-        ]
-    )
+    call(["apk", "add", "curl", "jq", "autossh"])
 
 
 def mnt_ext4(device, path):
@@ -401,6 +393,8 @@ def install_box():
     apk_update()
     install_firmware()  # for raspberry-pi
     install_apk_deps()  # curl & jq; are these really necessary?
+    install_compose()
+    enable_compose()
     install_tor()
     enable_tor()
 
@@ -413,10 +407,10 @@ def install_box():
     #                "https://raw.githubusercontent.com/lncm/iotwifi-ui/master/dist/index.html")
 
     # containers
+
     print("Starting usb-setup")
     usb_setup()
-    install_compose()
-    enable_compose()
+
     print("Starting docker-compose")
     noma.node.start()
     install_crontab()
