@@ -4,4 +4,4 @@ psutil==5.6.1
 setuptools==40.5.0
 requests==2.20.0
 docker_py==1.10.6
-docker-compose==1.24.0
+docker-compose==1.23.2
