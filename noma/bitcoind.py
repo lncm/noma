@@ -1,7 +1,7 @@
 """
 bitcoind related functionality
 """
-from subprocess import call
+from subprocess import call, run, PIPE
 import os
 import pathlib
 import shutil
@@ -35,10 +35,12 @@ def fastsync():
     :return str: Status
     """
     bitcoind_dir_path = "/media/archive/archive/bitcoin/"
+    bitcoind_dir = pathlib.Path(bitcoind_dir_path)
     location = "http://utxosets.blob.core.windows.net/public/"
     snapshot = "utxo-snapshot-bitcoin-mainnet-565305.tar"
+    snapshot_path = bitcoind_dir / snapshot
     url = location + snapshot
-    bitcoind_dir = pathlib.Path(bitcoind_dir_path)
+
     bitcoind_dir_exists = bitcoind_dir.is_dir()
 
     def set_permissions(working_path):
@@ -52,18 +54,48 @@ def fastsync():
                 os.chown(os.path.join(path, file), lncm_uid, lncm_gid)
                 os.chmod(os.path.join(path, file), 0o744)
 
+    def extract_snapshot():
+        print("Extract snapshot")
+        tar = run(["tar", "xf", snapshot])
+        print("Extracting done")
+        if tar.returncode == 0:
+            set_permissions(bitcoind_dir_path)
+
+    def remove_snapshot():
+        print("Removing corrupt snapshot")
+        os.remove(snapshot_path)
+
+    def compare_checksums():
+        print("Comparing checksums")
+        shasum = run(["sha256sum", snapshot_path], stdout=PIPE, stderr=PIPE)
+        if shasum.returncode == 0:
+            if shasum.stdout == "8e18176138be351707aee95f349dd1debc714cc2cc4f0c76d6a7380988bf0d22":
+                print("Checksums match")
+                return True
+            else:
+                print("Checksums do not match")
+                return False
+        else:
+            raise OSError("Cannot compare hashes" + str(shasum.stderr))
+
     def download_snapshot():
         os.chdir(bitcoind_dir_path)
-        call(["axel", "--quiet", url])
-        print("Extract snapshot")
-        call(["tar", "xf", snapshot])
-        set_permissions(bitcoind_dir_path)
+        print("Download snapshot")
+        download = run(["axel", "--quiet", url], stdout=PIPE, stderr=PIPE)
+        if download.returncode == 0:
+            if compare_checksums():
+                extract_snapshot()
+            else:
+                remove_snapshot()
+                download_snapshot()
+        else:
+            print("Download failed, retrying" + str(download.stderr))
+            download_snapshot()
 
     print("Checking existing filesystem structure")
     if bitcoind_dir_exists:
         print("Bitcoin directory exists")
-        snapshot_file = bitcoind_dir / snapshot
-        if snapshot_file.is_file():
+        if snapshot_path.is_file():
             print("Snapshot archive exists")
             if pathlib.Path(bitcoind_dir / "blocks").is_dir():
                 print("Bitcoin blocks directory exists, stopping")
@@ -73,20 +105,17 @@ def fastsync():
                 print("Bitcoin chainstate directory exists, stopping")
                 print("Remove the directory to fastsync")
                 return
-            # Assumes download was interrupted
-            print("Continue downloading snapshot")
+            compare_checksums()
             download_snapshot()
-        print("Downloading snapshot")
-        download_snapshot()
+        else:
+            download_snapshot()
     else:
         print("Bitcoin directory does not exist, creating")
         if pathlib.Path("/media/archive/archive").is_dir():
             pathlib.Path(bitcoind_dir).mkdir(exist_ok=True)
             download_snapshot()
         else:
-            print("Error: archive directory does not exist on your usb device")
-            print("Are you sure it was installed correctly?")
-            exit(1)
+            raise OSError("Error: archive directory does not exist on your usb device")
 
 
 def create():
