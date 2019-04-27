@@ -63,9 +63,13 @@ def fastsync():
             set_permissions(bitcoind_dir_path)
 
     def remove_snapshot():
-        print("Removing corrupt snapshot")
-        os.remove(snapshot_path)
-        os.remove(snapshot_path + ".st")
+        print("Removing corrupt snapshot files")
+        if snapshot_path.is_file():
+            os.remove(snapshot_path)
+
+        state_file = pathlib.Path(snapshot_path + ".st")
+        if state_file.is_file()
+            os.remove(snapshot_path + ".st")
 
     def compare_checksums():
         print("Comparing checksums")
