@@ -3,7 +3,7 @@ Node installation related functionality
 """
 from pathlib import Path
 import shutil
-from subprocess import call, Popen, PIPE
+from subprocess import call, Popen, PIPE, DEVNULL
 from time import sleep
 from noma import usb
 import requests
@@ -66,12 +66,20 @@ def install_apk_deps():
 
 def mnt_ext4(device, path):
     """Mount device at path using ext4"""
-    call(["mount", "-t ext4", "/dev/" + device, path, " > /dev/null 2>&1"])
+    exitcode = call(
+        ["mount", "-t ext4", "/dev/" + device, path],
+        stdout=DEVNULL,
+        stdin=DEVNULL,
+    )
+    return exitcode
 
 
 def mnt_any(device, path):
     """Mount device at path using any filesystem"""
-    call(["mount", "/dev/" + device, path, " > /dev/null 2>&1"])
+    exitcode = call(
+        ["mount", "/dev/" + device, path], stdout=DEVNULL, stdin=DEVNULL
+    )
+    return exitcode
 
 
 def setup_nginx():
@@ -104,14 +112,11 @@ def check_for_destruction(device, path):
             )
         )
         sleep(3)
-        call(["umount", "/dev/" + device])
-        sleep(2)
-        if not usb.is_mounted(device):
+        unmounted = call(["umount", "/dev/" + device])
+        if unmounted and not usb.is_mounted(device):
             print("Going to format {d} with ext4 now".format(d=device))
             call(["mkfs.ext4", "-F", "/dev/" + device])
-            mnt_ext4(device, path)
-            sleep(2)
-            if usb.is_mounted(device):
+            if mnt_ext4(device, path) == 0 and usb.is_mounted(device):
                 print(
                     "{d} formatted with ext4 successfully and mounted.".format(
                         d=device
@@ -119,14 +124,14 @@ def check_for_destruction(device, path):
                 )
                 return True
         else:
-            call(["umount", "-f", "/dev/" + device])
-            sleep(2)
-            if not usb.is_mounted(device):
+            unmounted = call(["umount", "-f", "/dev/" + device])
+
+            if unmounted and not usb.is_mounted(device):
                 print("Going to format {d} with ext4 now".format(d=device))
                 call(["mkfs.ext4", "-F", "/dev/" + device])
-                mnt_ext4(device, path)
-                sleep(2)
-                if usb.is_mounted(device):
+                mounted = mnt_ext4(device, path)
+
+                if mounted == 0 and usb.is_mounted(device):
                     print(
                         "{d} formatted with ext4 successfully and mounted.".format(
                             d=device
@@ -150,19 +155,21 @@ def fallback_mount(partition, path):
     mounted = usb.is_mounted(partition)
     if mounted:
         return True
-    mnt_ext4(partition, path)
-    sleep(2)
+
+    mounter = mnt_ext4(partition, path)
     ext4_mountable = usb.is_mounted(partition)
 
-    if ext4_mountable:
+    if mounter == 0 and ext4_mountable:
         print("{d} is mounted as ext4 at {p}".format(d=partition, p=path))
         return True
+
     print("Warning: {} usb is not mountable as ext4".format(partition))
     print("Attempting to mount with any filesystem...")
-    mnt_any(partition, path)
-    sleep(2)
+
+    mount_any = mnt_any(partition, path)
     mountable = usb.is_mounted(partition)
-    if mountable:
+
+    if mount_any == 0 and mountable:
         print(
             "{d} mounted at {p} with any filesystem".format(
                 d=partition, p=path
