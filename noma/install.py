@@ -36,7 +36,9 @@ def move_cache():
     if cache_dir.is_dir():
         shutil.rmtree(var_cache)
         shutil.copytree(cache_dir, var_cache)
-        call(["setup-apkcache", var_cache])
+        print("Running setup-apkcache")
+        setup = call(["setup-apkcache", var_cache], stderr=DEVNULL, stdout=DEVNULL)
+        return setup
 
 
 def enable_swap():
@@ -103,7 +105,7 @@ def setup_nginx():
 def check_for_destruction(device, path):
     """Check devices for destruction flag. If so, format with ext4"""
     print("Check devices for destruction flag")
-    destroy = Path(path + "/DESTROY_ALL_DATA_ON_THIS_DEVICE.txt").is_file()
+    destroy = Path(path + "/DESTROY_ALL_DATA_ON_THIS_DEVICE/").is_dir()
     if destroy:
         print("Destruction flag found!")
         print(
@@ -374,16 +376,19 @@ def install_crontab():
 
 def enable_compose():
     print("Enable docker-compose at boot")
-    call(["rc-update", "add", "docker-compose", "default"])
-
+    exitcode = call(["rc-update", "add", "docker-compose", "default"])
+    return exitcode
 
 def install_tor():
-    call(["apk", "add", "tor"])
-    call(["/sbin/service", "tor", "start"])
+    install_tor = call(["apk", "add", "tor"])
+    if install_tor == 0:
+        start_tor = call(["/sbin/service", "tor", "start"])
+        return start_tor
 
 
 def enable_tor():
-    call(["rc-update", "add", "tor", "default"])
+    add_tor = call(["rc-update", "add", "tor", "default"])
+    return add_tor
 
 
 def install_box():
