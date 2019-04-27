@@ -218,6 +218,7 @@ def install_compose():
 def create_swap():
     """Create swap on volatile usb device"""
     import psutil
+
     # TODO: make sure dd runs in foreground and is blocking
     print("Create swap on volatile usb device")
     volatile_path = Path("/media/volatile/volatile")
@@ -239,18 +240,23 @@ def create_swap():
 
         if dd.returncode != 0:
             # dd has non-zero exit code
-            raise OSError("Warning: dd cannot create swap file \n" + str(dd.stdout))
+            raise OSError(
+                "Warning: dd cannot create swap file \n" + str(dd.stdout)
+            )
         return True
 
     def mk_swap():
         mkswap = run(
-            ["mkswap", "/media/volatile/volatile/swap"], stdout=PIPE, stderr=STDOUT
+            ["mkswap", "/media/volatile/volatile/swap"],
+            stdout=PIPE,
+            stderr=STDOUT,
         )
 
         if mkswap.returncode != 0:
             # mkswap has non-zero exit code
             raise OSError(
-                "Warning: mkswap could not create swap file \n" + str(mkswap.stdout)
+                "Warning: mkswap could not create swap file \n"
+                + str(mkswap.stdout)
             )
         return True
 

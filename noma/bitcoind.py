@@ -69,7 +69,10 @@ def fastsync():
         print("Comparing checksums")
         shasum = run(["sha256sum", snapshot_path], stdout=PIPE, stderr=PIPE)
         if shasum.returncode == 0:
-            if shasum.stdout == "8e18176138be351707aee95f349dd1debc714cc2cc4f0c76d6a7380988bf0d22":
+            if (
+                shasum.stdout
+                == "8e18176138be351707aee95f349dd1debc714cc2cc4f0c76d6a7380988bf0d22"
+            ):
                 print("Checksums match")
                 return True
             else:
@@ -81,7 +84,9 @@ def fastsync():
     def download_snapshot():
         os.chdir(bitcoind_dir_path)
         print("Download snapshot")
-        download = run(["axel", "--quiet", "--no-clobber", url], stdout=PIPE, stderr=PIPE)
+        download = run(
+            ["axel", "--quiet", "--no-clobber", url], stdout=PIPE, stderr=PIPE
+        )
         if download.returncode == 0:
             if compare_checksums():
                 extract_snapshot()
@@ -115,7 +120,9 @@ def fastsync():
             pathlib.Path(bitcoind_dir).mkdir(exist_ok=True)
             download_snapshot()
         else:
-            raise OSError("Error: archive directory does not exist on your usb device")
+            raise OSError(
+                "Error: archive directory does not exist on your usb device"
+            )
 
 
 def create():
