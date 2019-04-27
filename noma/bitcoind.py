@@ -32,7 +32,7 @@ def fastsync():
     """
     Download blocks and chainstate snapshot
 
-    :return str: Status
+    :return bool: success status
     """
     bitcoind_dir_path = "/media/archive/archive/bitcoin/"
     bitcoind_dir = pathlib.Path(bitcoind_dir_path)
@@ -76,11 +76,9 @@ def fastsync():
             ):
                 print("Checksums match")
                 return True
-            else:
-                print("Checksums do not match")
-                return False
-        else:
-            raise OSError("Cannot compare hashes" + str(shasum.stderr))
+            print("Checksums do not match")
+            return False
+        raise OSError("Cannot compare hashes" + str(shasum.stderr))
 
     def download_snapshot():
         os.chdir(bitcoind_dir_path)
@@ -133,14 +131,12 @@ def create():
 
     if bitcoind_dir.is_dir():
         print("bitcoind directory exists")
-        pass
     else:
         print("bitcoind directory does not exist")
         bitcoind_dir.mkdir(exist_ok=True)
 
     if bitcoind_config.is_file():
         print("bitcoind bitcoin.conf exists")
-        pass
     else:
         print("bitcoind bitcoin.conf does not exist, creating")
         shutil.copy(bitcoind_config, bitcoind_dir + "/bitcoin.conf")
