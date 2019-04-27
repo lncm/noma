@@ -64,6 +64,7 @@ def fastsync():
     def remove_snapshot():
         print("Removing corrupt snapshot")
         os.remove(snapshot_path)
+        os.remove(snapshot_path / ".st")
 
     def compare_checksums():
         print("Comparing checksums")
