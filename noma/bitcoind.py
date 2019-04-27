@@ -81,7 +81,7 @@ def fastsync():
     def download_snapshot():
         os.chdir(bitcoind_dir_path)
         print("Download snapshot")
-        download = run(["axel", "--quiet", url], stdout=PIPE, stderr=PIPE)
+        download = run(["axel", "--quiet", "--no-clobber", url], stdout=PIPE, stderr=PIPE)
         if download.returncode == 0:
             if compare_checksums():
                 extract_snapshot()
