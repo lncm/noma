@@ -38,6 +38,7 @@ def fastsync():
     bitcoind_dir = pathlib.Path(bitcoind_dir_path)
     location = "http://utxosets.blob.core.windows.net/public/"
     snapshot = "utxo-snapshot-bitcoin-mainnet-565305.tar"
+    checksum = "8e18176138be351707aee95f349dd1debc714cc2cc4f0c76d6a7380988bf0d22"
     snapshot_path = bitcoind_dir / snapshot
     url = location + snapshot
 
@@ -64,21 +65,18 @@ def fastsync():
     def remove_snapshot():
         print("Removing corrupt snapshot")
         os.remove(snapshot_path)
-        os.remove(snapshot_path / ".st")
+        os.remove(snapshot_path + ".st")
 
     def compare_checksums():
         print("Comparing checksums")
         shasum = run(["sha256sum", snapshot_path], stdout=PIPE, stderr=PIPE)
         if shasum.returncode == 0:
-            if (
-                shasum.stdout
-                == "8e18176138be351707aee95f349dd1debc714cc2cc4f0c76d6a7380988bf0d22"
-            ):
+            if shasum.stdout == checksum:
                 print("Checksums match")
                 return True
-            print("Checksums do not match")
+            print("Checksums do not match: " + str(shasum.stdout))
             return False
-        raise OSError("Cannot compare hashes" + str(shasum.stderr))
+        raise OSError("Cannot compare hashes: " + str(shasum.stderr))
 
     def download_snapshot():
         os.chdir(bitcoind_dir_path)
