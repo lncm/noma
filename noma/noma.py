@@ -7,6 +7,7 @@ Usage:
   noma (freq|memory|voltage) [<device>]
   noma usb-setup
   noma install-box
+  noma create-swap
   noma tunnel <port> <host>
   noma (backup|restore|source|diff|devtools)
   noma reinstall [--full]
@@ -238,13 +239,15 @@ def node(args):
 
     elif args["usb-setup"]:
         import noma.install
-
         noma.install.usb_setup()
 
     elif args["install-box"]:
         import noma.install
-
         noma.install.install_box()
+
+    elif args["create-swap"]:
+        from noma import install
+        print(install.create_swap())
 
     elif args["check"]:
         node.check()

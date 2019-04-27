@@ -3,7 +3,7 @@ Node installation related functionality
 """
 from pathlib import Path
 import shutil
-from subprocess import call, Popen, PIPE, DEVNULL
+from subprocess import run, call, Popen, PIPE, DEVNULL, STDOUT
 from time import sleep
 from noma import usb
 import requests
@@ -34,11 +34,21 @@ def move_cache():
     cache_dir = Path("/media/mmcblk0p1/cache")
     var_cache = "/var/cache/apk"
     if cache_dir.is_dir():
+        print("Removing {v}".format(v=var_cache))
         shutil.rmtree(var_cache)
+
+        print("Copy {v} to {c}".format(v=var_cache, c=cache_dir))
         shutil.copytree(cache_dir, var_cache)
+
         print("Running setup-apkcache")
-        setup = call(["setup-apkcache", var_cache], stderr=DEVNULL, stdout=DEVNULL)
-        return setup
+        setup = run(
+            ["setup-apkcache", var_cache], stdout=PIPE, stderr=STDOUT
+        )
+        if setup.returncode == 0:
+            print("setup-apkcache was successful")
+        else:
+            raise OSError("setup-apkcache was not successful \n" + setup.stdout)
+        return setup.returncode
 
 
 def enable_swap():
@@ -208,12 +218,14 @@ def create_swap():
     print("Create swap on volatile usb device")
     volatile_path = Path("/media/volatile/volatile")
     volatile_path.mkdir(exist_ok=True)
-
+    swap_path = volatile_path / "swap"
     if not volatile_path.is_dir():
-        print("Warning: volatile directory inaccessible")
-        return False
+        raise OSError("Warning: volatile directory inaccessible")
 
-    dd = Popen(
+    if swap_path.is_file():
+        raise FileExistsError("Swap file exists")
+
+    dd = run(
         [
             "dd",
             "if=/dev/zero",
@@ -222,33 +234,30 @@ def create_swap():
             "count=1024",
         ],
         stdout=PIPE,
-        stderr=PIPE,
+        stderr=STDOUT,
     )
 
-    if dd.returncode:
+    if dd.returncode != 0:
         # dd has non-zero exit code
-        print("Warning: dd cannot create swap file")
-        return False
+        raise OSError("Warning: dd cannot create swap file \n" + dd.stdout)
 
-    mkswap = Popen(
-        ["mkswap", "/media/volatile/volatile/swap"], stdout=PIPE, stderr=PIPE
+    mkswap = run(
+        ["mkswap", "/media/volatile/volatile/swap"], stdout=PIPE, stderr=STDOUT
     )
 
-    if mkswap.returncode:
+    if mkswap.returncode != 0:
         # mkswap has non-zero exit code
-        print("Warning: mkswap could not create swap file")
-        return False
+        raise OSError("Warning: mkswap could not create swap file \n" + mkswap.stdout)
 
-    swapon = Popen(
+    swapon = run(
         ["swapon", "/media/volatile/volatile/swap", "-p 100"],
         stdout=PIPE,
-        stderr=PIPE,
+        stderr=STDOUT,
     )
 
-    if swapon.returncode:
+    if swapon.returncode != 0:
         # swapon has non-zero exit code
-        print("Warning: swapon could not add to swap")
-        return False
+        raise OSError("Warning: swapon could not add to swap \n" + swapon.stdout)
 
     try:
         with open("/etc/fstab", "a") as file:
@@ -258,7 +267,7 @@ def create_swap():
     except Exception as error:
         print(error)
         print("Warning: could not add swap to /etc/fstab")
-        return False
+        raise
 
 
 def check_to_fetch(file_path, url):
@@ -291,13 +300,38 @@ def usb_setup():
     devices = [largest, medium, smallest]
     mountpoints = ["/media/archive", "/media/volatile", "/media/important"]
 
+    for device in devices:
+        num = devices.index(device)
+        if create_dir(mountpoints[num]):
+            if fallback_mount(device, mountpoints[num]):
+                # All good with mount and mount-point
+                if check_for_destruction(device, mountpoints[num]):
+                    device_name = mountpoints[num].split("/")[2]
+                    mount_path = Path(
+                        "{p}/{n}".format(p=mountpoints[num], n=device_name)
+                    )
+                    if mount_path.mkdir(exist_ok=True) and mount_path.is_dir():
+                        # We confirmed device is mountable, readable, writable
+                        setup_fstab(device, mountpoints[num])
+            else:
+                print(
+                    "Mounting {d} with any filesystem unsuccessful".format(
+                        d=device
+                    )
+                )
+                exit(1)
+        else:
+            print(
+                "Error: {p} directory not available".format(p=mountpoints[num])
+            )
+            exit(1)
+
     def setup_volatile():
         if usb.is_mounted(medium):
-            # TODO: swap disabled until it is blocking!
-            # if create_swap():
-            #     enable_swap()
-            # else:
-            #     print("Warning: Cannot create and enable swap!")
+            if create_swap():
+                enable_swap()
+            else:
+                print("Warning: Cannot create and enable swap!")
             setup_nginx()
 
     def setup_important():
@@ -326,34 +360,9 @@ def usb_setup():
             if noma.bitcoind.check():
                 noma.bitcoind.fastsync()
 
-    for device in devices:
-        num = devices.index(device)
-        if create_dir(mountpoints[num]):
-            if fallback_mount(device, mountpoints[num]):
-                # All good with mount and mount-point
-                if check_for_destruction(device, mountpoints[num]):
-                    device_name = mountpoints[num].split("/")[2]
-                    mount_path = Path(
-                        "{p}/{n}".format(p=mountpoints[num], n=device_name)
-                    )
-                    if mount_path.mkdir(exist_ok=True) and mount_path.is_dir():
-                        # We confirmed device is mountable, readable, writable
-                        setup_fstab(device, mountpoints[num])
-                        setup_volatile()
-                        setup_important()
-                        setup_archive()
-            else:
-                print(
-                    "Mounting {d} with any filesystem unsuccessful".format(
-                        d=device
-                    )
-                )
-                exit(1)
-        else:
-            print(
-                "Error: {p} directory not available".format(p=mountpoints[num])
-            )
-            exit(1)
+    setup_volatile()
+    setup_important()
+    setup_archive()
 
 
 def install_crontab():
@@ -366,16 +375,17 @@ def enable_compose():
     exitcode = call(["rc-update", "add", "docker-compose", "default"])
     return exitcode
 
+
 def install_tor():
-    install_tor = call(["apk", "add", "tor"])
-    if install_tor == 0:
-        start_tor = call(["/sbin/service", "tor", "start"])
-        return start_tor
+    add_tor = run(["apk", "add", "tor"])
+    if add_tor.returncode == 0:
+        start_tor = run(["/sbin/service", "tor", "start"])
+        return start_tor.returncode
 
 
 def enable_tor():
-    add_tor = call(["rc-update", "add", "tor", "default"])
-    return add_tor
+    persist_tor = run(["rc-update", "add", "tor", "default"])
+    return persist_tor.returncode
 
 
 def install_box():
@@ -420,8 +430,7 @@ def install_box():
         print("Backup system state (apkovl) to important usb device")
         noma.node.backup()
 
-    # remove lncm-post from default runlevel
-    print("Removing lncm-post from default runlevel")
+    print("Removing post-install from default runlevel")
     call(["rc-update", "del", "lncm-post", "default"])
 
 
