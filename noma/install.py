@@ -41,13 +41,13 @@ def move_cache():
         shutil.copytree(cache_dir, var_cache)
 
         print("Running setup-apkcache")
-        setup = run(
-            ["setup-apkcache", var_cache], stdout=PIPE, stderr=STDOUT
-        )
+        setup = run(["setup-apkcache", var_cache], stdout=PIPE, stderr=STDOUT)
         if setup.returncode == 0:
             print("setup-apkcache was successful")
         else:
-            raise OSError("setup-apkcache was not successful \n" + setup.stdout)
+            raise OSError(
+                "setup-apkcache was not successful \n" + setup.stdout
+            )
         return setup.returncode
 
 
@@ -247,7 +247,9 @@ def create_swap():
 
     if mkswap.returncode != 0:
         # mkswap has non-zero exit code
-        raise OSError("Warning: mkswap could not create swap file \n" + mkswap.stdout)
+        raise OSError(
+            "Warning: mkswap could not create swap file \n" + mkswap.stdout
+        )
 
     swapon = run(
         ["swapon", "/media/volatile/volatile/swap", "-p 100"],
@@ -257,7 +259,9 @@ def create_swap():
 
     if swapon.returncode != 0:
         # swapon has non-zero exit code
-        raise OSError("Warning: swapon could not add to swap \n" + swapon.stdout)
+        raise OSError(
+            "Warning: swapon could not add to swap \n" + swapon.stdout
+        )
 
     try:
         with open("/etc/fstab", "a") as file:

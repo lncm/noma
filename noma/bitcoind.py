@@ -91,10 +91,22 @@ def fastsync():
 
 def create():
     """Create bitcoind directory structure and config file"""
-    bitcoind_dir = "/media/archive/archive/bitcoin"
-    bitcoind_config = "/home/lncm/bitcoin/bitcoin.conf"
-    pathlib.Path(bitcoind_dir).mkdir(exist_ok=True)
-    shutil.copy(bitcoind_config, bitcoind_dir + "/bitcoin.conf")
+    bitcoind_dir = pathlib.Path("/media/archive/archive/bitcoin")
+    bitcoind_config = pathlib.Path("/home/lncm/bitcoin/bitcoin.conf")
+
+    if bitcoind_dir.is_dir():
+        print("bitcoind directory exists")
+        pass
+    else:
+        print("bitcoind directory does not exist")
+        bitcoind_dir.mkdir(exist_ok=True)
+
+    if bitcoind_config.is_file():
+        print("bitcoind bitcoin.conf exists")
+        pass
+    else:
+        print("bitcoind bitcoin.conf does not exist, creating")
+        shutil.copy(bitcoind_config, bitcoind_dir + "/bitcoin.conf")
 
 
 def set_prune(prune_target, config_path=""):
@@ -115,6 +127,8 @@ def set_rpcauth(config_path):
         auth_value, password = generate_rpcauth("lncm")
         set_kv("rpcauth", auth_value, config_path)
         noma.lnd.set_bitcoind(password)
+    else:
+        create()
 
 
 def generate_rpcauth(username, password=""):
