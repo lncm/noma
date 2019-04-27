@@ -63,7 +63,7 @@ def start():
 
 def backup():
     """Backup apkovl to important usb device"""
-    call(["lbu", "pkg", "-v", IMPORTANT_PATH])
+    call(["lbu", "pkg", IMPORTANT_PATH])
 
 
 def devtools():
