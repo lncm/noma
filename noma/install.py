@@ -367,6 +367,7 @@ def usb_setup():
     setup_volatile()
     setup_important()
     setup_archive()
+    return True
 
 
 def install_crontab():
@@ -420,19 +421,17 @@ def install_box():
     #                "https://raw.githubusercontent.com/lncm/iotwifi-ui/master/dist/index.html")
 
     # containers
-
     print("Starting usb-setup")
-    usb_setup()
-
-    print("Starting docker-compose")
-    noma.node.start()
-    install_crontab()
-    if noma.lnd.check():
-        print("Checking lnd wallet")
-        noma.lnd.check_wallet()
-    if noma.node.check():
-        print("Backup system state (apkovl) to important usb device")
-        noma.node.backup()
+    if usb_setup():
+        print("Starting docker-compose")
+        noma.node.start()
+        install_crontab()
+        if noma.lnd.check():
+            print("Checking lnd wallet")
+            noma.lnd.check_wallet()
+        if noma.node.check():
+            print("Backup system state (apkovl) to important usb device")
+            noma.node.backup()
 
     print("Removing post-install from default runlevel")
     call(["rc-update", "del", "lncm-post", "default"])
