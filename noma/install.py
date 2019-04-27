@@ -54,8 +54,11 @@ def move_cache():
 def enable_swap():
     """Enable swap at boot"""
     print("Enable swap at boot")
-    call(["rc-update", "add", "swap", "boot"])
-    call(["rc-update", "add", "swap", "default"])
+    add_boot = run(["rc-update", "add", "swap", "boot"])
+    add_default = run(["rc-update", "add", "swap", "default"])
+    if add_boot.returncode == 0 and add_default.returncode == 0:
+        return True
+    return False
 
 
 def install_firmware():
@@ -219,59 +222,76 @@ def create_swap():
     volatile_path = Path("/media/volatile/volatile")
     volatile_path.mkdir(exist_ok=True)
     swap_path = volatile_path / "swap"
+
+    def create_file():
+        dd = run(
+            [
+                "dd",
+                "if=/dev/zero",
+                "of=/media/volatile/volatile/swap",
+                "bs=1M",
+                "count=1024",
+            ],
+            stdout=PIPE,
+            stderr=STDOUT,
+        )
+
+        if dd.returncode != 0:
+            # dd has non-zero exit code
+            raise OSError("Warning: dd cannot create swap file \n" + dd.stdout)
+        return True
+
+    def mk_swap():
+        mkswap = run(
+            ["mkswap", "/media/volatile/volatile/swap"], stdout=PIPE, stderr=STDOUT
+        )
+
+        if mkswap.returncode != 0:
+            # mkswap has non-zero exit code
+            raise OSError(
+                "Warning: mkswap could not create swap file \n" + mkswap.stdout
+            )
+        return True
+
+    def swap_on():
+        swapon = run(
+            ["swapon", "/media/volatile/volatile/swap", "-p 100"],
+            stdout=PIPE,
+            stderr=STDOUT,
+        )
+
+        if swapon.returncode != 0:
+            # swapon has non-zero exit code
+            raise OSError(
+                "Warning: swapon could not add to swap \n" + swapon.stdout
+            )
+        return True
+
+    def write_fstab():
+        try:
+            with open("/etc/fstab", "a") as file:
+                file.write("\n/media/volatile/swap none swap sw,pri=100 0 0")
+                print("Success! Wrote swap file to fstab")
+                return True
+        except Exception as error:
+            print(error)
+            print("Warning: could not add swap to /etc/fstab")
+            raise
+
     if not volatile_path.is_dir():
         raise OSError("Warning: volatile directory inaccessible")
 
     if swap_path.is_file():
-        raise FileExistsError("Swap file exists")
+        print("Swap file exists, enabling")
+        if enable_swap():
+            if swap_on():
+                return True
+            return False
 
-    dd = run(
-        [
-            "dd",
-            "if=/dev/zero",
-            "of=/media/volatile/volatile/swap",
-            "bs=1M",
-            "count=1024",
-        ],
-        stdout=PIPE,
-        stderr=STDOUT,
-    )
+    if create_file() and mk_swap():
+        if swap_on():
+            return write_fstab()
 
-    if dd.returncode != 0:
-        # dd has non-zero exit code
-        raise OSError("Warning: dd cannot create swap file \n" + dd.stdout)
-
-    mkswap = run(
-        ["mkswap", "/media/volatile/volatile/swap"], stdout=PIPE, stderr=STDOUT
-    )
-
-    if mkswap.returncode != 0:
-        # mkswap has non-zero exit code
-        raise OSError(
-            "Warning: mkswap could not create swap file \n" + mkswap.stdout
-        )
-
-    swapon = run(
-        ["swapon", "/media/volatile/volatile/swap", "-p 100"],
-        stdout=PIPE,
-        stderr=STDOUT,
-    )
-
-    if swapon.returncode != 0:
-        # swapon has non-zero exit code
-        raise OSError(
-            "Warning: swapon could not add to swap \n" + swapon.stdout
-        )
-
-    try:
-        with open("/etc/fstab", "a") as file:
-            file.write("\n/media/volatile/swap none swap sw,pri=100 0 0")
-            print("Success! Wrote swap file to fstab")
-            return True
-    except Exception as error:
-        print(error)
-        print("Warning: could not add swap to /etc/fstab")
-        raise
 
 
 def check_to_fetch(file_path, url):
