@@ -6,6 +6,7 @@ from os import popen
 from sys import exit
 import glob
 import re
+import psutil
 from subprocess import call
 
 # TODO: handle mountable devices without partitions!
@@ -24,7 +25,6 @@ def is_mounted(device):
     :return: True/False if device is mounted or not
     :rtype: bool
     """
-    import psutil
 
     partitions = psutil.disk_partitions()
     device_path = "/dev/" + device
