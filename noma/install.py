@@ -154,24 +154,18 @@ def fallback_mount(partition, path):
     :return bool: success
     """
     print("Mount ext4 storage device: {}".format(partition))
-    mounted = usb.is_mounted(partition)
-    if mounted:
+
+    if usb.is_mounted(partition):
         return True
 
-    mounter = mnt_ext4(partition, path)
-    ext4_mountable = usb.is_mounted(partition)
-
-    if mounter == 0 and ext4_mountable:
+    if mnt_ext4(partition, path) == 0 and usb.is_mounted(partition):
         print("{d} is mounted as ext4 at {p}".format(d=partition, p=path))
         return True
 
     print("Warning: {} usb is not mountable as ext4".format(partition))
     print("Attempting to mount with any filesystem...")
 
-    mount_any = mnt_any(partition, path)
-    mountable = usb.is_mounted(partition)
-
-    if mount_any == 0 and mountable:
+    if mnt_any(partition, path) == 0 and usb.is_mounted(partition):
         print(
             "{d} mounted at {p} with any filesystem".format(
                 d=partition, p=path
@@ -297,30 +291,57 @@ def usb_setup():
     devices = [largest, medium, smallest]
     mountpoints = ["/media/archive", "/media/volatile", "/media/important"]
 
+    def setup_volatile():
+        if usb.is_mounted(medium):
+            # TODO: swap disabled until it is blocking!
+            # if create_swap():
+            #     enable_swap()
+            # else:
+            #     print("Warning: Cannot create and enable swap!")
+            setup_nginx()
+
+    def setup_important():
+        if usb.is_mounted(smallest):
+            import noma.bitcoind
+
+            print("Creating bitcoind files")
+            noma.bitcoind.create()
+            if noma.bitcoind.check():
+                noma.bitcoind.set_prune("550")
+                noma.bitcoind.set_rpcauth(
+                    "/media/archive/archive/bitcoin/bitcoin.conf"
+                )
+
+            import noma.lnd
+
+            print("Creating lnd files")
+            noma.lnd.create()
+            if noma.lnd.check():
+                noma.lnd.setup_tor()
+
+    def setup_archive():
+        if usb.is_mounted(largest):
+            import noma.bitcoind
+
+            if noma.bitcoind.check():
+                noma.bitcoind.fastsync()
+
     for device in devices:
         num = devices.index(device)
         if create_dir(mountpoints[num]):
             if fallback_mount(device, mountpoints[num]):
-                sleep(1)
-                if usb.is_mounted(device):
-                    print(
-                        "Mounting {d} at {p} successful".format(
-                            d=device, p=mountpoints[num]
-                        )
+                # All good with mount and mount-point
+                if check_for_destruction(device, mountpoints[num]):
+                    device_name = mountpoints[num].split("/")[2]
+                    mount_path = Path(
+                        "{p}/{n}".format(p=mountpoints[num], n=device_name)
                     )
-                    # All good with mount and mount-point
-                    if check_for_destruction(device, mountpoints[num]):
-                        device_name = mountpoints[num].split("/")[2]
-                        mount_path = Path(
-                            "{p}/{n}".format(p=mountpoints[num], n=device_name)
-                        )
-                        mount_path.mkdir(exist_ok=True)
-                        if mount_path.is_dir():
-                            # We confirmed device is mountable, readable, writable
-                            setup_fstab(device, mountpoints[num])
-                else:
-                    print("Error: {d} is not mounted".format(d=device))
-                    exit(1)
+                    if mount_path.mkdir(exist_ok=True) and mount_path.is_dir():
+                        # We confirmed device is mountable, readable, writable
+                        setup_fstab(device, mountpoints[num])
+                        setup_volatile()
+                        setup_important()
+                        setup_archive()
             else:
                 print(
                     "Mounting {d} with any filesystem unsuccessful".format(
@@ -332,41 +353,7 @@ def usb_setup():
             print(
                 "Error: {p} directory not available".format(p=mountpoints[num])
             )
-
-    # volatile
-    if usb.is_mounted(medium):
-        # TODO: swap disabled until it is blocking!
-        # if create_swap():
-        #     enable_swap()
-        # else:
-        #     print("Warning: Cannot create and enable swap!")
-        setup_nginx()
-
-    # important
-    if usb.is_mounted(smallest):
-        import noma.bitcoind
-
-        print("Creating bitcoind files")
-        noma.bitcoind.create()
-        if noma.bitcoind.check():
-            noma.bitcoind.set_prune("550")
-            noma.bitcoind.set_rpcauth(
-                "/media/archive/archive/bitcoin/bitcoin.conf"
-            )
-
-        import noma.lnd
-
-        print("Creating lnd files")
-        noma.lnd.create()
-        if noma.lnd.check():
-            noma.lnd.setup_tor()
-
-    # archive
-    if usb.is_mounted(largest):
-        import noma.bitcoind
-
-        if noma.bitcoind.check():
-            noma.bitcoind.fastsync()
+            exit(1)
 
 
 def install_crontab():
