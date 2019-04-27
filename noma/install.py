@@ -66,12 +66,12 @@ def install_apk_deps():
 
 def mnt_ext4(device, path):
     """Mount device at path using ext4"""
-    call(["mount", "-t ext4", "/dev/" + device, path])
+    call(["mount", "-t ext4", "/dev/" + device, path, " > /dev/null 2>&1"])
 
 
 def mnt_any(device, path):
     """Mount device at path using any filesystem"""
-    call(["mount", "/dev/" + device, path])
+    call(["mount", "/dev/" + device, path, " > /dev/null 2>&1"])
 
 
 def setup_nginx():
