@@ -2,7 +2,7 @@ from setuptools import setup
 
 setup(
     name="noma",
-    version="0.3.0",
+    version="0.3.1",
     packages=["noma"],
     install_requires=["psutil", "docopt", "requests"],
     entry_points={"console_scripts": ["noma = noma.noma:main"]},
