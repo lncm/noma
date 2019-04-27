@@ -52,36 +52,41 @@ def fastsync():
                 os.chown(os.path.join(path, file), lncm_uid, lncm_gid)
                 os.chmod(os.path.join(path, file), 0o744)
 
-    print("Checking if snapshot archive exists")
+    def download_snapshot():
+        os.chdir(bitcoind_dir_path)
+        call(["axel", "--quiet", url])
+        print("Extract snapshot")
+        call(["tar", "xf", snapshot])
+        set_permissions(bitcoind_dir_path)
+
+    print("Checking existing filesystem structure")
     if bitcoind_dir_exists:
         print("Bitcoin directory exists")
         snapshot_file = bitcoind_dir / snapshot
         if snapshot_file.is_file():
             print("Snapshot archive exists")
             if pathlib.Path(bitcoind_dir / "blocks").is_dir():
-                print("Bitcoin blocks directory exists, exiting")
+                print("Bitcoin blocks directory exists, stopping")
+                print("Remove the directory to fastsync")
+                return
+            if pathlib.Path(bitcoind_dir / "chainstate").is_dir():
+                print("Bitcoin chainstate directory exists, stopping")
+                print("Remove the directory to fastsync")
+                return
             # Assumes download was interrupted
-            os.chdir(bitcoind_dir_path)
             print("Continue downloading snapshot")
-            call(["wget", "-c", url])
-            call(["tar", "xvf", snapshot])
-            set_permissions(bitcoind_dir_path)
+            download_snapshot()
         print("Downloading snapshot")
-        os.chdir(bitcoind_dir_path)
-        call(["wget", "-c", url])
-        call(["tar", "xvf", snapshot])
-        set_permissions(bitcoind_dir_path)
-    print("Bitcoin directory does not exist, creating")
-    if pathlib.Path("/media/archive/archive").is_dir():
-        pathlib.Path(bitcoind_dir).mkdir(exist_ok=True)
-        os.chdir(bitcoind_dir_path)
-        print("Downloading snapshot")
-        call(["wget", "-c", url])
-        call(["tar", "xvf", snapshot])
-        set_permissions(bitcoind_dir_path)
-    print("Error: archive directory does not exist on your usb device")
-    print("Are you sure it was installed correctly?")
-    exit(1)
+        download_snapshot()
+    else:
+        print("Bitcoin directory does not exist, creating")
+        if pathlib.Path("/media/archive/archive").is_dir():
+            pathlib.Path(bitcoind_dir).mkdir(exist_ok=True)
+            download_snapshot()
+        else:
+            print("Error: archive directory does not exist on your usb device")
+            print("Are you sure it was installed correctly?")
+            exit(1)
 
 
 def create():
