@@ -217,6 +217,7 @@ def install_compose():
 
 def create_swap():
     """Create swap on volatile usb device"""
+    import psutil
     # TODO: make sure dd runs in foreground and is blocking
     print("Create swap on volatile usb device")
     volatile_path = Path("/media/volatile/volatile")
@@ -238,7 +239,7 @@ def create_swap():
 
         if dd.returncode != 0:
             # dd has non-zero exit code
-            raise OSError("Warning: dd cannot create swap file \n" + dd.stdout)
+            raise OSError("Warning: dd cannot create swap file \n" + str(dd.stdout))
         return True
 
     def mk_swap():
@@ -249,7 +250,7 @@ def create_swap():
         if mkswap.returncode != 0:
             # mkswap has non-zero exit code
             raise OSError(
-                "Warning: mkswap could not create swap file \n" + mkswap.stdout
+                "Warning: mkswap could not create swap file \n" + str(mkswap.stdout)
             )
         return True
 
@@ -263,7 +264,7 @@ def create_swap():
         if swapon.returncode != 0:
             # swapon has non-zero exit code
             raise OSError(
-                "Warning: swapon could not add to swap \n" + swapon.stdout
+                "Warning: swapon could not add to swap \n" + str(swapon.stdout)
             )
         return True
 
@@ -282,16 +283,17 @@ def create_swap():
         raise OSError("Warning: volatile directory inaccessible")
 
     if swap_path.is_file():
-        print("Swap file exists, enabling")
-        if enable_swap():
-            if swap_on():
+        print("Swap file exists")
+        if psutil.swap_memory().total < 1000000000:
+            print("Enabling swap")
+            if swap_on() and enable_swap():
                 return True
             return False
+        return False
 
     if create_file() and mk_swap():
-        if swap_on():
+        if swap_on() and enable_swap():
             return write_fstab()
-
 
 
 def check_to_fetch(file_path, url):
