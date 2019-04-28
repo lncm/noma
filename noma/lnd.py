@@ -26,7 +26,7 @@ def check_wallet():
     else:
         print("lnd directory does not exist!")
 
-def lndconnectapp(ip='localhost:10009', macaroonfile='/media/important/important/lnd/data/chain/bitcoin/mainnet/admin.macaroon',tlsfile='/media/important/important/lnd/tls.cert'):
+def encodemacaroons(macaroonfile='/media/important/important/lnd/data/chain/bitcoin/mainnet/admin.macaroon', tlsfile='/media/important/important/lnd/tls.cert'):
     if path.exists(macaroonfile) and path.exists(tlsfile):
         with open(path.expanduser(macaroonfile), "rb") as f:
             macaroon_bytes = f.read()
@@ -34,10 +34,16 @@ def lndconnectapp(ip='localhost:10009', macaroonfile='/media/important/important
             tls_bytes = f.read()
         macaroonencoded = codecs.encode(macaroon_bytes, 'base64').decode().replace("\n", "")
         tlsencoded = tls_bytes.decode().replace("\n", "").replace("-----BEGIN CERTIFICATE-----", "").replace("-----END CERTIFICATE-----", "")
-
-        return {'c': tlsencoded, 'm': macaroonencoded, 'ip': ip}
+        return {'status': 'OK', 'certificate': tlsencoded, 'macaroon': macaroonencoded}
     else:
-        return "walletnotexist"
+        return {'status': 'File Not Found'}
+
+def lndconnectapp(ip='localhost:10009', macaroonfile='/media/important/important/lnd/data/chain/bitcoin/mainnet/admin.macaroon',tlsfile='/media/important/important/lnd/tls.cert'):
+    result = encodemacaroons(macaroonfile=macaroonfile, tlsfile=tlsfile)
+    if result['status'] == 'OK':
+        return {'c': result['certificate'], 'm': result['macaroon'], 'ip': ip}
+    else:
+        return result
 
 def autounlock():
     """Autounlock lnd using sesame.txt, tls.cert"""
