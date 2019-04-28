@@ -16,6 +16,7 @@ Usage:
   noma bitcoind set <key> <value>
   noma bitcoind logs [--tail]
   noma bitcoind rpcauth <username> [<password>]
+  noma lnd lndconnectapp
   noma lnd (start|stop|info)
   noma lnd logs [--tail]
   noma lnd connect <address>
@@ -117,7 +118,7 @@ def lnd(args):
             )
         )
 
-    elif args["zapconnectapp"]:
+    elif args["lndconnectapp"]:
         lnd.lndconnectapp()
 
     elif args["autoconnect"]:
