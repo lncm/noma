@@ -17,6 +17,7 @@ Usage:
   noma bitcoind logs [--tail]
   noma bitcoind rpcauth <username> [<password>]
   noma lnd lndconnectapp <hostport>
+  noma lnd lndconnectstring <hostport>
   noma lnd (start|stop|info)
   noma lnd logs [--tail]
   noma lnd connect <address>
@@ -120,6 +121,9 @@ def lnd(args):
 
     elif args["lndconnectapp"]:
         print(lnd.lndconnectapp(ip=args["<hostport>"]))
+
+    elif args["lndconnectstring"]:
+        print(lnd.lndconnectstring(ip=args["<hostport>"]))
 
     elif args["autoconnect"]:
         lnd.autoconnect(args["<path>"])
