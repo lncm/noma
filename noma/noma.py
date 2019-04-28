@@ -119,7 +119,7 @@ def lnd(args):
         )
 
     elif args["lndconnectapp"]:
-        print(lnd.lndconnectapp(ip=args["<first>"]))
+        print(lnd.lndconnectapp(ip=args["<hostport>"]))
 
     elif args["autoconnect"]:
         lnd.autoconnect(args["<path>"])
