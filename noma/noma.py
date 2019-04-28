@@ -277,7 +277,7 @@ def node(args):
 
 
 def main():
-    args = docopt(__doc__, version="v0.3.9")
+    args = docopt(__doc__, version="v0.3.10")
 
     if args["bitcoind"]:
         bitcoind(args)
