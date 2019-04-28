@@ -16,7 +16,7 @@ Usage:
   noma bitcoind set <key> <value>
   noma bitcoind logs [--tail]
   noma bitcoind rpcauth <username> [<password>]
-  noma lnd lndconnectapp <lnd ip:host>
+  noma lnd lndconnectapp <hostport>
   noma lnd (start|stop|info)
   noma lnd logs [--tail]
   noma lnd connect <address>
