@@ -1,4 +1,4 @@
-HOME = "/media/home/lncm"
+HOME = "/home/lncm"
 # HOME Alpine = "/home/lncm/"
 
 
