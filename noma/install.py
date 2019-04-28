@@ -310,8 +310,9 @@ def usb_setup():
 
 
 def install_crontab():
+    from noma.config import HOME
     print("Installing crontab")
-    call(["/usr/bin/crontab", "/home/lncm/crontab"])
+    call(["/usr/bin/crontab", HOME + "/crontab"])
 
 
 def enable_compose():
@@ -345,7 +346,9 @@ def install_box():
     enable_tor()
 
     # html
-    check_to_fetch("/home/lncm/public_html/pos/index.html",
+    from noma.config import node_settings
+    path = noma.config.HOME + "/public_html/pos/index.html"
+    check_to_fetch(path,
                    "https://raw.githubusercontent.com/lncm/invoicer-ui/master/dist/index.html")
     # check_to_fetch("home/lncm/public_html/wifi/index.html",
     #                "https://raw.githubusercontent.com/lncm/iotwifi-ui/master/dist/index.html")
