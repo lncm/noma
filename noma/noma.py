@@ -117,6 +117,9 @@ def lnd(args):
             )
         )
 
+    elif args["zapconnectapp"]:
+        lnd.lndconnectapp()
+
     elif args["autoconnect"]:
         lnd.autoconnect(args["<path>"])
 

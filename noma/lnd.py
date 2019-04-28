@@ -5,7 +5,7 @@ from os import path
 from subprocess import call
 import pathlib
 import shutil
-
+import base64, codecs, json
 
 def check_wallet():
     """
@@ -26,6 +26,18 @@ def check_wallet():
     else:
         print("lnd directory does not exist!")
 
+def lndconnectapp(macaroonfile='/media/important/important/lnd/data/chain/bitcoin/mainnet/admin.macaroon',tlsfile='/media/important/important/lnd/tls.cert'):
+    if check_wallet():
+        with open(os.path.expanduser(macaroonfile), "rb") as f:
+            macaroon_bytes = f.read()
+        with open(os.path.expanduser(tlsfile), "rb") as f:
+            tls_bytes = f.read()
+        macaroonencoded = codecs.encode(macaroon_bytes, 'base64').decode().replace("\n", "")
+        tlsencoded = tls_bytes.decode().replace("\n", "").replace("-----BEGIN CERTIFICATE-----", "").replace("-----END CERTIFICATE-----", "")
+
+        return {'c': tlsfile, 'm': macaroon, 'ip': 'localhost:10009'}
+    else:
+        return "walletnotexist"
 
 def autounlock():
     """Autounlock lnd using sesame.txt, tls.cert"""
