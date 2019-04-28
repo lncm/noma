@@ -13,10 +13,10 @@ Usage:
   noma bitcoind (start|stop|info|fastsync|status|check)
   noma bitcoind get <key>
   noma bitcoind set <key> <value>
-  noma bitcoind logs [--tail]
+  noma bitcoind logs
   noma bitcoind rpcauth <username> [<password>]
   noma lnd (start|stop|info)
-  noma lnd logs [--tail]
+  noma lnd logs
   noma lnd connect <address>
   noma lnd (create|unlock|status|check)
   noma lnd lncli [<command>...]
@@ -47,10 +47,16 @@ def bitcoind(args):
         bitcoind.stop()
 
     elif args['logs']:
-        if args['--tail']:
-            call(["tail", "-f", "/media/volatile/volatile/bitcoin/debug.log"])
+        import pathlib
+        log_path = pathlib.Path("/media/volatile/volatile/bitcoin/debug.log")
+        alt_log_path = pathlib.Path("/media/archive/archive/bitcoin/debug.log")
+        if log_path.is_file():
+            call(["tail", "-f", log_path])
         else:
-            node.logs("bitcoind")
+            if alt_log_path.is_file():
+                call(["tail", "-f", alt_log_path])
+            else:
+                node.logs("bitcoind")
 
     elif args['info']:
         call(["docker", "exec", "compose_bitcoind_1", "bitcoin-cli", "-getinfo"])
@@ -104,8 +110,10 @@ def lnd(args):
         call(["docker", "exec", "compose_lnd_1", "lncli", args['<command>']])
 
     elif args['logs']:
-        if args['--tail']:
-            call(["tail", "-f", "/media/volatile/volatile/lnd/logs/bitcoin/mainnet/lnd.log"])
+        import pathlib
+        log_path = "/media/volatile/volatile/lnd/logs/bitcoin/mainnet/lnd.log"
+        if pathlib.Path(log_path).is_file():
+            call(["tail", "-f", log_path])
         else:
             node.logs("lnd")
 
