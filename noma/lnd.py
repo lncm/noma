@@ -165,10 +165,11 @@ def randompass(string_length=10):
 
 
 def create():
+    from noma.config import HOME
     """Create lnd directory structure and config file"""
     lnd_path = '/media/important/important/lnd/'
     pathlib.Path(lnd_path).mkdir(exist_ok=True)
-    shutil.copy('/home/lncm/lnd/lnd.conf', lnd_path + "/lnd.conf")
+    shutil.copy(HOME + '/lnd/lnd.conf', lnd_path + "/lnd.conf")
 
 
 def create_wallet():
@@ -185,7 +186,7 @@ def create_wallet():
     Main entrypoint function
 
     Testing creation notes:
-    rm /home/lncm/seed.txt
+    rm $HOME/seed.txt
     rm /media/important/important/lnd/sesame.txt
 
     docker stop compose_lndbox_1 ; rm -fr /media/important/important/lnd/data/chain/ ; docker start compose_lndbox_1
@@ -193,19 +194,20 @@ def create_wallet():
     from requests import get, post
     from base64 import b64encode
     from json import dumps
+    from noma.config import HOME
 
     # Generate seed
     url = 'https://localhost:8181/v1/genseed'
     # Initialize wallet
     url2 = 'https://localhost:8181/v1/initwallet'
     cert_path = '/media/important/important/lnd/tls.cert'
-    seed_filename = '/home/lncm/seed.txt'
+    seed_filename = HOME + '/seed.txt'
     data = None
 
     # save password control file (Add this file if we want to save passwords)
-    save_password_control_file = '/home/lncm/save_password'
+    save_password_control_file = HOME + '/save_password'
     # Create password for writing
-    temp_password_file_path = '/home/lncm/password.txt'
+    temp_password_file_path = HOME + '/password.txt'
 
     if not path.exists(save_password_control_file):
         # Generate password but dont save it in usual spot
