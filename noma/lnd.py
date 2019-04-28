@@ -26,7 +26,7 @@ def check_wallet():
     else:
         print("lnd directory does not exist!")
 
-def lndconnectapp(macaroonfile='/media/important/important/lnd/data/chain/bitcoin/mainnet/admin.macaroon',tlsfile='/media/important/important/lnd/tls.cert'):
+def lndconnectapp(ip='localhost:10009', macaroonfile='/media/important/important/lnd/data/chain/bitcoin/mainnet/admin.macaroon',tlsfile='/media/important/important/lnd/tls.cert'):
     if path.exists(macaroonfile) and path.exists(tlsfile):
         with open(path.expanduser(macaroonfile), "rb") as f:
             macaroon_bytes = f.read()
@@ -35,7 +35,7 @@ def lndconnectapp(macaroonfile='/media/important/important/lnd/data/chain/bitcoi
         macaroonencoded = codecs.encode(macaroon_bytes, 'base64').decode().replace("\n", "")
         tlsencoded = tls_bytes.decode().replace("\n", "").replace("-----BEGIN CERTIFICATE-----", "").replace("-----END CERTIFICATE-----", "")
 
-        return {'c': tlsencoded, 'm': macaroonencoded, 'ip': 'localhost:10009'}
+        return {'c': tlsencoded, 'm': macaroonencoded, 'ip': ip}
     else:
         return "walletnotexist"
 
