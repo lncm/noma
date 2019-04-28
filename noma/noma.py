@@ -119,7 +119,7 @@ def lnd(args):
         )
 
     elif args["lndconnectapp"]:
-        lnd.lndconnectapp()
+        print(lnd.lndconnectapp())
 
     elif args["autoconnect"]:
         lnd.autoconnect(args["<path>"])
