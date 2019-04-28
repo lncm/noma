@@ -35,7 +35,7 @@ def lndconnectapp(macaroonfile='/media/important/important/lnd/data/chain/bitcoi
         macaroonencoded = codecs.encode(macaroon_bytes, 'base64').decode().replace("\n", "")
         tlsencoded = tls_bytes.decode().replace("\n", "").replace("-----BEGIN CERTIFICATE-----", "").replace("-----END CERTIFICATE-----", "")
 
-        return {'c': tlsfile, 'm': macaroonencoded, 'ip': 'localhost:10009'}
+        return {'c': tlsencoded, 'm': macaroonencoded, 'ip': 'localhost:10009'}
     else:
         return "walletnotexist"
 
