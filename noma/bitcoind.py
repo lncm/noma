@@ -4,6 +4,7 @@ import pathlib
 from noma import rpcauth
 import shutil
 
+
 def start():
     """Start bitcoind docker compose container"""
     from noma.node import is_running
@@ -70,8 +71,9 @@ def fastsync():
 
 def create():
     """Create bitcoind directory structure and config file"""
+    from noma.config import HOME
     bitcoind_dir = "/media/archive/archive/bitcoin"
-    bitcoind_config = "/home/lncm/bitcoin/bitcoin.conf"
+    bitcoind_config = HOME + "/bitcoin/bitcoin.conf"
     pathlib.Path(bitcoind_dir).mkdir(exist_ok=True)
     shutil.copy(bitcoind_config, bitcoind_dir + "/bitcoin.conf")
 

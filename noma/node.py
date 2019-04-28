@@ -11,7 +11,7 @@ ARCHIVE_PATH = MEDIA_PATH / pathlib.Path("archive/archive")
 VOLATILE_PATH = MEDIA_PATH / pathlib.Path("volatile/volatile")
 IMPORTANT_PATH = MEDIA_PATH / pathlib.Path("important/important")
 
-HOME_PATH = pathlib.Path("/home/lncm")
+HOME_PATH = pathlib.Path("/media/home/lncm")
 COMPOSE_PATH = HOME_PATH / pathlib.Path("compose")
 FACTORY_PATH = HOME_PATH / pathlib.Path("pi-factory")
 
@@ -261,15 +261,17 @@ def do_diff():
     install_git()
 
     def make_diff():
-        print("Generating /home/lncm/etc.diff")
-        call(["diff", "-r", "etc", "/home/lncm/pi-factory/etc"])
-        print("Generating /home/lncm/usr.diff")
-        call(["diff", "-r", "usr", "/home/lncm/pi-factory/usr"])
-        print("Generating /home/lncm/home.diff")
-        call(["diff", "-r", "home", "/home/lncm/pi-factory/home"])
+        from noma.config import HOME
+        print("Generating {h}/etc.diff".format(h=HOME))
+        call(["diff", "-r", "etc", "{h}/pi-factory/etc".format(h=HOME)])
+        print("Generating {h}/usr.diff".format(h=HOME))
+        call(["diff", "-r", "usr", "{h}/pi-factory/usr".format(h=HOME)])
+        print("Generating {h}/home.diff".format(h=HOME))
+        call(["diff", "-r", "home", "{h}/pi-factory/home".format(h=HOME)])
 
     if FACTORY_PATH.is_dir():
-        os.chdir("/home/lncm/pi-factory")
+        from noma.config import HOME
+        os.chdir(HOME + "/pi-factory")
         print("Getting latest sources")
         call(["git", "pull"])
         make_diff()
