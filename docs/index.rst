@@ -41,6 +41,7 @@ Command-line Usage
   noma lnd set <key> <value> [<section>] [<path>]
   noma lnd autounlock
   noma lnd autoconnect [<path>]
+  noma lnd lndconnectapp <hostport>
 
 **noma**::
 
