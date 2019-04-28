@@ -45,6 +45,15 @@ def lndconnectapp(ip='localhost:10009', macaroonfile='/media/important/important
     else:
         return result
 
+def lndconnectstring(hostname='localhost', macaroonfile='/media/important/important/lnd/data/chain/bitcoin/mainnet/admin.macaroon',tlsfile='/media/important/important/lnd/tls.cert'):
+    result = encodemacaroons(macaroonfile=macaroonfile, tlsfile=tlsfile)
+    if result['status'] == 'OK':
+        macaroon_string = result['macaroon'].replace("=","").replace("/","").replace("+","")
+        cert_string = result["certificate"].replace("=","").replace("/","").replace("+","")
+        return "lndconnect://" + hostname + "?cert=" + cert_string + "&macaroon=" + macaroon_string
+    else:
+        return result['status']
+
 def autounlock():
     """Autounlock lnd using sesame.txt, tls.cert"""
     from json import dumps
