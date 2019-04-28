@@ -57,21 +57,22 @@ def fastsync():
 
     def extract_snapshot():
         print("Extract snapshot")
+        os.chdir(bitcoind_dir_path)
         tar = run(["tar", "xf", snapshot_path])
         print("Extracting done")
         if tar.returncode == 0:
             set_permissions(bitcoind_dir_path)
 
     def remove_snapshot():
-        print("Removing corrupt snapshot files")
+        assert IOError("Corrupt snapshot file")
         if snapshot_path.is_file():
-            pass
-            # os.remove(snapshot_path)
-
-        state_file = pathlib.Path(snapshot_path + ".st")
-        if state_file.is_file():
-            pass
-            # os.remove(snapshot_path + ".st")
+            print("Remove the utxoset-snapshot.* files to try again")
+        #     # os.remove(snapshot_path)
+        #
+        # state_file = pathlib.Path(snapshot_path + ".st")
+        # if state_file.is_file():
+        #     pass
+        #     # os.remove(snapshot_path + ".st")
 
     def compare_checksums():
         print("Comparing checksums")
