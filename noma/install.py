@@ -17,7 +17,7 @@ def check_installed():
     """Check if LNCM-Box is installed"""
     installed = "/media/mmcblk0p1/installed"
     if Path(installed).is_file():
-        with open(installed, 'r') as file:
+        with open(installed, "r") as file:
             lines = file.readlines()
             for line in lines:
                 print(line)
@@ -59,7 +59,21 @@ def apk_update():
 def install_apk_deps():
     """Install misc dependencies"""
     print("Install dependencies")
-    call(["apk", "add", "curl", "jq", "autossh", "gcc", "libc-dev", "make", "python3-dev", "libffi-dev", "openssl-dev"])
+    call(
+        [
+            "apk",
+            "add",
+            "curl",
+            "jq",
+            "autossh",
+            "gcc",
+            "libc-dev",
+            "make",
+            "python3-dev",
+            "libffi-dev",
+            "openssl-dev",
+        ]
+    )
 
 
 def mnt_ext4(device, path):
@@ -96,7 +110,11 @@ def check_for_destruction(device, path):
     destroy = Path(path + "/DESTROY_ALL_DATA_ON_THIS_DEVICE.txt").is_file()
     if destroy:
         print("Destruction flag found!")
-        print("Going to destroy all data on /dev/{} in 3 seconds...".format(device))
+        print(
+            "Going to destroy all data on /dev/{} in 3 seconds...".format(
+                device
+            )
+        )
         sleep(3)
         call(["umount", "/dev/" + device])
         sleep(2)
@@ -106,7 +124,11 @@ def check_for_destruction(device, path):
             mnt_ext4(device, path)
             sleep(2)
             if usb.is_mounted(device):
-                print("{d} formatted with ext4 successfully and mounted.".format(d=device))
+                print(
+                    "{d} formatted with ext4 successfully and mounted.".format(
+                        d=device
+                    )
+                )
                 return True
         else:
             call(["umount", "-f", "/dev/" + device])
@@ -117,7 +139,11 @@ def check_for_destruction(device, path):
                 mnt_ext4(device, path)
                 sleep(2)
                 if usb.is_mounted(device):
-                    print("{d} formatted with ext4 successfully and mounted.".format(d=device))
+                    print(
+                        "{d} formatted with ext4 successfully and mounted.".format(
+                            d=device
+                        )
+                    )
                     return True
             else:
                 print("Error mounting {}".format(device))
@@ -150,10 +176,18 @@ def fallback_mount(partition, path):
         sleep(2)
         mountable = usb.is_mounted(partition)
         if mountable:
-            print("{d} mounted at {p} with any filesystem".format(d=partition, p=path))
+            print(
+                "{d} mounted at {p} with any filesystem".format(
+                    d=partition, p=path
+                )
+            )
             return True
         else:
-            print("Error: {} usb is not mountable with any supported format".format(partition))
+            print(
+                "Error: {} usb is not mountable with any supported format".format(
+                    partition
+                )
+            )
             print("Cannot continue without all USB storage devices")
             return False
 
@@ -162,11 +196,15 @@ def setup_fstab(device, mount):
     """Add device to fstab"""
     ext4_mounted = usb.is_mounted(device)
     if ext4_mounted:
-        with open("/etc/fstab", 'a') as file:
-            fstab = "\nUUID={u} /media/{m} ext4 defaults,noatime 0 0".format(u=usb.get_uuid(device), m=mount)
+        with open("/etc/fstab", "a") as file:
+            fstab = "\nUUID={u} /media/{m} ext4 defaults,noatime 0 0".format(
+                u=usb.get_uuid(device), m=mount
+            )
             file.write(fstab)
     else:
-        print("Warning: {} usb does not seem to be ext4 formatted".format(device))
+        print(
+            "Warning: {} usb does not seem to be ext4 formatted".format(device)
+        )
         print("{} will not be added to /etc/fstab".format(device))
 
 
@@ -186,27 +224,37 @@ def create_swap():
         print("Warning: volatile directory inaccessible")
         return False
 
-    dd = Popen(["dd", "if=/dev/zero", "of=/media/volatile/volatile/swap", "bs=1M", "count=1024"],
-               stdout=PIPE,
-               stderr=PIPE)
+    dd = Popen(
+        [
+            "dd",
+            "if=/dev/zero",
+            "of=/media/volatile/volatile/swap",
+            "bs=1M",
+            "count=1024",
+        ],
+        stdout=PIPE,
+        stderr=PIPE,
+    )
 
     if dd.returncode:
         # dd has non-zero exit code
         print("Warning: dd cannot create swap file")
         return False
 
-    mkswap = Popen(["mkswap", "/media/volatile/volatile/swap"],
-                   stdout=PIPE,
-                   stderr=PIPE)
+    mkswap = Popen(
+        ["mkswap", "/media/volatile/volatile/swap"], stdout=PIPE, stderr=PIPE
+    )
 
     if mkswap.returncode:
         # mkswap has non-zero exit code
         print("Warning: mkswap could not create swap file")
         return False
 
-    swapon = Popen(["swapon", "/media/volatile/volatile/swap", "-p 100"],
-                   stdout=PIPE,
-                   stderr=PIPE)
+    swapon = Popen(
+        ["swapon", "/media/volatile/volatile/swap", "-p 100"],
+        stdout=PIPE,
+        stderr=PIPE,
+    )
 
     if swapon.returncode:
         # swapon has non-zero exit code
@@ -214,7 +262,7 @@ def create_swap():
         return False
 
     try:
-        with open("/etc/fstab", 'a') as file:
+        with open("/etc/fstab", "a") as file:
             file.write("\n/media/volatile/swap none swap sw,pri=100 0 0")
             print("Success! Wrote swap file to fstab")
             return True
@@ -226,9 +274,9 @@ def create_swap():
 
 def check_to_fetch(file_path, url):
     """Check and fetch if necessary"""
-    filename = file_path.split('/')[-1]
-    path_list = file_path.split('/')[:-1]
-    dir_path = '/'.join(path_list)
+    filename = file_path.split("/")[-1]
+    path_list = file_path.split("/")[:-1]
+    dir_path = "/".join(path_list)
     if Path(dir_path).is_dir():
         if Path(filename).is_file():
             print("Success {f} exists at {d}".format(f=filename, d=dir_path))
@@ -238,7 +286,7 @@ def check_to_fetch(file_path, url):
             Path(dir_path).mkdir(exist_ok=True)
 
             r = requests.get(url, stream=True)
-            with open(filename, 'wb') as f:
+            with open(filename, "wb") as f:
                 shutil.copyfileobj(r.raw, f)
             return True
         except Exception as error:
@@ -260,23 +308,35 @@ def usb_setup():
             if fallback_mount(device, mountpoints[num]):
                 sleep(1)
                 if usb.is_mounted(device):
-                    print("Mounting {d} at {p} successful".format(d=device, p=mountpoints[num]))
+                    print(
+                        "Mounting {d} at {p} successful".format(
+                            d=device, p=mountpoints[num]
+                        )
+                    )
                     # All good with mount and mount-point
                     if check_for_destruction(device, mountpoints[num]):
-                        device_name = mountpoints[num].split('/')[2]
-                        mount_path = Path('{p}/{n}'.format(p=mountpoints[num], n=device_name))
+                        device_name = mountpoints[num].split("/")[2]
+                        mount_path = Path(
+                            "{p}/{n}".format(p=mountpoints[num], n=device_name)
+                        )
                         mount_path.mkdir(exist_ok=True)
                         if mount_path.is_dir():
                             # We confirmed device is mountable, readable, writable
                             setup_fstab(device, mountpoints[num])
                 else:
-                    print('Error: {d} is not mounted'.format(d=device))
+                    print("Error: {d} is not mounted".format(d=device))
                     exit(1)
             else:
-                print('Mounting {d} with any filesystem unsuccessful'.format(d=device))
+                print(
+                    "Mounting {d} with any filesystem unsuccessful".format(
+                        d=device
+                    )
+                )
                 exit(1)
         else:
-            print("Error: {p} directory not available".format(p=mountpoints[num]))
+            print(
+                "Error: {p} directory not available".format(p=mountpoints[num])
+            )
 
     # volatile
     if usb.is_mounted(medium):
@@ -290,13 +350,17 @@ def usb_setup():
     # important
     if usb.is_mounted(smallest):
         import noma.bitcoind
+
         print("Creating bitcoind files")
         noma.bitcoind.create()
         if noma.bitcoind.check():
             noma.bitcoind.set_prune("550")
-            noma.bitcoind.set_rpcauth("/media/archive/archive/bitcoin/bitcoin.conf")
+            noma.bitcoind.set_rpcauth(
+                "/media/archive/archive/bitcoin/bitcoin.conf"
+            )
 
         import noma.lnd
+
         print("Creating lnd files")
         noma.lnd.create()
         if noma.lnd.check():
@@ -305,12 +369,14 @@ def usb_setup():
     # archive
     if usb.is_mounted(largest):
         import noma.bitcoind
+
         if noma.bitcoind.check():
             noma.bitcoind.fastsync()
 
 
 def install_crontab():
     from noma.config import HOME
+
     print("Installing crontab")
     call(["/usr/bin/crontab", HOME + "/crontab"])
 
@@ -332,6 +398,7 @@ def enable_tor():
 def install_box():
     import noma.node
     import noma.lnd
+
     is_installed = check_installed()
     if is_installed:
         print("Box installation detected!")
@@ -347,9 +414,12 @@ def install_box():
 
     # html
     from noma.config import node_settings
+
     path = noma.config.HOME + "/public_html/pos/index.html"
-    check_to_fetch(path,
-                   "https://raw.githubusercontent.com/lncm/invoicer-ui/master/dist/index.html")
+    check_to_fetch(
+        path,
+        "https://raw.githubusercontent.com/lncm/invoicer-ui/master/dist/index.html",
+    )
     # check_to_fetch("home/lncm/public_html/wifi/index.html",
     #                "https://raw.githubusercontent.com/lncm/iotwifi-ui/master/dist/index.html")
 

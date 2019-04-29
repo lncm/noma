@@ -9,10 +9,10 @@ from subprocess import call
 
 # TODO: handle mountable devices without partitions!
 
-usb_dev_pattern = ['sd.*']
-usb_part_pattern = ['sd.[1-9]*']
-sd_dev_pattern = ['mmcblk*']
-sd_part_pattern = ['mmcblk.p[1-9]*']
+usb_dev_pattern = ["sd.*"]
+usb_part_pattern = ["sd.[1-9]*"]
+sd_dev_pattern = ["mmcblk*"]
+sd_part_pattern = ["mmcblk.p[1-9]*"]
 
 
 def is_mounted(device):
@@ -24,6 +24,7 @@ def is_mounted(device):
     :rtype: bool
     """
     import psutil
+
     partitions = psutil.disk_partitions()
     device_path = "/dev/" + device
     for i in partitions:
@@ -40,10 +41,14 @@ def dev_size(device):
     :return: device size in bytes
     :rtype: int
     """
-    device_path = '/sys/block/'
-    num_sectors = open(device_path + device + '/size').read().rstrip('\n')
-    sector_size = open(device_path + device + '/queue/hw_sector_size').read().rstrip('\n')
-    return int(num_sectors)*int(sector_size)
+    device_path = "/sys/block/"
+    num_sectors = open(device_path + device + "/size").read().rstrip("\n")
+    sector_size = (
+        open(device_path + device + "/queue/hw_sector_size")
+        .read()
+        .rstrip("\n")
+    )
+    return int(num_sectors) * int(sector_size)
 
 
 def usb_part_size(partition):
@@ -55,15 +60,23 @@ def usb_part_size(partition):
     :rtype: int
     """
     try:
-        device_path = '/sys/block/'
+        device_path = "/sys/block/"
         device = partition[:-1]
-        num_sectors = open(device_path + device + '/' + partition + '/size').read().rstrip('\n')
-        sector_size = open(device_path + device + '/queue/hw_sector_size').read().rstrip('\n')
+        num_sectors = (
+            open(device_path + device + "/" + partition + "/size")
+            .read()
+            .rstrip("\n")
+        )
+        sector_size = (
+            open(device_path + device + "/queue/hw_sector_size")
+            .read()
+            .rstrip("\n")
+        )
     except TypeError:
         print("Not enough USB devices available")
         exit(1)
     else:
-        return int(num_sectors)*int(sector_size)
+        return int(num_sectors) * int(sector_size)
 
 
 def sd_part_size(partition):
@@ -75,21 +88,29 @@ def sd_part_size(partition):
     :rtype: int
     """
     try:
-        device_path = '/sys/block/'
+        device_path = "/sys/block/"
         device = partition[:-2]
-        num_sectors = open(device_path + device + '/' + partition + '/size').read().rstrip('\n')
-        sector_size = open(device_path + device + '/queue/hw_sector_size').read().rstrip('\n')
+        num_sectors = (
+            open(device_path + device + "/" + partition + "/size")
+            .read()
+            .rstrip("\n")
+        )
+        sector_size = (
+            open(device_path + device + "/queue/hw_sector_size")
+            .read()
+            .rstrip("\n")
+        )
     except TypeError:
         print("Not enough USB devices available")
         exit(1)
     else:
-        return int(num_sectors)*int(sector_size)
+        return int(num_sectors) * int(sector_size)
 
 
 def usb_devs():
     """list usb devices"""
     devices = []
-    for device in glob.glob('/sys/block/*'):
+    for device in glob.glob("/sys/block/*"):
         for pattern in usb_dev_pattern:
             if re.compile(pattern).match(path.basename(device)):
                 devices.append(path.basename(device))
@@ -99,7 +120,7 @@ def usb_devs():
 def sd_devs():
     """list sd devices"""
     devices = []
-    for device in glob.glob('/sys/block/*'):
+    for device in glob.glob("/sys/block/*"):
         for pattern in sd_dev_pattern:
             if re.compile(pattern).match(path.basename(device)):
                 devices.append(path.basename(device))
@@ -110,7 +131,7 @@ def usb_partitions():
     """list usb partitions"""
     partitions = []
     for device in usb_devs():
-        for partition in glob.glob('/sys/block/' + str(device) + '/*'):
+        for partition in glob.glob("/sys/block/" + str(device) + "/*"):
             for pattern in usb_part_pattern:
                 if re.compile(pattern).match(path.basename(partition)):
                     partitions.append(path.basename(partition))
@@ -121,7 +142,7 @@ def sd_partitions():
     """list sd partitions"""
     partitions = []
     for device in sd_devs():
-        for partition in glob.glob('/sys/block/' + str(device) + '/*'):
+        for partition in glob.glob("/sys/block/" + str(device) + "/*"):
             for pattern in sd_part_pattern:
                 if re.compile(pattern).match(path.basename(partition)):
                     partitions.append(path.basename(partition))
@@ -196,8 +217,8 @@ def medium_partition():
     """get second largest device and partition name"""
     try:
         usb_partitions = sort_partitions()
-        usb_partitions.pop(0)   # remove smallest
-        usb_partitions.pop(len(usb_partitions) - 1)   # remove largest
+        usb_partitions.pop(0)  # remove smallest
+        usb_partitions.pop(len(usb_partitions) - 1)  # remove largest
     except IndexError:
         print("Not enough USB devices available")
         exit(1)
@@ -215,7 +236,7 @@ def uuid_table():
     e.g. {'sdc1': 'd641d2b9-4fcd-4c83-9415-7ca4e7553a5d'}
 
     :return: dictionary of device names and UUIDs"""
-    device_table = popen('blkid').read().splitlines()
+    device_table = popen("blkid").read().splitlines()
     devices = {}
     for device in device_table:
         dev = device.split(":")[0].split("/")[2]
@@ -237,21 +258,23 @@ def usb_setup():
     medium = medium_partition()
     smallest = smallest_partition()
 
-    print('Starting USB installation')
-    print('Using {} as archive storage'.format(largest))
-    print('Using {} as volatile storage'.format(medium))
-    print('Using {} as important storage'.format(smallest))
+    print("Starting USB installation")
+    print("Using {} as archive storage".format(largest))
+    print("Using {} as volatile storage".format(medium))
+    print("Using {} as important storage".format(smallest))
 
     lncm_usb = "/usr/local/sbin/lncm-usb"
 
-    cli_invocation = [lncm_usb,
-                      largest,
-                      medium,
-                      smallest,
-                      get_uuid(largest),
-                      get_uuid(medium),
-                      get_uuid(smallest),
-                      str(largest_part_size())]
+    cli_invocation = [
+        lncm_usb,
+        largest,
+        medium,
+        smallest,
+        get_uuid(largest),
+        get_uuid(medium),
+        get_uuid(smallest),
+        str(largest_part_size()),
+    ]
 
     call(cli_invocation)
 
