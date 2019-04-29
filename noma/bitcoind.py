@@ -2,12 +2,14 @@ from subprocess import call
 import os
 import pathlib
 from noma import rpcauth
+from noma.config import *
 import shutil
 
 
 def start():
     """Start bitcoind docker compose container"""
     from noma.node import is_running
+
     if is_running("bitcoind"):
         print("bitcoind is running already")
     else:
@@ -17,6 +19,7 @@ def start():
 def stop():
     """Stop bitcoind docker compose container, if running"""
     from noma.node import is_running
+
     if is_running("bitcoind"):
         call(["docker", "exec", "compose_bitcoind_1", "bitcoin-cli", "stop"])
     else:
@@ -29,37 +32,35 @@ def fastsync():
 
     :return str: Status
     """
-    bitcoind_dir_path = "/media/archive/archive/bitcoin/"
-    location = "http://utxosets.blob.core.windows.net/public/"
-    snapshot = "utxo-snapshot-bitcoin-mainnet-565305.tar"
-    url = location + snapshot
-    bitcoind_dir = pathlib.Path(bitcoind_dir_path)
-    bitcoind_dir_exists = bitcoind_dir.is_dir()
+    bitcoin_dir = BITCOIN_DIR
+    snapshot = SNAPSHOT_NAME
+    url = SNAPSHOT_URL
+
     print("Checking if snapshot archive exists")
-    if bitcoind_dir_exists:
+    if bitcoin_dir.is_dir():
         print("Bitcoin directory exists")
-        snapshot_file = bitcoind_dir / snapshot
+        snapshot_file = bitcoin_dir / snapshot
         if snapshot_file.is_file():
             print("Snapshot archive exists")
-            if pathlib.Path(bitcoind_dir / "blocks").is_dir():
+            if pathlib.Path(bitcoin_dir / "blocks").is_dir():
                 print("Bitcoin blocks directory exists, exiting")
                 return True
             else:
                 # Assumes download was interrupted
-                os.chdir(bitcoind_dir_path)
+                os.chdir(bitcoin_dir)
                 print("Continue downloading snapshot")
                 call(["wget", "-c", url])
                 call(["tar", "xvf", snapshot])
         else:
             print("Downloading snapshot")
-            os.chdir(bitcoind_dir_path)
+            os.chdir(bitcoin_dir)
             call(["wget", "-c", url])
             call(["tar", "xvf", snapshot])
     else:
         print("Bitcoin directory does not exist, creating")
         if pathlib.Path("/media/archive/archive").is_dir():
-            pathlib.Path(bitcoind_dir).mkdir(exist_ok=True)
-            os.chdir(bitcoind_dir_path)
+            pathlib.Path(bitcoin_dir).mkdir(exist_ok=True)
+            os.chdir(bitcoin_dir)
             print("Downloading snapshot")
             call(["wget", "-c", url])
             call(["tar", "xvf", snapshot])
@@ -71,14 +72,13 @@ def fastsync():
 
 def create():
     """Create bitcoind directory structure and config file"""
-    from noma.config import HOME
-    bitcoind_dir = "/media/archive/archive/bitcoin"
-    bitcoind_config = HOME + "/bitcoin/bitcoin.conf"
-    pathlib.Path(bitcoind_dir).mkdir(exist_ok=True)
-    shutil.copy(bitcoind_config, bitcoind_dir + "/bitcoin.conf")
+    bitcoin_dir = BITCOIN_DIR
+    bitcoind_config = BITCOIND_CONFIG
+    pathlib.Path(bitcoin_dir).mkdir(exist_ok=True)
+    shutil.copy(bitcoind_config, bitcoin_dir + "/bitcoin.conf")
 
 
-def set_prune(prune_target, config_path=''):
+def set_prune(prune_target, config_path=""):
     """Set bitcoind prune target, minimum 550"""
     if not config_path:
         config_path = "/media/archive/archive/bitcoin/bitcoin.conf"
@@ -88,6 +88,7 @@ def set_prune(prune_target, config_path=''):
 def set_rpcauth(config_path):
     """Write new rpc auth to bitcoind and lnd config"""
     import noma.lnd
+
     # TODO: Generate usernames too
     if not config_path:
         config_path = "/media/archive/archive/bitcoin/bitcoin.conf"
@@ -97,18 +98,22 @@ def set_rpcauth(config_path):
         noma.lnd.set_bitcoind(password)
 
 
-def generate_rpcauth(username, password=''):
+def generate_rpcauth(username, password=""):
     """Generate bitcoind rpcauth string from username and optional password"""
     if not password:
         password = rpcauth.generate_password()
     salt = rpcauth.generate_salt(16)
     password_hmac = rpcauth.password_to_hmac(salt, password)
-    auth_value = '{0}:{1}${2}'.format(username, salt, password_hmac)
+    auth_value = "{0}:{1}${2}".format(username, salt, password_hmac)
     try:
         with open("/media/important/important/rpc.txt", "a") as file:
-            file.write('rpcauth={r}\nusername={u}\npassword={p}'.format(r=auth_value, u=username, p=password))
+            file.write(
+                "rpcauth={r}\nusername={u}\npassword={p}".format(
+                    r=auth_value, u=username, p=password
+                )
+            )
     except Exception as error:
-        print(error.__class__.__name__, ':', error)
+        print(error.__class__.__name__, ":", error)
 
     return auth_value, password
 
@@ -149,9 +154,11 @@ def get_kv(key, config_path):
 
     parser = configparser.ConfigParser(strict=False)
     with open(config_path) as lines:
-        lines = itertools.chain(("[main]",), lines)   # workaround: prepend dummy section
+        lines = itertools.chain(
+            ("[main]",), lines
+        )  # workaround: prepend dummy section
         parser.read_file(lines)
-        return parser.get('main', key)
+        return parser.get("main", key)
 
 
 def set_kv(key, value, config_path):
@@ -185,13 +192,13 @@ def set_kv(key, value, config_path):
         return
     if current_val is None:
         # key does not exist yet
-        with open(config_path, 'a') as file:
+        with open(config_path, "a") as file:
             # append kv pair to file
             file.write("\n{k}={v}".format(k=key, v=value))
     else:
-        with FileInput(config_path, inplace=True, backup='.bak') as file:
+        with FileInput(config_path, inplace=True, backup=".bak") as file:
             for line in file:
-                print(line.replace(current_val, value), end='')
+                print(line.replace(current_val, value), end="")
 
 
 if __name__ == "__main__":

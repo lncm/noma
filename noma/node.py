@@ -4,16 +4,7 @@ from subprocess import call
 import psutil
 import pathlib
 import time
-
-
-MEDIA_PATH = pathlib.Path("/media")
-ARCHIVE_PATH = MEDIA_PATH / pathlib.Path("archive/archive")
-VOLATILE_PATH = MEDIA_PATH / pathlib.Path("volatile/volatile")
-IMPORTANT_PATH = MEDIA_PATH / pathlib.Path("important/important")
-
-HOME_PATH = pathlib.Path("/media/home/lncm")
-COMPOSE_PATH = HOME_PATH / pathlib.Path("compose")
-FACTORY_PATH = HOME_PATH / pathlib.Path("pi-factory")
+from noma.config import *
 
 
 def get_swap():
@@ -28,9 +19,9 @@ def get_ram():
 
 def check():
     """check box filesystem structure"""
-    archive_exists = ARCHIVE_PATH.is_dir()
-    important_exists = IMPORTANT_PATH.is_dir()
-    volatile_exists = VOLATILE_PATH.is_dir()
+    archive_exists = ARCHIVE_DIR.is_dir()
+    important_exists = IMPORTANT_DIR.is_dir()
+    volatile_exists = VOLATILE_DIR.is_dir()
 
     if archive_exists:
         print("archive usb device exists")
@@ -54,29 +45,42 @@ def check():
 
 def start():
     """Start default docker compose"""
-    os.chdir(COMPOSE_PATH)
+    os.chdir(COMPOSE_DIR)
     call(["docker-compose", "up", "-d"])
 
 
 def backup():
     """Backup apkovl to important usb device"""
-    call(["lbu", "pkg", "-v", IMPORTANT_PATH])
+    call(["lbu", "pkg", "-v", IMPORTANT_DIR])
 
 
 def devtools():
     """Install common development tools, nano, tmux, git, etc"""
     call(["apk", "update"])
-    call(["apk", "add", "tmux", "sudo", "git", "rsync", "htop", "iotop", "nmap", "nano"])
+    call(
+        [
+            "apk",
+            "add",
+            "tmux",
+            "sudo",
+            "git",
+            "rsync",
+            "htop",
+            "iotop",
+            "nmap",
+            "nano",
+        ]
+    )
 
 
-def is_running(node=''):
+def is_running(node=""):
     """Check if container is running
 
     :return bool: container is running"""
     from docker import from_env
 
     if not node:
-        node = 'bitcoind'
+        node = "bitcoind"
     docker_host = from_env()
     compose_name = "compose_{}_1".format(node)
     try:
@@ -94,20 +98,23 @@ def stop_daemons():
         return print("bitcoind and lnd are already stopped")
 
     for i in range(5):
-            if not is_running("bitcoind") and not is_running("lnd"):
-                break
-            if is_running("bitcoind"):
-                # stop bitcoind
-                call(["docker", "exec", "compose_bitcoind_1", "bitcoin-cli", "stop"])
-            if is_running("lnd"):
-                # stop lnd
-                call(["docker", "exec", "compose_lnd_1", "lncli", "stop"])
+        if not is_running("bitcoind") and not is_running("lnd"):
+            break
+        if is_running("bitcoind"):
+            # stop bitcoind
+            call(
+                ["docker", "exec", "compose_bitcoind_1", "bitcoin-cli", "stop"]
+            )
+        if is_running("lnd"):
+            # stop lnd
+            call(["docker", "exec", "compose_lnd_1", "lncli", "stop"])
 
-            time.sleep(2)
-            i -= 1
+        time.sleep(2)
+        i -= 1
 
     for i in range(5):
         import docker
+
         client = docker.from_env()
 
         if not is_running("bitcoind") and not is_running("lnd"):
@@ -128,7 +135,7 @@ def voltage(device=""):
     :return str: voltage
     """
     if not device:
-        device = 'core'
+        device = "core"
     call(["/opt/vc/bin/vcgencmd", "measure_volts", device])
 
 
@@ -139,7 +146,7 @@ def temp():
     :return str: CPU temperature
     """
     cpu_temp_path = "/sys/class/thermal/thermal_zone0/temp"
-    with open(cpu_temp_path, 'r') as file:
+    with open(cpu_temp_path, "r") as file:
         cpu_temp = file.read()
     return str(int(cpu_temp) / 1000) + "C"
 
@@ -169,7 +176,7 @@ def memory(device=""):
         call(["/opt/vc/bin/vcgencmd", "get_mem", "arm"])
 
 
-def logs(node=''):
+def logs(node=""):
     """Show logs of node specified, defaults to bitcoind
 
     return str: tailling logs"""
@@ -194,23 +201,32 @@ def get_source():
     """Get latest pi-factory source code or update"""
     install_git()
 
-    if FACTORY_PATH.is_dir():
+    if FACTORY_DIR.is_dir():
         print("source directory already exists")
         print("going to update with git pull")
-        os.chdir(FACTORY_PATH)
+        os.chdir(FACTORY_DIR)
         call(["git", "pull"])
     else:
-        os.chdir(HOME_PATH)
+        os.chdir(HOME_DIR)
         call(["git", "clone", "https://github.com/lncm/pi-factory.git"])
 
 
-def tunnel(port, host):
+def tunnel(port, hostname):
     """Keep the SSH tunnel open, no matter what"""
     while True:
         try:
-            print("Tunneling local port 22 to " + host + ":" + port)
+            print("Tunneling local port 22 to " + hostname + ":" + port)
             port_str = "-R " + port + ":localhost:22"
-            call(["autossh", "-M 0", "-o ServerAliveInterval=60", "-o ServerAliveCountMax=10", port_str, host])
+            call(
+                [
+                    "autossh",
+                    "-M 0",
+                    "-o ServerAliveInterval=60",
+                    "-o ServerAliveCountMax=10",
+                    port_str,
+                    hostname,
+                ]
+            )
         except Exception as error:
             print(error)
 
@@ -228,7 +244,7 @@ def reinstall():
     install_git()
     get_source()
 
-    os.chdir(FACTORY_PATH)
+    os.chdir(FACTORY_DIR)
     call(["git", "pull"])
     print("Migrating current WiFi credentials")
     supplicant_sd = pathlib.Path("/etc/wpa_supplicant/wpa_supplicant.conf")
@@ -251,7 +267,7 @@ def full_reinstall():
     print("Starting upgrade...")
     install_git()
     get_source()
-    os.chdir(FACTORY_PATH)
+    os.chdir(FACTORY_DIR)
     call(["git", "pull"])
     call(["make_upgrade.sh"])
 
@@ -261,17 +277,16 @@ def do_diff():
     install_git()
 
     def make_diff():
-        from noma.config import HOME
-        print("Generating {h}/etc.diff".format(h=HOME))
-        call(["diff", "-r", "etc", "{h}/pi-factory/etc".format(h=HOME)])
-        print("Generating {h}/usr.diff".format(h=HOME))
-        call(["diff", "-r", "usr", "{h}/pi-factory/usr".format(h=HOME)])
-        print("Generating {h}/home.diff".format(h=HOME))
-        call(["diff", "-r", "home", "{h}/pi-factory/home".format(h=HOME)])
 
-    if FACTORY_PATH.is_dir():
-        from noma.config import HOME
-        os.chdir(HOME + "/pi-factory")
+        print("Generating {h}/etc.diff".format(h=HOME_DIR))
+        call(["diff", "-r", "etc", "{h}/pi-factory/etc".format(h=HOME_DIR)])
+        print("Generating {h}/usr.diff".format(h=HOME_DIR))
+        call(["diff", "-r", "usr", "{h}/pi-factory/usr".format(h=HOME_DIR)])
+        print("Generating {h}/home.diff".format(h=HOME_DIR))
+        call(["diff", "-r", "home", "{h}/pi-factory/home".format(h=HOME_DIR)])
+
+    if FACTORY_DIR.is_dir():
+        os.chdir(HOME_DIR + "/pi-factory")
         print("Getting latest sources")
         call(["git", "pull"])
         make_diff()
