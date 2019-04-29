@@ -5,6 +5,7 @@ Usage:
   noma (info|start|stop|restart|logs|check|status)
   noma (temp|swap|ram)
   noma (freq|memory|voltage) [<device>]
+  noma turbo
   noma usb-setup
   noma install-box
   noma create-swap
@@ -205,8 +206,15 @@ def node(args):
     elif args["freq"]:
         node.freq(args["<device>"])
 
-    elif args["memory"]:
-        print(node.memory(args["<device>"]))
+    elif args['turbo']:
+        print("Set CPU scaling")
+        from subprocess import DEVNULL
+        for cpu_num in range(0, 4):
+            device_path = "/sys/devices/system/cpu/cpu{n}/cpufreq/scaling_governor".format(n=cpu_num)
+            call(["echo", "ondemand > {p} ".format(p=device_path)], shell=True, stdout=DEVNULL, stderr=DEVNULL)
+
+    elif args['memory']:
+        print(node.memory(args['<device>']))
 
     elif args["backup"]:
         node.backup()
