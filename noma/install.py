@@ -403,9 +403,30 @@ def install_crontab():
     call(["/usr/bin/crontab", "/home/lncm/crontab"])
 
 
+def enable_dbus():
+    print("Enable dbus at boot")
+    exitcode = call(["rc-update", "add", "dbus"])
+    return exitcode
+
+
+def enable_docker():
+    print("Enable docker at boot")
+    exitcode = call(["rc-update", "add", "docker"])
+    return exitcode
+
+
+def enable_avahi():
+    print("Enable avahi-daemon at boot")
+    exitcode = call(["rc-update", "add", "avahi-daemon"])
+    return exitcode
+
+
 def enable_compose():
+    # TODO: Change init script to run "noma start" and "noma stop"
     print("Enable docker-compose at boot")
-    exitcode = call(["rc-update", "add", "docker-compose", "default"])
+    check_to_fetch("/etc/init.d/docker-compose",
+                   "https://raw.githubusercontent.com/lncm/pi-factory/b12c6f43d11be58dac03a2513cfd2abbb16f6526/etc/init.d/docker-compose")
+    exitcode = call(["rc-update", "add", "docker-compose"])
     return exitcode
 
 
@@ -417,6 +438,7 @@ def install_tor():
 
 
 def enable_tor():
+    print("Enable tor at boot")
     persist_tor = run(["rc-update", "add", "tor", "default"])
     return persist_tor.returncode
 
@@ -436,6 +458,9 @@ def install_box():
     install_firmware()  # for raspberry-pi
     install_apk_deps()  # curl & jq; are these really necessary?
     install_compose()
+    enable_dbus()
+    enable_avahi()
+    enable_docker()
     enable_compose()
     install_tor()
     enable_tor()
