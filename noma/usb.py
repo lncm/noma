@@ -34,6 +34,17 @@ def is_mounted(device):
     return False
 
 
+def fs_size(fs_path):
+    """Return filesystem size in bytes
+
+    :param fs_path: path to mounted filesystem
+    :return: filesystem size in bytes
+    """
+    import shutil
+    total, used, free = shutil.disk_usage(fs_path)
+    return total
+
+
 def dev_size(device):
     """Return device size in bytes
 
