@@ -101,7 +101,7 @@ def sd_part_size(partition):
     """
     try:
         device_path = "/sys/block/"
-        device = partition[:-2]
+        device = partition[:-1]
         num_sectors = (
             open(device_path + device + "/" + partition + "/size")
             .read()
