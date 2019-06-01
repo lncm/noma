@@ -10,6 +10,8 @@ else:
     device = "disk1"
     device_partition = "disk1s1"
 
+# Set to True to enable testing SD cards
+mmc_device = True
 
 class TestNode(unittest.TestCase):
 
@@ -45,8 +47,9 @@ class TestNode(unittest.TestCase):
     def test_sd_devs(self):
         result = noma.usb.sd_devs()
         self.assertIsInstance(result, list)
-        # TODO: test environment requires SD device
-        # self.assertEqual(result[0], "mmcblk0")
+        if mmc_device:
+            # test environment requires SD (mmc) device
+            self.assertEqual(result[0], "mmcblk0")
 
     def test_usb_partitions(self):
         result = noma.usb.usb_partitions()
@@ -55,8 +58,9 @@ class TestNode(unittest.TestCase):
     def test_sd_partitions(self):
         result = noma.usb.sd_partitions()
         self.assertIsInstance(result, list)
-        # TODO: test environment requires SD device
-        # self.assertEqual(result[0], "mmcblk0")
+        if mmc_device:
+            # test environment requires SD (mmc) device
+            self.assertEqual(result[0], "mmcblk0")
 
     def test_usb_partition_table(self):
         result = noma.usb.usb_partition_table()
@@ -66,14 +70,16 @@ class TestNode(unittest.TestCase):
     def test_sd_partition_table(self):
         result = noma.usb.sd_partition_table()
         self.assertIsInstance(result, dict)
-        # TODO: test environment requires SD device
-        # self.assertIsInstance(result.get('mmcblk0'), int)
+        if mmc_device:
+            # test environment requires SD (mmc) device
+            self.assertIsInstance(result.get('mmcblk0p1'), int)
 
     def test_sd_device_table(self):
         result = noma.usb.sd_device_table()
         self.assertIsInstance(result, dict)
-        # TODO: test environment requires SD device
-        # self.assertIsInstance(result.get('mmcblk0'), int)
+        if mmc_device:
+            # test environment requires SD (mmc) device
+            self.assertIsInstance(result.get('mmcblk0'), int)
 
     def test_usb_device_table(self):
         result = noma.usb.usb_device_table()
