@@ -13,6 +13,7 @@ else:
 # Set to True to enable testing SD cards
 mmc_device = True
 
+
 class TestNode(unittest.TestCase):
 
     def test_is_mounted_device(self):
@@ -112,6 +113,14 @@ class TestNode(unittest.TestCase):
         largest_partition = noma.usb.sort_partitions()[-1][1]
         self.assertEqual(largest_partition, result)
 
+    def test_uuid_table(self):
+        result = noma.usb.uuid_table()
+        self.assertIsInstance(result, dict)
+        self.assertIsInstance(result.get(device_partition), str)
+
+    def test_get_uuid(self):
+        result = noma.usb.get_uuid(device_partition)
+        self.assertIsInstance(result, str)
 
 
 # Create test suite
@@ -139,6 +148,9 @@ if platform.system() == 'Linux':
     TestSuite.addTest(TestNode("test_medium_partition"))
     TestSuite.addTest(TestNode("test_smallest_partition"))
     TestSuite.addTest(TestNode("test_largest_part_size"))
+    TestSuite.addTest(TestNode("test_uuid_table"))
+    TestSuite.addTest(TestNode("test_get_uuid"))
+
 
 if platform.system() == 'Darwin':  # Mac
     pass
