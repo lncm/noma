@@ -16,9 +16,8 @@ def create_dir(path):
     return False
 
 
-def check_installed():
+def check_installed(installed='/media/mmcblk0p1/installed'):
     """Check if LNCM-Box is installed"""
-    installed = "/media/mmcblk0p1/installed"
     if Path(installed).is_file():
         with open(installed, "r") as file:
             lines = file.readlines()
@@ -28,12 +27,10 @@ def check_installed():
     return False
 
 
-def move_cache():
+def move_cache(cache_dir="/media/mmcblk0p1/cache", var_cache="/var/cache/apk"):
     """Let apk cache live on persistent volume"""
     print("Let apk cache live on persistent volume")
-    cache_dir = Path("/media/mmcblk0p1/cache")
-    var_cache = "/var/cache/apk"
-    if cache_dir.is_dir():
+    if Path(cache_dir).is_dir():
         print("Removing {v}".format(v=var_cache))
         shutil.rmtree(var_cache)
 
