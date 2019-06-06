@@ -398,26 +398,14 @@ def usb_setup():
     return True
 
 
+def rc_add(service, runlevel=''):
+    print("Enable {s} at boot".format(s=service))
+    call(["rc-update", "add", service, runlevel])
+
+
 def install_crontab():
     print("Installing crontab")
-    call(["/usr/bin/crontab", "/home/lncm/crontab"])
-
-
-def enable_dbus():
-    print("Enable dbus at boot")
-    exitcode = call(["rc-update", "add", "dbus"])
-    return exitcode
-
-
-def enable_docker():
-    print("Enable docker at boot")
-    exitcode = call(["rc-update", "add", "docker"])
-    return exitcode
-
-
-def enable_avahi():
-    print("Enable avahi-daemon at boot")
-    exitcode = call(["rc-update", "add", "avahi-daemon"])
+    exitcode = call(["/usr/bin/crontab", "/home/lncm/crontab"])
     return exitcode
 
 
@@ -437,12 +425,6 @@ def install_tor():
         return start_tor.returncode
 
 
-def enable_tor():
-    print("Enable tor at boot")
-    persist_tor = run(["rc-update", "add", "tor", "default"])
-    return persist_tor.returncode
-
-
 def install_box():
     import noma.node
     import noma.lnd
@@ -458,12 +440,12 @@ def install_box():
     install_firmware()  # for raspberry-pi
     install_apk_deps()  # curl & jq; are these really necessary?
     install_compose()
-    enable_dbus()
-    enable_avahi()
-    enable_docker()
+    rc_add("dbus")
+    rc_add("avahi-daemon")
+    rc_add("docker")
     enable_compose()
     install_tor()
-    enable_tor()
+    rc_add("tor", "default")
 
     # html
     check_to_fetch(
