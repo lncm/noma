@@ -11,7 +11,7 @@ alpine_install()
     apk add docker
     service docker start
     # docker-compose
-    apk add libffi py3-cffi python3-dev build-base python3 openssl-dev
+    apk add libffi-dev py3-cffi python3-dev build-base python3 openssl-dev
     pip3 install docker-compose
     # install noma
     python3 setup.py develop
