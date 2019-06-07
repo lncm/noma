@@ -31,16 +31,6 @@ install_git()
     alpine_install
 }
 
-vagrant_install()
-{
-    if [ -f "/vagrant" ]; then
-        cd /vagrant || exit
-        alpine_install
-    else
-        install_git
-    fi
-}
-
 # chroot_install() 
 # {
 #     # TODO: alpine-chroot and then install()
@@ -50,7 +40,8 @@ check_vm()
 {
     if [ -f "/vagrant" ]; then
         echo "detected vagrant VM"
-        vagrant_install
+        cd /vagrant || exit
+        alpine_install
     else
         echo "fetching noma sources"
         install_git
