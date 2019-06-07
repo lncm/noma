@@ -61,21 +61,29 @@ Currently, some third-party components need to be installed and configured separ
 Some `noma` functions are specific to Raspberry Pi hardware.
 
 ### Installation
-1. `pip install noma`
 
-### Pre-build Instructions
+#### Vagrant (MacOS/Windows)
+* Install Vagrant, VirtualBox
+```
+vagrant plugin install vagrant-alpine
+cd noma
+vagrant up
+```
 
-#### Alpine Linux
-
-* ```apk add gcc python3-dev linux-headers py-configobj libusb python-dev musl-dev```
+#### Linux
+`pip install noma`
 
 ### Build instructions
-0. `pip3 install wheel docker docker-compose`
-1. `python3 setup.py bdist_wheel`
-2. `pip install dist/noma-0.2.1-py3-none-any.whl`
+```
+pip3 install wheel docker docker-compose
+python3 setup.py bdist_wheel
+pip install dist/noma-*-py3-none-any.whl
+```
 
 ### Build docs
-0. `pip3 install sphinx sphinx-rtd-theme`
-1. `cd docs`
-2. `make html`
+```
+pip3 install sphinx sphinx-rtd-theme`
+cd docs
+make html
+```
 docs can be found at `docs/_build/html/index.html`

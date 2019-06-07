@@ -16,9 +16,8 @@ def create_dir(path):
     return False
 
 
-def check_installed():
+def check_installed(installed='/media/mmcblk0p1/installed'):
     """Check if LNCM-Box is installed"""
-    installed = "/media/mmcblk0p1/installed"
     if Path(installed).is_file():
         with open(installed, "r") as file:
             lines = file.readlines()
@@ -28,12 +27,10 @@ def check_installed():
     return False
 
 
-def move_cache():
+def move_cache(cache_dir="/media/mmcblk0p1/cache", var_cache="/var/cache/apk"):
     """Let apk cache live on persistent volume"""
     print("Let apk cache live on persistent volume")
-    cache_dir = Path("/media/mmcblk0p1/cache")
-    var_cache = "/var/cache/apk"
-    if cache_dir.is_dir():
+    if Path(cache_dir).is_dir():
         print("Removing {v}".format(v=var_cache))
         shutil.rmtree(var_cache)
 
@@ -398,26 +395,14 @@ def usb_setup():
     return True
 
 
+def rc_add(service, runlevel=''):
+    print("Enable {s} at boot".format(s=service))
+    call(["rc-update", "add", service, runlevel])
+
+
 def install_crontab():
     print("Installing crontab")
-    call(["/usr/bin/crontab", "/home/lncm/crontab"])
-
-
-def enable_dbus():
-    print("Enable dbus at boot")
-    exitcode = call(["rc-update", "add", "dbus"])
-    return exitcode
-
-
-def enable_docker():
-    print("Enable docker at boot")
-    exitcode = call(["rc-update", "add", "docker"])
-    return exitcode
-
-
-def enable_avahi():
-    print("Enable avahi-daemon at boot")
-    exitcode = call(["rc-update", "add", "avahi-daemon"])
+    exitcode = call(["/usr/bin/crontab", "/home/lncm/crontab"])
     return exitcode
 
 
@@ -437,12 +422,6 @@ def install_tor():
         return start_tor.returncode
 
 
-def enable_tor():
-    print("Enable tor at boot")
-    persist_tor = run(["rc-update", "add", "tor", "default"])
-    return persist_tor.returncode
-
-
 def install_box():
     import noma.node
     import noma.lnd
@@ -458,12 +437,12 @@ def install_box():
     install_firmware()  # for raspberry-pi
     install_apk_deps()  # curl & jq; are these really necessary?
     install_compose()
-    enable_dbus()
-    enable_avahi()
-    enable_docker()
+    rc_add("dbus")
+    rc_add("avahi-daemon")
+    rc_add("docker")
     enable_compose()
     install_tor()
-    enable_tor()
+    rc_add("tor", "default")
 
     # html
     check_to_fetch(

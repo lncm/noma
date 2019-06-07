@@ -14,7 +14,7 @@ ARCHIVE_PATH = MEDIA_PATH / pathlib.Path("archive/archive")
 VOLATILE_PATH = MEDIA_PATH / pathlib.Path("volatile/volatile")
 IMPORTANT_PATH = MEDIA_PATH / pathlib.Path("important/important")
 
-HOME_PATH = pathlib.Path("/home/lncm")
+HOME_PATH = pathlib.Path.home()
 COMPOSE_PATH = HOME_PATH / pathlib.Path("compose")
 FACTORY_PATH = HOME_PATH / pathlib.Path("pi-factory")
 
@@ -219,7 +219,7 @@ def get_source():
         os.chdir(FACTORY_PATH)
         call(["git", "pull"])
     else:
-        os.chdir(HOME_PATH)
+        os.chdir(str(HOME_PATH))
         call(["git", "clone", "https://github.com/lncm/pi-factory.git"])
 
 
