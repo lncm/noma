@@ -11,7 +11,8 @@ def check_wallet():
     """
     This will either import an existing seed (or our own generated one),
     or use LND to create one.
-    It will also create a password either randomly or use an existing password provided)
+    It will also create a password either randomly or use an existing password
+    provided)
 
     :return str: Status
     """
@@ -21,7 +22,9 @@ def check_wallet():
         else:
             print("Wallet already exists!")
             print(
-                "Please backup and move /media/important/important/lnd/data/chain and then restart lnd"
+                "Please backup and move "
+                "/media/important/important/lnd/data/chain and then "
+                "restart lnd"
             )
     else:
         print("lnd directory does not exist!")
@@ -49,7 +52,8 @@ def autounlock():
         try:
             print(response.json())
         except Exception:
-            # JSON will fail to decode when unlocked already since response is empty
+            # JSON will fail to decode when unlocked already since response is
+            # empty
             pass
 
 
@@ -187,6 +191,24 @@ def create():
     shutil.copy("/home/lncm/lnd/lnd.conf", lnd_path + "/lnd.conf")
 
 
+# Generate seed
+URL_GENSEED = "https://localhost:8181/v1/genseed"
+
+# Initialize wallet
+URL_INITWALLET = "https://localhost:8181/v1/initwallet"
+
+TLS_CERT_PATH = "/media/important/important/lnd/tls.cert"
+SEED_FILENAME = "/home/lncm/seed.txt"
+
+# save password control file (Add this file if we want to save passwords)
+SAVE_PASSWORD_CONTROL_FILE = "/home/lncm/save_password"
+
+# Create password for writing
+TEMP_PASSWORD_FILE_PATH = "/home/lncm/password.txt"
+
+SESAME_PATH = "/media/important/important/lnd/sesame.txt"
+
+
 def create_wallet():
     """
     Documented logic
@@ -194,11 +216,12 @@ def create_wallet():
     1. Check if there's already a wallet. If there is, then exit.
     2. Check for sesame.txt
     3. If doesn't exist then check for whether we should save the password
-    (save_password_control_file exists) or not
+    (SAVE_PASSWORD_CONTROL_FILE exists) or not
     4. If sesame.txt exists import password in.
     5. If sesame.txt doesn't exist ans we don't save the password, create a
-    password and save it in temporary path as defined in temp_password_file_path
-    6. Now start the wallet creation. Look for a seed defined in seed_filename,
+    password and save it in temporary path as defined in
+    TEMP_PASSWORD_FILE_PATH
+    6. Now start the wallet creation. Look for a seed defined in SEED_FILENAME,
     if not existing then generate a wallet based on the seed by LND.
 
     Main entrypoint function
@@ -215,43 +238,30 @@ def create_wallet():
     from base64 import b64encode
     from json import dumps
 
-    # Generate seed
-    url = "https://localhost:8181/v1/genseed"
-    # Initialize wallet
-    url2 = "https://localhost:8181/v1/initwallet"
-    cert_path = "/media/important/important/lnd/tls.cert"
-    seed_filename = "/home/lncm/seed.txt"
     data = None
 
-    # save password control file (Add this file if we want to save passwords)
-    save_password_control_file = "/home/lncm/save_password"
-    # Create password for writing
-    temp_password_file_path = "/home/lncm/password.txt"
-
-    if not path.exists(save_password_control_file):
+    if not path.exists(SAVE_PASSWORD_CONTROL_FILE):
         # Generate password but dont save it in usual spot
         password_str = randompass(string_length=15)
-        temp_password_file = open(temp_password_file_path, "w")
+        temp_password_file = open(TEMP_PASSWORD_FILE_PATH, "w")
     # Check if there is an existing file, if not generate a random password
-    if not path.exists("/media/important/important/lnd/sesame.txt"):
+    if not path.exists(SESAME_PATH):
         # sesame file doesnt exist
         password_str = randompass(string_length=15)
-        if not path.exists(save_password_control_file):
+        if not path.exists(SAVE_PASSWORD_CONTROL_FILE):
             # Use tempory file if there is a password control file there
-            temp_password_file = open(temp_password_file_path, "w")
+            temp_password_file = open(TEMP_PASSWORD_FILE_PATH, "w")
             temp_password_file.write(password_str)
             temp_password_file.close()
         else:
             # Use sesame.txt if password_control_file exists
-            password_file = open(
-                "/media/important/important/lnd/sesame.txt", "w"
-            )
+            password_file = open(SESAME_PATH, "w")
             password_file.write(password_str)
             password_file.close()
     else:
         # Get password from file if sesame file already exists
         password_str = (
-            open("/media/important/important/lnd/sesame.txt", "r")
+            open(SESAME_PATH, "r")
             .read()
             .rstrip()
         )
@@ -262,12 +272,12 @@ def create_wallet():
     # Step 1 get seed from web or file
 
     # Send request to generate seed if seed file doesnt exist
-    if not path.exists(seed_filename):
-        r = get(url, verify=cert_path)
+    if not path.exists(SEED_FILENAME):
+        r = get(URL_GENSEED, verify=TLS_CERT_PATH)
         if r.status_code == 200:
             json_seed_creation = r.json()
             json_seed_mnemonic = json_seed_creation["cipher_seed_mnemonic"]
-            seed_file = open(seed_filename, "w")
+            seed_file = open(SEED_FILENAME, "w")
             for word in json_seed_mnemonic:
                 seed_file.write(word + "\n")
             seed_file.close()
@@ -275,10 +285,11 @@ def create_wallet():
                 "cipher_seed_mnemonic": json_seed_mnemonic,
                 "wallet_password": b64encode(password_bytes).decode(),
             }
-        # Data doesnt get set if cant create the seed but that is fine, handle it later
+        # Data doesnt get set if cant create the seed but that is fine, handle
+        # it later
     else:
         # Seed exists
-        seed_file = open(seed_filename, "r")
+        seed_file = open(SEED_FILENAME, "r")
         seed_file_words = seed_file.readlines()
         import_file_array = []
         for importword in seed_file_words:
@@ -293,7 +304,7 @@ def create_wallet():
 
     if data:
         # Data is defined so proceed
-        r2 = post(url2, verify=cert_path, data=dumps(data))
+        r2 = post(URL_INITWALLET, verify=TLS_CERT_PATH, data=dumps(data))
         if r2.status_code == 200:
             # If create wallet was successful
             print("Create wallet is successful")
