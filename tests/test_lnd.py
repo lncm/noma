@@ -5,14 +5,6 @@ import random
 from unittest import mock
 from noma import lnd
 
-PATCH_MODULES = [
-    "requests.get",
-    "requests.post",
-    "base64.b64encode",
-    "json.dumps",
-    "os.path",
-]
-
 
 class TestComplete(Exception):
     """Raise me to stop the test, we're done"""
@@ -36,7 +28,7 @@ class LndCreateWalletTests(unittest.TestCase):
         pass
 
     def setUp(self):
-        self.mocks = {mod: mock.MagicMock() for mod in PATCH_MODULES}
+        pass
 
     def tearDown(self):
         pass
@@ -268,6 +260,8 @@ class LndCreateWalletTests(unittest.TestCase):
                 - wallet_password
             - requests.post() the `data` dict to lnd.URL_INITWALLET after
             dumping it to JSON
+        COVERAGE IMPROVEMENT OPPORUNITIES:
+            - test wallet_password is correctly read (earlier in the function)
         """
 
         def exists(call):
