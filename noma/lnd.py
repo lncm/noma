@@ -240,10 +240,6 @@ def create_wallet():
 
     data = None
 
-    if not path.exists(SAVE_PASSWORD_CONTROL_FILE):
-        # Generate password but dont save it in usual spot
-        password_str = randompass(string_length=15)
-        temp_password_file = open(TEMP_PASSWORD_FILE_PATH, "w")
     # Check if there is an existing file, if not generate a random password
     if not path.exists(SESAME_PATH):
         # sesame file doesnt exist
