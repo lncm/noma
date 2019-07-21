@@ -16,8 +16,8 @@ alpine_install()
     # install noma
     python3 setup.py develop
     # test noma
-    python3 tests/test_usb.py
-    python3 tests/test_install.py
+    #python3 tests/test_usb.py
+    #python3 tests/test_install.py
     # run noma
     noma --version
     noma --help
