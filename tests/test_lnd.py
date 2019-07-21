@@ -2,6 +2,7 @@
 import unittest
 import logging
 import random
+import json
 from unittest import mock
 from noma import lnd
 
@@ -32,40 +33,6 @@ class LndCreateWalletTests(unittest.TestCase):
 
     def tearDown(self):
         pass
-
-    @mock.patch("os.path.exists")
-    def test_checks_path(self, m_exists):
-        """Check create_walet() checks whether the SAVE_PASSWORD_CONTROL_FILE
-        exists"""
-        m_exists.side_effect = TestComplete
-        with self.assertRaises(TestComplete):
-            lnd.create_wallet()
-        m_exists.assert_called_with(lnd.SAVE_PASSWORD_CONTROL_FILE)
-
-    @mock.patch("noma.lnd.randompass")
-    @mock.patch("os.path.exists")
-    def test_generates_pass_and_opens_passfile(self, m_exists, m_rpass):
-        """
-        Test that, if SAVE_PASSWORD_CONTROL_FILE does not exist, we call
-        `randompass` and open the temp password file
-        """
-
-        def pass_control(call):
-            """Checking for the file happens first, if we are called with any
-            other arg, something is wrong"""
-            if call == lnd.SAVE_PASSWORD_CONTROL_FILE:
-                return False
-            raise Unhappy(call)
-
-        m_exists.side_effect = pass_control
-        m_open = mock.mock_open()
-        m_open.side_effect = TestComplete
-        with mock.patch("builtins.open", m_open):
-            with self.assertRaises(TestComplete):
-                lnd.create_wallet()
-        m_exists.assert_called_with(lnd.SAVE_PASSWORD_CONTROL_FILE)
-        m_rpass.assert_called_with(string_length=15)
-        m_open.assert_called_with(lnd.TEMP_PASSWORD_FILE_PATH, "w")
 
     @mock.patch("noma.lnd.randompass")
     @mock.patch("os.path.exists")
@@ -284,11 +251,13 @@ class LndCreateWalletTests(unittest.TestCase):
                 lnd.create_wallet()
         m_get.assert_not_called()
         m_open.assert_called_with(lnd.SEED_FILENAME, "r")
-        # TODO: get the json-dumped value of the `data` dict from the post()
-        # calls, deserialize it, and check that the resulting dict contains the
-        # correct mnemonic.
-        # ...also check that post() was called with lnd.URL_INITWALLET and
-        # TLS_CERT_PATH
+        post_call = m_post.mock_calls[-1]
+        _, args, kwargs = post_call
+        self.assertIn(lnd.URL_INITWALLET, args)
+        self.assertEqual(kwargs['verify'], lnd.TLS_CERT_PATH)
+        data_json = kwargs['data']
+        data = json.loads(data_json)
+        self.assertEqual(data['cipher_seed_mnemonic'], mnemonic)
 
 
 if __name__ == "__main__":
