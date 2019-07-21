@@ -205,7 +205,14 @@ class LndCreateWalletTests(unittest.TestCase):
         m_post.side_effect = TestComplete
         with mock.patch("builtins.open", m_open):
             with self.assertRaises(TestComplete):
-                lnd.create_wallet()
+                try:
+                    lnd.create_wallet()
+                except Unhappy as exc:
+                    raise Unhappy(
+                        "{}: {}\nget: {}\npost: {}".format(
+                            exc, m_exists.mock_calls, m_get.mock_calls,
+                            m_post.mock_calls)
+                    )
         m_get.assert_called_with(lnd.URL_GENSEED, verify=lnd.TLS_CERT_PATH)
         handle = m_open()
         for mne in mnemonic:
