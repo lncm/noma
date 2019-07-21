@@ -254,10 +254,10 @@ class LndCreateWalletTests(unittest.TestCase):
         post_call = m_post.mock_calls[-1]
         _, args, kwargs = post_call
         self.assertIn(lnd.URL_INITWALLET, args)
-        self.assertEqual(kwargs['verify'], lnd.TLS_CERT_PATH)
-        data_json = kwargs['data']
+        self.assertEqual(kwargs["verify"], lnd.TLS_CERT_PATH)
+        data_json = kwargs["data"]
         data = json.loads(data_json)
-        self.assertEqual(data['cipher_seed_mnemonic'], mnemonic)
+        self.assertEqual(data["cipher_seed_mnemonic"], mnemonic)
 
 
 if __name__ == "__main__":
