@@ -8,7 +8,7 @@ ARCHIVE_DIR = MEDIA_DIR / "archive" / "archive"
 VOLATILE_DIR = MEDIA_DIR / "volatile" / "volatile"
 IMPORTANT_DIR = MEDIA_DIR / "important" / "important"
 FACTORY_DIR = HOME_DIR / "pi-factory"
-COMPOSE_DIR = HOME_DIR / "compose"
+COMPOSE_DIR = FACTORY_DIR / "home" / "lncm" / "compose"
 NOMA_DIR = HOME_DIR / "noma"
 # node = [ARCHIVE_DIR, VOLATILE_DIR, IMPORTANT_DIR, FACTORY_DIR, COMPOSE_DIR, NOMA_DIR]
 

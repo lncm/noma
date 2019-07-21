@@ -38,12 +38,14 @@ install_git()
 
 check_vm() 
 {
-    if [ -f "/vagrant" ]; then
-        echo "detected vagrant VM"
+    if [ -d "/vagrant" ]; then
+        echo "Detected vagrant VM"
         cd /vagrant || exit
         alpine_install
     else
-        echo "fetching noma sources"
+        echo "Vagrant not found!"
+        echo
+        echo "Fetching noma sources from github instead"
         install_git
     fi
 }

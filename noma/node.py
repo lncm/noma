@@ -15,9 +15,8 @@ VOLATILE_PATH = MEDIA_PATH / pathlib.Path("volatile/volatile")
 IMPORTANT_PATH = MEDIA_PATH / pathlib.Path("important/important")
 
 HOME_PATH = pathlib.Path.home()
-COMPOSE_PATH = HOME_PATH / pathlib.Path("compose")
 FACTORY_PATH = HOME_PATH / pathlib.Path("pi-factory")
-
+COMPOSE_PATH = FACTORY_PATH / "home" / "lncm" / "compose"
 
 def get_swap():
     """Return amount of swap"""
@@ -57,7 +56,12 @@ def check():
 
 def start():
     """Start default docker compose"""
-    os.chdir(COMPOSE_DIR)
+    if COMPOSE_PATH.exists():
+        os.chdir(COMPOSE_PATH)
+    else:
+        get_source()
+        os.chdir(COMPOSE_PATH)
+
     call(["docker-compose", "up", "-d"])
 
 
@@ -213,10 +217,10 @@ def get_source():
     """Get latest pi-factory source code or update"""
     install_git()
 
-    if FACTORY_DIR.is_dir():
+    if FACTORY_PATH.is_dir():
         print("source directory already exists")
         print("going to update with git pull")
-        os.chdir(FACTORY_DIR)
+        os.chdir(FACTORY_PATH)
         call(["git", "pull"])
     else:
         os.chdir(str(HOME_PATH))
