@@ -1,10 +1,22 @@
+"""
+Node hardware and software management related functionality
+"""
 import os
 import shutil
 from subprocess import call
-import psutil
 import pathlib
 import time
-from noma.config import *
+import psutil
+
+
+MEDIA_PATH = pathlib.Path("/media")
+ARCHIVE_PATH = MEDIA_PATH / pathlib.Path("archive/archive")
+VOLATILE_PATH = MEDIA_PATH / pathlib.Path("volatile/volatile")
+IMPORTANT_PATH = MEDIA_PATH / pathlib.Path("important/important")
+
+HOME_PATH = pathlib.Path.home()
+COMPOSE_PATH = HOME_PATH / pathlib.Path("compose")
+FACTORY_PATH = HOME_PATH / pathlib.Path("pi-factory")
 
 
 def get_swap():
@@ -51,7 +63,7 @@ def start():
 
 def backup():
     """Backup apkovl to important usb device"""
-    call(["lbu", "pkg", "-v", IMPORTANT_DIR])
+    call(["lbu", "pkg", IMPORTANT_PATH])
 
 
 def devtools():
@@ -88,14 +100,14 @@ def is_running(node=""):
             if compose_name in container.name:
                 return True
     except AttributeError:
-        return
+        return None
     return False
 
 
 def stop_daemons():
     """Check and wait for clean shutdown of both bitcoind and lnd"""
     if not is_running("bitcoind") and not is_running("lnd"):
-        return print("bitcoind and lnd are already stopped")
+        print("bitcoind and lnd are already stopped")
 
     for i in range(5):
         if not is_running("bitcoind") and not is_running("lnd"):
@@ -207,7 +219,7 @@ def get_source():
         os.chdir(FACTORY_DIR)
         call(["git", "pull"])
     else:
-        os.chdir(HOME_DIR)
+        os.chdir(str(HOME_PATH))
         call(["git", "clone", "https://github.com/lncm/pi-factory.git"])
 
 
@@ -224,7 +236,7 @@ def tunnel(port, hostname):
                     "-o ServerAliveInterval=60",
                     "-o ServerAliveCountMax=10",
                     port_str,
-                    hostname,
+                    host,
                 ]
             )
         except Exception as error:

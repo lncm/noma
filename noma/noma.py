@@ -8,6 +8,7 @@ Usage:
   noma turbo
   noma usb-setup
   noma install-box
+  noma create-swap
   noma tunnel <port> <host>
   noma (backup|restore|source|diff|devtools)
   noma reinstall [--full]
@@ -48,12 +49,8 @@ def bitcoind(args):
         bitcoind.stop()
 
     elif args["logs"]:
-        import pathlib
-
-        log_path = pathlib.Path("/media/volatile/volatile/bitcoin/debug.log")
-        alt_log_path = pathlib.Path("/media/archive/archive/bitcoin/debug.log")
-        if log_path.is_file():
-            call(["tail", "-f", log_path])
+        if args["--tail"]:
+            call(["tail", "-f", "/media/volatile/volatile/bitcoin/debug.log"])
         else:
             if alt_log_path.is_file():
                 call(["tail", "-f", alt_log_path])
@@ -131,11 +128,14 @@ def lnd(args):
         call(["docker", "exec", "compose_lnd_1", "lncli", args["<command>"]])
 
     elif args["logs"]:
-        import pathlib
-
-        log_path = "/media/volatile/volatile/lnd/logs/bitcoin/mainnet/lnd.log"
-        if pathlib.Path(log_path).is_file():
-            call(["tail", "-f", log_path])
+        if args["--tail"]:
+            call(
+                [
+                    "tail",
+                    "-f",
+                    "/media/volatile/volatile/lnd/logs/bitcoin/mainnet/lnd.log",
+                ]
+            )
         else:
             node.logs("lnd")
 
@@ -209,23 +209,15 @@ def node(args):
     elif args["freq"]:
         node.freq(args["<device>"])
 
-    elif args["turbo"]:
+    elif args['turbo']:
         print("Set CPU scaling")
         from subprocess import DEVNULL
-
         for cpu_num in range(0, 4):
-            device_path = "/sys/devices/system/cpu/cpu{n}/cpufreq/scaling_governor".format(
-                n=cpu_num
-            )
-            call(
-                ["echo", "ondemand > {p} ".format(p=device_path)],
-                shell=True,
-                stdout=DEVNULL,
-                stderr=DEVNULL,
-            )
+            device_path = "/sys/devices/system/cpu/cpu{n}/cpufreq/scaling_governor".format(n=cpu_num)
+            call(["echo", "ondemand > {p} ".format(p=device_path)], shell=True, stdout=DEVNULL, stderr=DEVNULL)
 
-    elif args["memory"]:
-        print(node.memory(args["<device>"]))
+    elif args['memory']:
+        print(node.memory(args['<device>']))
 
     elif args["backup"]:
         node.backup()
@@ -266,6 +258,10 @@ def node(args):
 
         noma.install.install_box()
 
+    elif args["create-swap"]:
+        from noma import install
+        print(install.create_swap())
+
     elif args["check"]:
         node.check()
 
@@ -290,7 +286,7 @@ def node(args):
 
 
 def main():
-    args = docopt(__doc__, version="v0.4.2")
+    args = docopt(__doc__, version="v0.4.3")
 
     if args["bitcoind"]:
         bitcoind(args)

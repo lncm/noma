@@ -1,7 +1,7 @@
 import unittest
-import noma.node
 import urllib3
 import requests
+import noma.node
 
 
 class TestNode(unittest.TestCase):

@@ -2,7 +2,7 @@
 
 CLI utility and Python API to manage bitcoin lightning nodes.
 
-
+[![Build Status](https://travis-ci.com/lncm/noma.svg?branch=master)](https://travis-ci.com/lncm/noma)
 [![Documentation Status](https://readthedocs.org/projects/noma/badge/?version=latest)](https://noma.readthedocs.io/en/latest/?badge=latest)
 [![Maintainability](https://api.codeclimate.com/v1/badges/fd95275314bd4f680140/maintainability)](https://codeclimate.com/github/lncm/noma/maintainability)
 
@@ -61,24 +61,29 @@ Currently, some third-party components need to be installed and configured separ
 Some `noma` functions are specific to Raspberry Pi hardware.
 
 ### Installation
-0. `apk add docker docker-compose` or OS equivalent
-1. `pip install -r https://raw.githubusercontent.com/lncm/noma/master/requirements.txt`
-2. `pip install https://github.com/lncm/noma/releases/download/v0.2.2/noma-0.2.2-py3-none-any.whl`
- 
 
-### Pre-build Instructions
+#### Vagrant (MacOS/Windows)
+* Install Vagrant, VirtualBox
+```
+vagrant plugin install vagrant-alpine
+cd noma
+vagrant up
+```
 
-#### Alpine Linux
-
-* ```apk add gcc python3-dev linux-headers py-configobj libusb python-dev musl-dev```
+#### Linux
+`pip install noma`
 
 ### Build instructions
-0. `pip3 install wheel docker docker-compose`
-1. `python3 setup.py bdist_wheel`
-2. `pip install dist/noma-0.2.1-py3-none-any.whl`
+```
+pip3 install wheel docker docker-compose
+python3 setup.py bdist_wheel
+pip install dist/noma-*-py3-none-any.whl
+```
 
 ### Build docs
-0. `pip3 install sphinx sphinx-rtd-theme`
-1. `cd docs`
-2. `make html`
+```
+pip3 install sphinx sphinx-rtd-theme`
+cd docs
+make html
+```
 docs can be found at `docs/_build/html/index.html`

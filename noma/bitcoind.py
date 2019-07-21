@@ -1,9 +1,11 @@
-from subprocess import call
+"""
+bitcoind related functionality
+"""
+from subprocess import call, run, PIPE, STDOUT, DEVNULL
 import os
 import pathlib
-from noma import rpcauth
-from noma.config import *
 import shutil
+from noma import rpcauth
 
 
 def start():
@@ -30,52 +32,139 @@ def fastsync():
     """
     Download blocks and chainstate snapshot
 
-    :return str: Status
+    :return bool: success status
     """
-    bitcoin_dir = BITCOIN_DIR
-    snapshot = SNAPSHOT_NAME
-    url = SNAPSHOT_URL
+    bitcoind_dir_path = "/media/archive/archive/bitcoin/"
+    bitcoind_dir = pathlib.Path(bitcoind_dir_path)
+    location = "http://utxosets.blob.core.windows.net/public/"
+    snapshot = "utxo-snapshot-bitcoin-mainnet-565305.tar"
+    checksum = "8e18176138be351707aee95f349dd1debc714cc2cc4f0c76d6a7380988bf0d22"
+    snapshot_path = bitcoind_dir / snapshot
+    url = location + snapshot
 
-    print("Checking if snapshot archive exists")
-    if bitcoin_dir.is_dir():
-        print("Bitcoin directory exists")
-        snapshot_file = bitcoin_dir / snapshot
-        if snapshot_file.is_file():
-            print("Snapshot archive exists")
-            if pathlib.Path(bitcoin_dir / "blocks").is_dir():
-                print("Bitcoin blocks directory exists, exiting")
-                return True
-            else:
-                # Assumes download was interrupted
-                os.chdir(bitcoin_dir)
-                print("Continue downloading snapshot")
-                call(["wget", "-c", url])
-                call(["tar", "xvf", snapshot])
+    bitcoind_dir_exists = bitcoind_dir.is_dir()
+
+    def set_permissions(working_path):
+        print("Setting file and directory permissions")
+        for path, dirs, files in os.walk(working_path):
+            lncm_uid, lncm_gid = 1001, 1001
+            for directory in dirs:
+                os.chown(os.path.join(path, directory), lncm_uid, lncm_gid)
+                os.chmod(os.path.join(path, directory), 0o755)
+            for file in files:
+                os.chown(os.path.join(path, file), lncm_uid, lncm_gid)
+                os.chmod(os.path.join(path, file), 0o744)
+
+    def extract_snapshot():
+        print("Extract snapshot")
+        os.chdir(bitcoind_dir_path)
+        tar = run(["tar", "xf", snapshot_path])
+        print("Extracting done")
+        if tar.returncode == 0:
+            set_permissions(bitcoind_dir_path)
+
+    def remove_snapshot():
+        assert IOError("Corrupt snapshot file")
+        if snapshot_path.is_file():
+            print("Remove the utxoset-snapshot.* files to try again")
+        #     # os.remove(snapshot_path)
+        #
+        # state_file = pathlib.Path(snapshot_path + ".st")
+        # if state_file.is_file():
+        #     pass
+        #     # os.remove(snapshot_path + ".st")
+
+    def compare_checksums():
+        print("Comparing checksums")
+        openssl_location = run(["which", "openssl"], stdout=DEVNULL, stderr=DEVNULL)
+        if openssl_location.returncode == 0:
+            # openssl is installed
+            openssl = run(["openssl", "dgst", "-sha256", snapshot_path], stdout=PIPE, stderr=PIPE)
+            if openssl.returncode == 0:
+                hash = str(bytes.decode(openssl.stdout))
+                hash = hash.split(' ')[1].rstrip()
+
+                if hash == checksum:
+                    print("Checksums match")
+                    return True
+                print("Checksums do not match:")
+                print("Expected: " + str(checksum))
+                print("  Actual: " + str(hash))
+                return False
+            raise OSError("Cannot compare hashes: " + bytes.decode(openssl.stderr))
         else:
-            print("Downloading snapshot")
-            os.chdir(bitcoin_dir)
-            call(["wget", "-c", url])
-            call(["tar", "xvf", snapshot])
+            shasum = run(["sha256sum", snapshot_path], stdout=PIPE, stderr=PIPE)
+            if shasum.returncode == 0:
+                hash = shasum.stdout.split(' ')[0]
+                print(hash)
+                if hash == checksum:
+                    print("Checksums match")
+                    return True
+                print("Checksums do not match: " + bytes.decode(shasum.stdout))
+                return False
+            raise OSError("Cannot compare hashes: " + bytes.decode(shasum.stderr))
+
+    def download_snapshot():
+        os.chdir(bitcoind_dir_path)
+        print("Download snapshot")
+        download = run(
+            ["axel", "--quiet", "--no-clobber", url], stdout=PIPE, stderr=STDOUT
+        )
+        if download.returncode == 0:
+            if compare_checksums():
+                extract_snapshot()
+            else:
+                remove_snapshot()
+                download_snapshot()
+        else:
+            raise OSError("Download failed" + str(download.stdout))
+
+    print("Checking existing filesystem structure")
+    if bitcoind_dir_exists:
+        print("Bitcoin directory exists")
+        if snapshot_path.is_file():
+            print("Snapshot archive exists")
+            if pathlib.Path(bitcoind_dir / "blocks").is_dir():
+                print("Bitcoin blocks directory exists, stopping")
+                print("Remove the directory to fastsync")
+                return
+            if pathlib.Path(bitcoind_dir / "chainstate").is_dir():
+                print("Bitcoin chainstate directory exists, stopping")
+                print("Remove the directory to fastsync")
+                return
+            if compare_checksums():
+                extract_snapshot()
+            else:
+                download_snapshot()
+        else:
+            download_snapshot()
     else:
         print("Bitcoin directory does not exist, creating")
         if pathlib.Path("/media/archive/archive").is_dir():
-            pathlib.Path(bitcoin_dir).mkdir(exist_ok=True)
-            os.chdir(bitcoin_dir)
-            print("Downloading snapshot")
-            call(["wget", "-c", url])
-            call(["tar", "xvf", snapshot])
+            pathlib.Path(bitcoind_dir).mkdir(exist_ok=True)
+            download_snapshot()
         else:
-            print("Error: archive directory does not exist on your usb device")
-            print("Are you sure it was installed correctly?")
-            exit(1)
+            raise OSError(
+                "Error: archive directory does not exist on your usb device"
+            )
 
 
 def create():
     """Create bitcoind directory structure and config file"""
-    bitcoin_dir = BITCOIN_DIR
-    bitcoind_config = BITCOIND_CONFIG
-    pathlib.Path(bitcoin_dir).mkdir(exist_ok=True)
-    shutil.copy(bitcoind_config, bitcoin_dir + "/bitcoin.conf")
+    bitcoind_dir = pathlib.Path("/media/archive/archive/bitcoin")
+    bitcoind_config = pathlib.Path("/home/lncm/bitcoin/bitcoin.conf")
+
+    if bitcoind_dir.is_dir():
+        print("bitcoind directory exists")
+    else:
+        print("bitcoind directory does not exist")
+        bitcoind_dir.mkdir(exist_ok=True)
+
+    if bitcoind_config.is_file():
+        print("bitcoind bitcoin.conf exists")
+    else:
+        print("bitcoind bitcoin.conf does not exist, creating")
+        shutil.copy(bitcoind_config, bitcoind_dir + "/bitcoin.conf")
 
 
 def set_prune(prune_target, config_path=""):
@@ -96,6 +185,8 @@ def set_rpcauth(config_path):
         auth_value, password = generate_rpcauth("lncm")
         set_kv("rpcauth", auth_value, config_path)
         noma.lnd.set_bitcoind(password)
+    else:
+        create()
 
 
 def generate_rpcauth(username, password=""):
@@ -172,14 +263,13 @@ def set_kv(key, value, config_path):
     :return str: string written
     """
     from fileinput import FileInput
-    import pathlib
 
-    p = pathlib.Path(config_path)
-    config_exists = p.is_file()
+    path = pathlib.Path(config_path)
+    config_exists = path.is_file()
 
     if not config_exists:
         # create empty config file
-        p.touch()
+        path.touch()
 
     current_val = None
     try:

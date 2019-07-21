@@ -1,18 +1,20 @@
-#!/usr/bin/env python3
-
+"""
+USB and SD device related functionality
+"""
 from os import path
 from os import popen
 from sys import exit
 import glob
 import re
+import psutil
 from subprocess import call
 
 # TODO: handle mountable devices without partitions!
 
-usb_dev_pattern = ["sd.*"]
-usb_part_pattern = ["sd.[1-9]*"]
-sd_dev_pattern = ["mmcblk*"]
-sd_part_pattern = ["mmcblk.p[1-9]*"]
+USB_DEV_PATTERN = ["sd.*"]
+USB_PART_PATTERN = ["sd.[1-9]*"]
+SD_DEV_PATTERN = ["mmcblk*"]
+SD_PART_PATTERN = ["mmcblk.p[1-9]*"]
 
 
 def is_mounted(device):
@@ -23,7 +25,6 @@ def is_mounted(device):
     :return: True/False if device is mounted or not
     :rtype: bool
     """
-    import psutil
 
     partitions = psutil.disk_partitions()
     device_path = "/dev/" + device
@@ -31,6 +32,17 @@ def is_mounted(device):
         if i.device == device_path:
             return True
     return False
+
+
+def fs_size(fs_path):
+    """Return filesystem size in bytes
+
+    :param fs_path: path to mounted filesystem
+    :return: filesystem size in bytes
+    """
+    import shutil
+    total, used, free = shutil.disk_usage(fs_path)
+    return total
 
 
 def dev_size(device):
@@ -89,7 +101,7 @@ def sd_part_size(partition):
     """
     try:
         device_path = "/sys/block/"
-        device = partition[:-2]
+        device = partition[:-1]
         num_sectors = (
             open(device_path + device + "/" + partition + "/size")
             .read()
@@ -111,7 +123,7 @@ def usb_devs():
     """list usb devices"""
     devices = []
     for device in glob.glob("/sys/block/*"):
-        for pattern in usb_dev_pattern:
+        for pattern in USB_DEV_PATTERN:
             if re.compile(pattern).match(path.basename(device)):
                 devices.append(path.basename(device))
     return devices
@@ -121,7 +133,7 @@ def sd_devs():
     """list sd devices"""
     devices = []
     for device in glob.glob("/sys/block/*"):
-        for pattern in sd_dev_pattern:
+        for pattern in SD_DEV_PATTERN:
             if re.compile(pattern).match(path.basename(device)):
                 devices.append(path.basename(device))
     return devices
@@ -132,7 +144,7 @@ def usb_partitions():
     partitions = []
     for device in usb_devs():
         for partition in glob.glob("/sys/block/" + str(device) + "/*"):
-            for pattern in usb_part_pattern:
+            for pattern in USB_PART_PATTERN:
                 if re.compile(pattern).match(path.basename(partition)):
                     partitions.append(path.basename(partition))
     return partitions
@@ -143,7 +155,7 @@ def sd_partitions():
     partitions = []
     for device in sd_devs():
         for partition in glob.glob("/sys/block/" + str(device) + "/*"):
-            for pattern in sd_part_pattern:
+            for pattern in SD_PART_PATTERN:
                 if re.compile(pattern).match(path.basename(partition)):
                     partitions.append(path.basename(partition))
     return partitions

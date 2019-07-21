@@ -1,6 +1,9 @@
+"""
+Node installation related functionality
+"""
 from pathlib import Path
 import shutil
-from subprocess import call, Popen, PIPE
+from subprocess import run, call, Popen, PIPE, DEVNULL, STDOUT
 from time import sleep
 from noma import usb
 import requests
@@ -13,35 +16,46 @@ def create_dir(path):
     return False
 
 
-def check_installed():
+def check_installed(installed='/media/mmcblk0p1/installed'):
     """Check if LNCM-Box is installed"""
-    installed = "/media/mmcblk0p1/installed"
     if Path(installed).is_file():
         with open(installed, "r") as file:
             lines = file.readlines()
             for line in lines:
                 print(line)
         return True
-    else:
-        return False
+    return False
 
 
-def move_cache():
+def move_cache(cache_dir="/media/mmcblk0p1/cache", var_cache="/var/cache/apk"):
     """Let apk cache live on persistent volume"""
     print("Let apk cache live on persistent volume")
-    cache_dir = Path("/media/mmcblk0p1/cache")
-    var_cache = "/var/cache/apk"
-    if cache_dir.is_dir():
+    if Path(cache_dir).is_dir():
+        print("Removing {v}".format(v=var_cache))
         shutil.rmtree(var_cache)
+
+        print("Copy {v} to {c}".format(v=var_cache, c=cache_dir))
         shutil.copytree(cache_dir, var_cache)
-        call(["setup-apkcache", var_cache])
+
+        print("Running setup-apkcache")
+        setup = run(["setup-apkcache", var_cache], stdout=PIPE, stderr=STDOUT)
+        if setup.returncode == 0:
+            print("setup-apkcache was successful")
+        else:
+            raise OSError(
+                "setup-apkcache was not successful \n" + setup.stdout
+            )
+        return setup.returncode
 
 
 def enable_swap():
     """Enable swap at boot"""
     print("Enable swap at boot")
-    call(["rc-update", "add", "swap", "boot"])
-    call(["rc-update", "add", "swap", "default"])
+    add_boot = run(["rc-update", "add", "swap", "boot"])
+    add_default = run(["rc-update", "add", "swap", "default"])
+    if add_boot.returncode == 0 and add_default.returncode == 0:
+        return True
+    return False
 
 
 def install_firmware():
@@ -59,31 +73,25 @@ def apk_update():
 def install_apk_deps():
     """Install misc dependencies"""
     print("Install dependencies")
-    call(
-        [
-            "apk",
-            "add",
-            "curl",
-            "jq",
-            "autossh",
-            "gcc",
-            "libc-dev",
-            "make",
-            "python3-dev",
-            "libffi-dev",
-            "openssl-dev",
-        ]
-    )
+    call(["apk", "add", "curl", "jq", "autossh", "axel"])
 
 
 def mnt_ext4(device, path):
     """Mount device at path using ext4"""
-    call(["mount", "-t ext4", "/dev/" + device, path])
+    exitcode = call(
+        ["mount", "-t ext4", "/dev/" + device, path],
+        stdout=DEVNULL,
+        stdin=DEVNULL,
+    )
+    return exitcode
 
 
 def mnt_any(device, path):
     """Mount device at path using any filesystem"""
-    call(["mount", "/dev/" + device, path])
+    exitcode = call(
+        ["mount", "/dev/" + device, path], stdout=DEVNULL, stdin=DEVNULL
+    )
+    return exitcode
 
 
 def setup_nginx():
@@ -107,7 +115,7 @@ def setup_nginx():
 def check_for_destruction(device, path):
     """Check devices for destruction flag. If so, format with ext4"""
     print("Check devices for destruction flag")
-    destroy = Path(path + "/DESTROY_ALL_DATA_ON_THIS_DEVICE.txt").is_file()
+    destroy = Path(path + "/DESTROY_ALL_DATA_ON_THIS_DEVICE/").is_dir()
     if destroy:
         print("Destruction flag found!")
         print(
@@ -116,14 +124,11 @@ def check_for_destruction(device, path):
             )
         )
         sleep(3)
-        call(["umount", "/dev/" + device])
-        sleep(2)
-        if not usb.is_mounted(device):
+        unmounted = call(["umount", "/dev/" + device])
+        if unmounted and not usb.is_mounted(device):
             print("Going to format {d} with ext4 now".format(d=device))
             call(["mkfs.ext4", "-F", "/dev/" + device])
-            mnt_ext4(device, path)
-            sleep(2)
-            if usb.is_mounted(device):
+            if mnt_ext4(device, path) == 0 and usb.is_mounted(device):
                 print(
                     "{d} formatted with ext4 successfully and mounted.".format(
                         d=device
@@ -131,14 +136,14 @@ def check_for_destruction(device, path):
                 )
                 return True
         else:
-            call(["umount", "-f", "/dev/" + device])
-            sleep(2)
-            if not usb.is_mounted(device):
+            unmounted = call(["umount", "-f", "/dev/" + device])
+
+            if unmounted and not usb.is_mounted(device):
                 print("Going to format {d} with ext4 now".format(d=device))
                 call(["mkfs.ext4", "-F", "/dev/" + device])
-                mnt_ext4(device, path)
-                sleep(2)
-                if usb.is_mounted(device):
+                mounted = mnt_ext4(device, path)
+
+                if mounted == 0 and usb.is_mounted(device):
                     print(
                         "{d} formatted with ext4 successfully and mounted.".format(
                             d=device
@@ -159,37 +164,31 @@ def fallback_mount(partition, path):
     :return bool: success
     """
     print("Mount ext4 storage device: {}".format(partition))
-    mounted = usb.is_mounted(partition)
-    if mounted:
-        return True
-    mnt_ext4(partition, path)
-    sleep(2)
-    ext4_mountable = usb.is_mounted(partition)
 
-    if ext4_mountable:
+    if usb.is_mounted(partition):
+        return True
+
+    if mnt_ext4(partition, path) == 0 and usb.is_mounted(partition):
         print("{d} is mounted as ext4 at {p}".format(d=partition, p=path))
         return True
-    else:
-        print("Warning: {} usb is not mountable as ext4".format(partition))
-        print("Attempting to mount with any filesystem...")
-        mnt_any(partition, path)
-        sleep(2)
-        mountable = usb.is_mounted(partition)
-        if mountable:
-            print(
-                "{d} mounted at {p} with any filesystem".format(
-                    d=partition, p=path
-                )
+
+    print("Warning: {} usb is not mountable as ext4".format(partition))
+    print("Attempting to mount with any filesystem...")
+
+    if mnt_any(partition, path) == 0 and usb.is_mounted(partition):
+        print(
+            "{d} mounted at {p} with any filesystem".format(
+                d=partition, p=path
             )
-            return True
-        else:
-            print(
-                "Error: {} usb is not mountable with any supported format".format(
-                    partition
-                )
-            )
-            print("Cannot continue without all USB storage devices")
-            return False
+        )
+        return True
+    print(
+        "Error: {} usb is not mountable with any supported format".format(
+            partition
+        )
+    )
+    print("Cannot continue without all USB storage devices")
+    return False
 
 
 def setup_fstab(device, mount):
@@ -197,7 +196,7 @@ def setup_fstab(device, mount):
     ext4_mounted = usb.is_mounted(device)
     if ext4_mounted:
         with open("/etc/fstab", "a") as file:
-            fstab = "\nUUID={u} /media/{m} ext4 defaults,noatime 0 0".format(
+            fstab = "\nUUID={u} {m} ext4 defaults,noatime 0 0".format(
                 u=usb.get_uuid(device), m=mount
             )
             file.write(fstab)
@@ -210,66 +209,94 @@ def setup_fstab(device, mount):
 
 def install_compose():
     print("Installing docker-compose, if necessary")
-    call(["pip3", "install", "docker-compose"])
+    call(["pip3", "install", "docker-compose==1.23.2"])
 
 
 def create_swap():
     """Create swap on volatile usb device"""
+    import psutil
+
     # TODO: make sure dd runs in foreground and is blocking
     print("Create swap on volatile usb device")
     volatile_path = Path("/media/volatile/volatile")
     volatile_path.mkdir(exist_ok=True)
+    swap_path = volatile_path / "swap"
+
+    def create_file():
+        dd = run(
+            [
+                "dd",
+                "if=/dev/zero",
+                "of=/media/volatile/volatile/swap",
+                "bs=1M",
+                "count=1024",
+            ],
+            stdout=PIPE,
+            stderr=STDOUT,
+        )
+
+        if dd.returncode != 0:
+            # dd has non-zero exit code
+            raise OSError(
+                "Warning: dd cannot create swap file \n" + str(dd.stdout)
+            )
+        return True
+
+    def mk_swap():
+        mkswap = run(
+            ["mkswap", "/media/volatile/volatile/swap"],
+            stdout=PIPE,
+            stderr=STDOUT,
+        )
+
+        if mkswap.returncode != 0:
+            # mkswap has non-zero exit code
+            raise OSError(
+                "Warning: mkswap could not create swap file \n"
+                + str(mkswap.stdout)
+            )
+        return True
+
+    def swap_on():
+        swapon = run(
+            ["swapon", "/media/volatile/volatile/swap", "-p 100"],
+            stdout=PIPE,
+            stderr=STDOUT,
+        )
+
+        if swapon.returncode != 0:
+            # swapon has non-zero exit code
+            raise OSError(
+                "Warning: swapon could not add to swap \n" + str(swapon.stdout)
+            )
+        return True
+
+    def write_fstab():
+        try:
+            with open("/etc/fstab", "a") as file:
+                file.write("\n/media/volatile/swap none swap sw,pri=100 0 0")
+                print("Success! Wrote swap file to fstab")
+                return True
+        except Exception as error:
+            print(error)
+            print("Warning: could not add swap to /etc/fstab")
+            raise
 
     if not volatile_path.is_dir():
-        print("Warning: volatile directory inaccessible")
+        raise OSError("Warning: volatile directory inaccessible")
+
+    if swap_path.is_file():
+        print("Swap file exists")
+        if psutil.swap_memory().total < 1000000000:
+            print("Enabling swap")
+            if swap_on() and enable_swap():
+                return True
+            return False
         return False
 
-    dd = Popen(
-        [
-            "dd",
-            "if=/dev/zero",
-            "of=/media/volatile/volatile/swap",
-            "bs=1M",
-            "count=1024",
-        ],
-        stdout=PIPE,
-        stderr=PIPE,
-    )
-
-    if dd.returncode:
-        # dd has non-zero exit code
-        print("Warning: dd cannot create swap file")
-        return False
-
-    mkswap = Popen(
-        ["mkswap", "/media/volatile/volatile/swap"], stdout=PIPE, stderr=PIPE
-    )
-
-    if mkswap.returncode:
-        # mkswap has non-zero exit code
-        print("Warning: mkswap could not create swap file")
-        return False
-
-    swapon = Popen(
-        ["swapon", "/media/volatile/volatile/swap", "-p 100"],
-        stdout=PIPE,
-        stderr=PIPE,
-    )
-
-    if swapon.returncode:
-        # swapon has non-zero exit code
-        print("Warning: swapon could not add to swap")
-        return False
-
-    try:
-        with open("/etc/fstab", "a") as file:
-            file.write("\n/media/volatile/swap none swap sw,pri=100 0 0")
-            print("Success! Wrote swap file to fstab")
-            return True
-    except Exception as error:
-        print(error)
-        print("Warning: could not add swap to /etc/fstab")
-        return False
+    if create_file() and mk_swap():
+        if swap_on() and enable_swap():
+            return write_fstab()
 
 
 def check_to_fetch(file_path, url):
@@ -306,26 +333,15 @@ def usb_setup():
         num = devices.index(device)
         if create_dir(mountpoints[num]):
             if fallback_mount(device, mountpoints[num]):
-                sleep(1)
-                if usb.is_mounted(device):
-                    print(
-                        "Mounting {d} at {p} successful".format(
-                            d=device, p=mountpoints[num]
-                        )
+                # All good with mount and mount-point
+                if check_for_destruction(device, mountpoints[num]):
+                    device_name = mountpoints[num].split("/")[2]
+                    mount_path = Path(
+                        "{p}/{n}".format(p=mountpoints[num], n=device_name)
                     )
-                    # All good with mount and mount-point
-                    if check_for_destruction(device, mountpoints[num]):
-                        device_name = mountpoints[num].split("/")[2]
-                        mount_path = Path(
-                            "{p}/{n}".format(p=mountpoints[num], n=device_name)
-                        )
-                        mount_path.mkdir(exist_ok=True)
-                        if mount_path.is_dir():
-                            # We confirmed device is mountable, readable, writable
-                            setup_fstab(device, mountpoints[num])
-                else:
-                    print("Error: {d} is not mounted".format(d=device))
-                    exit(1)
+                    if mount_path.mkdir(exist_ok=True) and mount_path.is_dir():
+                        # We confirmed device is mountable, readable, writable
+                        setup_fstab(device, mountpoints[num])
             else:
                 print(
                     "Mounting {d} with any filesystem unsuccessful".format(
@@ -337,62 +353,75 @@ def usb_setup():
             print(
                 "Error: {p} directory not available".format(p=mountpoints[num])
             )
+            exit(1)
 
-    # volatile
-    if usb.is_mounted(medium):
-        # TODO: swap disabled until it is blocking!
-        # if create_swap():
-        #     enable_swap()
-        # else:
-        #     print("Warning: Cannot create and enable swap!")
-        setup_nginx()
+    def setup_volatile():
+        if usb.is_mounted(medium):
+            if create_swap():
+                enable_swap()
+            else:
+                print("Warning: Cannot create and enable swap!")
+            setup_nginx()
 
-    # important
-    if usb.is_mounted(smallest):
-        import noma.bitcoind
+    def setup_important():
+        if usb.is_mounted(smallest):
+            import noma.bitcoind
 
-        print("Creating bitcoind files")
-        noma.bitcoind.create()
-        if noma.bitcoind.check():
-            noma.bitcoind.set_prune("550")
-            noma.bitcoind.set_rpcauth(
-                "/media/archive/archive/bitcoin/bitcoin.conf"
-            )
+            print("Creating bitcoind files")
+            noma.bitcoind.create()
+            if noma.bitcoind.check():
+                noma.bitcoind.set_prune("550")
+                noma.bitcoind.set_rpcauth(
+                    "/media/archive/archive/bitcoin/bitcoin.conf"
+                )
 
-        import noma.lnd
+            import noma.lnd
 
-        print("Creating lnd files")
-        noma.lnd.create()
-        if noma.lnd.check():
-            noma.lnd.setup_tor()
+            print("Creating lnd files")
+            noma.lnd.create()
+            if noma.lnd.check():
+                noma.lnd.setup_tor()
 
-    # archive
-    if usb.is_mounted(largest):
-        import noma.bitcoind
+    def setup_archive():
+        if usb.is_mounted(largest):
+            import noma.bitcoind
 
-        if noma.bitcoind.check():
-            noma.bitcoind.fastsync()
+            if noma.bitcoind.check():
+                noma.bitcoind.fastsync()
+
+    setup_volatile()
+    setup_important()
+    setup_archive()
+    return True
+
+
+def rc_add(service, runlevel=''):
+    print("Enable {s} at boot".format(s=service))
+    call(["rc-update", "add", service, runlevel])
 
 
 def install_crontab():
     from noma.config import HOME
 
     print("Installing crontab")
-    call(["/usr/bin/crontab", HOME + "/crontab"])
+    exitcode = call(["/usr/bin/crontab", "/home/lncm/crontab"])
+    return exitcode
 
 
 def enable_compose():
+    # TODO: Change init script to run "noma start" and "noma stop"
     print("Enable docker-compose at boot")
-    call(["rc-update", "add", "docker-compose", "default"])
+    check_to_fetch("/etc/init.d/docker-compose",
+                   "https://raw.githubusercontent.com/lncm/pi-factory/b12c6f43d11be58dac03a2513cfd2abbb16f6526/etc/init.d/docker-compose")
+    exitcode = call(["rc-update", "add", "docker-compose"])
+    return exitcode
 
 
 def install_tor():
-    call(["apk", "add", "tor"])
-    call(["/sbin/service", "tor", "start"])
-
-
-def enable_tor():
-    call(["rc-update", "add", "tor", "default"])
+    add_tor = run(["apk", "add", "tor"])
+    if add_tor.returncode == 0:
+        start_tor = run(["/sbin/service", "tor", "start"])
+        return start_tor.returncode
 
 
 def install_box():
@@ -409,15 +438,17 @@ def install_box():
     apk_update()
     install_firmware()  # for raspberry-pi
     install_apk_deps()  # curl & jq; are these really necessary?
+    install_compose()
+    rc_add("dbus")
+    rc_add("avahi-daemon")
+    rc_add("docker")
+    enable_compose()
     install_tor()
-    enable_tor()
+    rc_add("tor", "default")
 
     # html
-    from noma.config import node_settings
-
-    path = noma.config.HOME + "/public_html/pos/index.html"
     check_to_fetch(
-        path,
+        "/home/lncm/public_html/pos/index.html",
         "https://raw.githubusercontent.com/lncm/invoicer-ui/master/dist/index.html",
     )
     # check_to_fetch("home/lncm/public_html/wifi/index.html",
@@ -425,21 +456,18 @@ def install_box():
 
     # containers
     print("Starting usb-setup")
-    usb_setup()
-    install_compose()
-    enable_compose()
-    print("Starting docker-compose")
-    noma.node.start()
-    install_crontab()
-    if noma.lnd.check():
-        print("Checking lnd wallet")
-        noma.lnd.check_wallet()
-    if noma.node.check():
-        print("Backup system state (apkovl) to important usb device")
-        noma.node.backup()
+    if usb_setup():
+        print("Starting docker-compose")
+        noma.node.start()
+        install_crontab()
+        if noma.lnd.check():
+            print("Checking lnd wallet")
+            noma.lnd.check_wallet()
+        if noma.node.check():
+            print("Backup system state (apkovl) to important usb device")
+            noma.node.backup()
 
-    # remove lncm-post from default runlevel
-    print("Removing lncm-post from default runlevel")
+    print("Removing post-install from default runlevel")
     call(["rc-update", "del", "lncm-post", "default"])
 
 
