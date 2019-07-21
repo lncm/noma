@@ -1,10 +1,13 @@
 """
 LND related functionality
 """
-from os import path
-from subprocess import call
 import pathlib
 import shutil
+from requests import get, post
+from base64 import b64encode
+from json import dumps
+from os import path
+from subprocess import call
 
 
 def check_wallet():
@@ -32,9 +35,6 @@ def check_wallet():
 
 def autounlock():
     """Autounlock lnd using sesame.txt, tls.cert"""
-    from json import dumps
-    from requests import post
-    from base64 import b64encode
 
     url = "https://localhost:8181/v1/unlockwallet"
     cert_path = "/media/important/important/lnd/tls.cert"
@@ -234,10 +234,6 @@ def create_wallet():
     rm -fr /media/important/important/lnd/data/chain/
     docker start compose_lndbox_1
     """
-    from requests import get, post
-    from base64 import b64encode
-    from json import dumps
-
     data = None
 
     # Check if there is an existing file, if not generate a random password
@@ -256,11 +252,7 @@ def create_wallet():
             password_file.close()
     else:
         # Get password from file if sesame file already exists
-        password_str = (
-            open(SESAME_PATH, "r")
-            .read()
-            .rstrip()
-        )
+        password_str = open(SESAME_PATH, "r").read().rstrip()
 
     # Convert password to byte encoded
     password_bytes = str(password_str).encode("utf-8")
@@ -297,7 +289,6 @@ def create_wallet():
         }
 
     # Step 2: Create wallet
-
     if data:
         # Data is defined so proceed
         r2 = post(URL_INITWALLET, verify=TLS_CERT_PATH, data=dumps(data))
