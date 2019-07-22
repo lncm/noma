@@ -16,7 +16,8 @@ IMPORTANT_PATH = MEDIA_PATH / pathlib.Path("important/important")
 
 HOME_PATH = pathlib.Path.home()
 FACTORY_PATH = HOME_PATH / pathlib.Path("pi-factory")
-COMPOSE_PATH = FACTORY_PATH / "home" / "lncm" / "compose"
+NOMA_PATH = MEDIA_PATH / "noma"
+COMPOSE_PATH = NOMA_PATH / "compose"
 
 def get_swap():
     """Return amount of swap"""
@@ -57,8 +58,10 @@ def check():
 def start():
     """Start default docker compose"""
     if COMPOSE_PATH.exists():
+        # compose from noma repo
         os.chdir(COMPOSE_PATH)
     else:
+        print("Note: using compose from pi-factory repo")
         get_source()
         os.chdir(COMPOSE_PATH)
 

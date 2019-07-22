@@ -23,6 +23,7 @@ alpine_install()
     noma --help
 }
 
+
 install_git() 
 {
     apk add git
@@ -36,11 +37,18 @@ install_git()
 #     # TODO: alpine-chroot and then install()
 # }
 
+rsync_noma()
+{
+    echo "sync source code from /vagrant to /media/noma"
+    rsync --archive --delete --verbose /vagrant/ /media/noma
+}
+
 check_vm() 
 {
     if [ -d "/vagrant" ]; then
         echo "Detected vagrant VM"
-        cd /vagrant || exit
+        rsync_noma
+        cd /media/noma || exit
         alpine_install
     else
         echo "Vagrant not found!"
