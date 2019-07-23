@@ -1,8 +1,8 @@
 """Test LND functions"""
-import unittest
 import logging
 import random
 import json
+import unittest
 from unittest import mock
 from noma import lnd
 
@@ -10,16 +10,14 @@ from noma import lnd
 class TestComplete(Exception):
     """Raise me to stop the test, we're done"""
 
-    pass
-
 
 class Unhappy(Exception):
     """Something has gone wrong"""
 
-    pass
-
 
 class LndCreateWalletTests(unittest.TestCase):
+    """Test the create_wallet() function"""
+
     @classmethod
     def setUpClass(cls):
         cls.logger = logging.getLogger("root").getChild("lnd_test")
@@ -197,6 +195,7 @@ class LndCreateWalletTests(unittest.TestCase):
                 pass
 
             def json(self):
+                """mock JSON method"""
                 return {"cipher_seed_mnemonic": mnemonic}
 
         m_exists.side_effect = exists
@@ -210,8 +209,11 @@ class LndCreateWalletTests(unittest.TestCase):
                 except Unhappy as exc:
                     raise Unhappy(
                         "{}: {}\nget: {}\npost: {}".format(
-                            exc, m_exists.mock_calls, m_get.mock_calls,
-                            m_post.mock_calls)
+                            exc,
+                            m_exists.mock_calls,
+                            m_get.mock_calls,
+                            m_post.mock_calls,
+                        )
                     )
         m_get.assert_called_with(lnd.URL_GENSEED, verify=lnd.TLS_CERT_PATH)
         handle = m_open()

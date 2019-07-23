@@ -3,11 +3,11 @@ LND related functionality
 """
 import pathlib
 import shutil
-from requests import get, post
-from base64 import b64encode
-from json import dumps
-from os import path
 from subprocess import call
+from os import path
+from json import dumps
+from base64 import b64encode
+from requests import get, post
 
 
 def check_wallet():
@@ -242,9 +242,9 @@ def _wallet_password():
 def _generate_and_save_seed():
     """Generate a wallet seed, save it to SEED_FILENAME, and return it"""
     mnemonic = None
-    r = get(URL_GENSEED, verify=TLS_CERT_PATH)
-    if r.status_code == 200:
-        json_seed_creation = r.json()
+    return_data = get(URL_GENSEED, verify=TLS_CERT_PATH)
+    if return_data.status_code == 200:
+        json_seed_creation = return_data.json()
         mnemonic = json_seed_creation["cipher_seed_mnemonic"]
         seed_file = open(SEED_FILENAME, "w")
         for word in mnemonic:
@@ -282,6 +282,7 @@ def _wallet_data(password_str):
             "cipher_seed_mnemonic": mnemonic,
             "wallet_password": b64encode(password_bytes).decode(),
         }
+    return {}
 
 
 def create_wallet():
@@ -317,8 +318,10 @@ def create_wallet():
     # Step 2: Create wallet
     if data:
         # Data is defined so proceed
-        r2 = post(URL_INITWALLET, verify=TLS_CERT_PATH, data=dumps(data))
-        if r2.status_code == 200:
+        return_data = post(
+            URL_INITWALLET, verify=TLS_CERT_PATH, data=dumps(data)
+        )
+        if return_data.status_code == 200:
             # If create wallet was successful
             print("Create wallet is successful")
         else:
