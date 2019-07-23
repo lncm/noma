@@ -1,4 +1,4 @@
-"""Unit test template"""
+"""Test LND functions"""
 import unittest
 import logging
 import random
@@ -129,7 +129,7 @@ class LndCreateWalletTests(unittest.TestCase):
         m_exists.assert_any_call(lnd.SESAME_PATH)
         m_open.assert_called_with(lnd.SESAME_PATH, "r")
 
-    @mock.patch("requests.get")
+    @mock.patch("noma.lnd.get")
     @mock.patch("os.path.exists")
     def test_generates_seed(self, m_exists, m_get):
         """
@@ -156,8 +156,8 @@ class LndCreateWalletTests(unittest.TestCase):
                 lnd.create_wallet()
         m_get.assert_called_with(lnd.URL_GENSEED, verify=lnd.TLS_CERT_PATH)
 
-    @mock.patch("requests.post")
-    @mock.patch("requests.get")
+    @mock.patch("noma.lnd.post")
+    @mock.patch("noma.lnd.get")
     @mock.patch("os.path.exists")
     def test_saves_seed(self, m_exists, m_get, m_post):
         """
@@ -219,8 +219,8 @@ class LndCreateWalletTests(unittest.TestCase):
             handle.write.assert_any_call(mne + "\n")
         handle.close.assert_called_with()
 
-    @mock.patch("requests.post")
-    @mock.patch("requests.get")
+    @mock.patch("noma.lnd.post")
+    @mock.patch("noma.lnd.get")
     @mock.patch("os.path.exists")
     def test_loads_seed(self, m_exists, m_get, m_post):
         """
