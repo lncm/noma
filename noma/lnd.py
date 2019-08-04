@@ -20,15 +20,16 @@ def check_wallet():
     :return str: Status
     """
     if path.exists("/media/noma/lnd"):
-        if not path.exists("/media/noma/lnd/data/chain"):
+        if path.exists("/media/noma/lnd/neutrino/data/chain"):
             create_wallet()
         else:
-            print("Wallet already exists!")
-            print(
-                "Please backup and move "
-                "/media/noma/lnd/data/chain and then "
-                "restart lnd"
-            )
+            print("Error: LND not initialized")
+            # print("Wallet already exists!")
+            # print(
+            #     "Please backup and move "
+            #     "/media/noma/lnd/neutrino/data/chain and then "
+            #     "restart lnd"
+            # )
     else:
         print("lnd directory does not exist!")
 
