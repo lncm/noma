@@ -19,14 +19,14 @@ def check_wallet():
 
     :return str: Status
     """
-    if path.exists("/media/important/important/lnd"):
-        if not path.exists("/media/important/important/lnd/data/chain"):
+    if path.exists("/media/noma/lnd"):
+        if not path.exists("/media/noma/lnd/data/chain"):
             create_wallet()
         else:
             print("Wallet already exists!")
             print(
                 "Please backup and move "
-                "/media/important/important/lnd/data/chain and then "
+                "/media/noma/lnd/data/chain and then "
                 "restart lnd"
             )
     else:
@@ -188,27 +188,27 @@ def create():
     from noma.config import HOME
 
     """Create lnd directory structure and config file"""
-    lnd_path = "/media/important/important/lnd/"
+    lnd_path = "/media/noma/lnd/"
     pathlib.Path(lnd_path).mkdir(exist_ok=True)
-    shutil.copy("/home/lncm/lnd/lnd.conf", lnd_path + "/lnd.conf")
+    shutil.copy("/media/noma/lnd/neutrino/lnd.conf", lnd_path + "/lnd.conf")
 
 
 # Generate seed
-URL_GENSEED = "https://localhost:8181/v1/genseed"
+URL_GENSEED = "https://localhost:8080/v1/genseed"
 
 # Initialize wallet
-URL_INITWALLET = "https://localhost:8181/v1/initwallet"
+URL_INITWALLET = "https://localhost:8080/v1/initwallet"
 
-TLS_CERT_PATH = "/media/important/important/lnd/tls.cert"
-SEED_FILENAME = "/home/lncm/seed.txt"
+TLS_CERT_PATH = "/media/noma/lnd/neutrino/tls.cert"
+SEED_FILENAME = "/media/noma/seed.txt"
 
 # save password control file (Add this file if we want to save passwords)
-SAVE_PASSWORD_CONTROL_FILE = "/home/lncm/save_password"
+SAVE_PASSWORD_CONTROL_FILE = "/media/noma/lnd/save_password"
 
 # Create password for writing
-TEMP_PASSWORD_FILE_PATH = "/home/lncm/password.txt"
+TEMP_PASSWORD_FILE_PATH = "/media/noma/lnd/password.txt"
 
-SESAME_PATH = "/media/important/important/lnd/sesame.txt"
+SESAME_PATH = "/media/noma/lnd/sesame.txt"
 
 
 def _write_password(password_str):
