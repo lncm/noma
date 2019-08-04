@@ -37,7 +37,7 @@ def check_wallet():
 def autounlock():
     """Autounlock lnd using sesame.txt, tls.cert"""
 
-    url = "https://localhost:8181/v1/unlockwallet"
+    url = "https://127.0.0.1:8080/v1/unlockwallet"
     cert_path = "/media/important/important/lnd/tls.cert"
     password_str = (
         open("/media/important/important/lnd/sesame.txt", "r").read().rstrip()
@@ -195,10 +195,10 @@ def create():
 
 
 # Generate seed
-URL_GENSEED = "https://localhost:8080/v1/genseed"
+URL_GENSEED = "https://127.0.0.1:8080/v1/genseed"
 
 # Initialize wallet
-URL_INITWALLET = "https://localhost:8080/v1/initwallet"
+URL_INITWALLET = "https://127.0.0.1:8080/v1/initwallet"
 
 TLS_CERT_PATH = "/media/noma/lnd/neutrino/tls.cert"
 SEED_FILENAME = "/media/noma/seed.txt"
