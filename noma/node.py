@@ -17,7 +17,7 @@ IMPORTANT_PATH = MEDIA_PATH / pathlib.Path("important/important")
 HOME_PATH = pathlib.Path.home()
 FACTORY_PATH = HOME_PATH / pathlib.Path("pi-factory")
 NOMA_PATH = MEDIA_PATH / "noma"
-COMPOSE_PATH = NOMA_PATH / "compose"
+COMPOSE_PATH = NOMA_PATH / "compose" / "neutrino"
 
 def get_swap():
     """Return amount of swap"""
