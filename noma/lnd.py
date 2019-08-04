@@ -38,9 +38,9 @@ def autounlock():
     """Autounlock lnd using sesame.txt, tls.cert"""
 
     url = "https://127.0.0.1:8080/v1/unlockwallet"
-    cert_path = "/media/important/important/lnd/tls.cert"
+    cert_path = "/media/noma/lnd/neutrino/tls.cert"
     password_str = (
-        open("/media/important/important/lnd/sesame.txt", "r").read().rstrip()
+        open("/media/noma/lnd/sesame.txt", "r").read().rstrip()
     )
     password_bytes = str(password_str).encode("utf-8")
     data = {"wallet_password": b64encode(password_bytes).decode()}
@@ -70,7 +70,7 @@ def get_kv(key, section="", config_path=""):
     from configparser import ConfigParser
 
     if not config_path:
-        config_path = "/media/important/important/lnd/lnd.conf"
+        config_path = "/media/noma/lnd/neutrino/lnd.conf"
     if not section:
         section = "Application Options"
 
@@ -98,7 +98,7 @@ def set_kv(key, value, section="", config_path=""):
     if not section:
         section = "Application Options"
     if not config_path:
-        config_path = "/media/important/important/lnd/lnd.conf"
+        config_path = "/media/noma/lnd/neutrino/lnd.conf"
     parser = ConfigParser(strict=False)
     with open(config_path) as lines:
         parser.read_file(lines)
@@ -126,7 +126,7 @@ def set_bitcoind(password, user="", lnd_config=""):
     if not user:
         user = "lncm"
     if not lnd_config:
-        lnd_config = "/media/important/important/lnd/lnd.conf"
+        lnd_config = "/media/noma/lnd/neutrino/lnd.conf"
     if pathlib.Path(lnd_config).is_file():
         set_kv("bitcoind.rpcuser", user, "Bitcoind", lnd_config)
         set_kv("bitcoind.rpcpass", password, "Bitcoind", lnd_config)
@@ -136,7 +136,7 @@ def autoconnect(list_path=""):
     """Autoconnect to a list of nodes in autoconnect.txt"""
     print("Connecting to:")
     if not list_path:
-        list_path = "/media/important/important/autoconnect.txt"
+        list_path = "/media/noma/lnd/autoconnect.txt"
 
     with open(list_path) as address_list:
         for address in address_list:
@@ -157,14 +157,14 @@ def check():
     """Check lnd filesystem structure"""
 
     # check lnd filesystem structure
-    lnd_dir = pathlib.Path("/media/important/important/lnd").is_dir()
+    lnd_dir = pathlib.Path("/media/noma/lnd").is_dir()
     if lnd_dir:
         print("lnd directory exists")
     else:
         print("lnd directory missing")
 
     lnd_conf = pathlib.Path(
-        "/media/important/important/lnd/lnd.conf"
+        "/media/noma/lnd/neutrino/lnd.conf"
     ).is_file()
     if lnd_conf:
         print("lnd conf exists")
@@ -201,7 +201,7 @@ URL_GENSEED = "https://127.0.0.1:8080/v1/genseed"
 URL_INITWALLET = "https://127.0.0.1:8080/v1/initwallet"
 
 TLS_CERT_PATH = "/media/noma/lnd/neutrino/tls.cert"
-SEED_FILENAME = "/media/noma/seed.txt"
+SEED_FILENAME = "/media/noma/lnd/seed.txt"
 
 # save password control file (Add this file if we want to save passwords)
 SAVE_PASSWORD_CONTROL_FILE = "/media/noma/lnd/save_password"
