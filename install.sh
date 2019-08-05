@@ -1,10 +1,9 @@
 #!/bin/sh
 
-# install noma and dependencies within alpine linux 
+# install noma and dependencies within alpine linux
 # or run with "vagrant up" to create alpine VM
 
-alpine_install() 
-{
+alpine_install() {
     # noma dependencies
     apk add python3 py3-psutil
     # docker
@@ -23,32 +22,21 @@ alpine_install()
     noma --help
 }
 
-
-install_git() 
-{
+install_git() {
     apk add git
     git clone https://github.com/lncm/noma.git
     cd noma || exit
     alpine_install
 }
 
-# chroot_install() 
+# chroot_install()
 # {
 #     # TODO: alpine-chroot and then install()
 # }
 
-rsync_noma()
-{
-    echo "sync source code from /vagrant to /media/noma"
-    rsync --archive --delete --verbose /vagrant/ /media/noma
-}
-
-check_vm() 
-{
+check_vm() {
     if [ -d "/vagrant" ]; then
         echo "Detected vagrant VM"
-        rsync_noma
-        cd /media/noma || exit
         alpine_install
     else
         echo "Vagrant not found!"
@@ -58,8 +46,7 @@ check_vm()
     fi
 }
 
-main()
-{
+main() {
     if [ -f "/etc/alpine-release" ]; then
         check_vm
     else
