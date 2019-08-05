@@ -401,6 +401,8 @@ def rc_add(service, runlevel=''):
 
 
 def install_crontab():
+    from noma.config import HOME
+
     print("Installing crontab")
     exitcode = call(["/usr/bin/crontab", "/home/lncm/crontab"])
     return exitcode

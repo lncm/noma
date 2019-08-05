@@ -15,10 +15,10 @@ Usage:
   noma bitcoind (start|stop|info|fastsync|status|check)
   noma bitcoind get <key>
   noma bitcoind set <key> <value>
-  noma bitcoind logs [--tail]
+  noma bitcoind logs
   noma bitcoind rpcauth <username> [<password>]
   noma lnd (start|stop|info)
-  noma lnd logs [--tail]
+  noma lnd logs
   noma lnd connect <address>
   noma lnd (create|unlock|status|check)
   noma lnd lncli [<command>...]
@@ -52,7 +52,10 @@ def bitcoind(args):
         if args["--tail"]:
             call(["tail", "-f", "/media/volatile/volatile/bitcoin/debug.log"])
         else:
-            node.logs("bitcoind")
+            if alt_log_path.is_file():
+                call(["tail", "-f", alt_log_path])
+            else:
+                node.logs("bitcoind")
 
     elif args["info"]:
         call(
@@ -247,10 +250,12 @@ def node(args):
 
     elif args["usb-setup"]:
         import noma.install
+
         noma.install.usb_setup()
 
     elif args["install-box"]:
         import noma.install
+
         noma.install.install_box()
 
     elif args["create-swap"]:

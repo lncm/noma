@@ -15,9 +15,9 @@ VOLATILE_PATH = MEDIA_PATH / pathlib.Path("volatile/volatile")
 IMPORTANT_PATH = MEDIA_PATH / pathlib.Path("important/important")
 
 HOME_PATH = pathlib.Path.home()
-COMPOSE_PATH = HOME_PATH / pathlib.Path("compose")
 FACTORY_PATH = HOME_PATH / pathlib.Path("pi-factory")
-
+NOMA_PATH = MEDIA_PATH / "noma"
+COMPOSE_PATH = NOMA_PATH / "compose" / "neutrino"
 
 def get_swap():
     """Return amount of swap"""
@@ -31,9 +31,9 @@ def get_ram():
 
 def check():
     """check box filesystem structure"""
-    archive_exists = ARCHIVE_PATH.is_dir()
-    important_exists = IMPORTANT_PATH.is_dir()
-    volatile_exists = VOLATILE_PATH.is_dir()
+    archive_exists = ARCHIVE_DIR.is_dir()
+    important_exists = IMPORTANT_DIR.is_dir()
+    volatile_exists = VOLATILE_DIR.is_dir()
 
     if archive_exists:
         print("archive usb device exists")
@@ -57,7 +57,14 @@ def check():
 
 def start():
     """Start default docker compose"""
-    os.chdir(COMPOSE_PATH)
+    if COMPOSE_PATH.exists():
+        # compose from noma repo
+        os.chdir(COMPOSE_PATH)
+    else:
+        print("Note: using compose from pi-factory repo")
+        get_source()
+        os.chdir(COMPOSE_PATH)
+
     call(["docker-compose", "up", "-d"])
 
 
@@ -223,11 +230,11 @@ def get_source():
         call(["git", "clone", "https://github.com/lncm/pi-factory.git"])
 
 
-def tunnel(port, host):
+def tunnel(port, hostname):
     """Keep the SSH tunnel open, no matter what"""
     while True:
         try:
-            print("Tunneling local port 22 to " + host + ":" + port)
+            print("Tunneling local port 22 to " + hostname + ":" + port)
             port_str = "-R " + port + ":localhost:22"
             call(
                 [
@@ -256,7 +263,7 @@ def reinstall():
     install_git()
     get_source()
 
-    os.chdir(FACTORY_PATH)
+    os.chdir(FACTORY_DIR)
     call(["git", "pull"])
     print("Migrating current WiFi credentials")
     supplicant_sd = pathlib.Path("/etc/wpa_supplicant/wpa_supplicant.conf")
@@ -279,7 +286,7 @@ def full_reinstall():
     print("Starting upgrade...")
     install_git()
     get_source()
-    os.chdir(FACTORY_PATH)
+    os.chdir(FACTORY_DIR)
     call(["git", "pull"])
     call(["make_upgrade.sh"])
 
@@ -289,15 +296,16 @@ def do_diff():
     install_git()
 
     def make_diff():
-        print("Generating /home/lncm/etc.diff")
-        call(["diff", "-r", "etc", "/home/lncm/pi-factory/etc"])
-        print("Generating /home/lncm/usr.diff")
-        call(["diff", "-r", "usr", "/home/lncm/pi-factory/usr"])
-        print("Generating /home/lncm/home.diff")
-        call(["diff", "-r", "home", "/home/lncm/pi-factory/home"])
 
-    if FACTORY_PATH.is_dir():
-        os.chdir("/home/lncm/pi-factory")
+        print("Generating {h}/etc.diff".format(h=HOME_DIR))
+        call(["diff", "-r", "etc", "{h}/pi-factory/etc".format(h=HOME_DIR)])
+        print("Generating {h}/usr.diff".format(h=HOME_DIR))
+        call(["diff", "-r", "usr", "{h}/pi-factory/usr".format(h=HOME_DIR)])
+        print("Generating {h}/home.diff".format(h=HOME_DIR))
+        call(["diff", "-r", "home", "{h}/pi-factory/home".format(h=HOME_DIR)])
+
+    if FACTORY_DIR.is_dir():
+        os.chdir(HOME_DIR + "/pi-factory")
         print("Getting latest sources")
         call(["git", "pull"])
         make_diff()

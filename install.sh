@@ -16,12 +16,13 @@ alpine_install()
     # install noma
     python3 setup.py develop
     # test noma
-    python3 tests/test_usb.py
-    python3 tests/test_install.py
+    #python3 tests/test_usb.py
+    #python3 tests/test_install.py
     # run noma
     noma --version
     noma --help
 }
+
 
 install_git() 
 {
@@ -36,14 +37,23 @@ install_git()
 #     # TODO: alpine-chroot and then install()
 # }
 
+rsync_noma()
+{
+    echo "sync source code from /vagrant to /media/noma"
+    rsync --archive --delete --verbose /vagrant/ /media/noma
+}
+
 check_vm() 
 {
-    if [ -f "/vagrant" ]; then
-        echo "detected vagrant VM"
-        cd /vagrant || exit
+    if [ -d "/vagrant" ]; then
+        echo "Detected vagrant VM"
+        rsync_noma
+        cd /media/noma || exit
         alpine_install
     else
-        echo "fetching noma sources"
+        echo "Vagrant not found!"
+        echo
+        echo "Fetching noma sources from github instead"
         install_git
     fi
 }
