@@ -14,18 +14,29 @@ alpine_install() {
     pip3 install docker-compose
     # install noma
     python3 setup.py develop
-    # test noma
-    #python3 tests/test_usb.py
-    #python3 tests/test_install.py
     # run noma
-    noma --version
-    noma --help
+    noma --version || exit 1
+    noma --help || exit 1
+    run_tests
+}
+
+run_tests() {
+    # test noma
+    if [ -x "$(command -v noma)" ]; then
+	    python3 tests/test_lnd.py
+    else
+	    echo "Error: noma python package not available"
+	    echo
+	    echo "Please ensure python3 and noma are installed correctly."
+    fi
 }
 
 install_git() {
     apk add git
     git clone https://github.com/lncm/noma.git
-    cd noma || exit
+    if [ ! -f setup.py ]; then
+        cd noma || exit
+    fi
     alpine_install
 }
 
