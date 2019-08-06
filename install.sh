@@ -29,10 +29,15 @@ install_git() {
     alpine_install
 }
 
-# chroot_install()
-# {
-#     # TODO: alpine-chroot and then install()
-# }
+chroot_install() {
+    # create alpine chroot before alpine_install
+    wget https://raw.githubusercontent.com/alpinelinux/alpine-chroot-install/v0.10.0/alpine-chroot-install \
+        && echo 'dcceb34aa63767579f533a7f2e733c4d662b0d1b  alpine-chroot-install' | sha1sum -c \
+        || exit 1
+    chmod +x ./alpine-chroot-install || exit 1
+    ./alpine-chroot-install -d /alpine-v310 -b v3.10
+    /alpine-v310/enter-chroot install.sh
+}
 
 check_vm() {
     if [ -d "/vagrant" ]; then
@@ -50,9 +55,12 @@ main() {
     if [ -f "/etc/alpine-release" ]; then
         check_vm
     else
-        # TODO: Create chroot here on Ubuntu
-        echo "Error: not an alpine linux system!"
-        exit 1
+        echo "Not an alpine linux system!"
+        echo
+        echo "Attempting to create alpine chroot"
+        chroot_install || exit 1
+        check_vm
+
     fi
 }
 main
