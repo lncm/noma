@@ -86,7 +86,7 @@ vagrant up
 ```
 pip3 install wheel docker docker-compose
 python3 setup.py bdist_wheel
-pip install dist/noma-*-py3-none-any.whl
+pip3 install dist/noma-*-py3-none-any.whl
 ```
 
 ### Build docs
