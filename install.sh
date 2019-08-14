@@ -26,7 +26,8 @@ start_noma() {
     echo "Waiting 3s for lnd to start up..."
     sleep 3 && noma lnd create
     docker logs neutrino_lnd_1
-    docker exec -it neutrino_lnd_1 lncli getinfo
+    echo "Waiting 3s for wallet to be created..."
+    sleep 3 && docker exec neutrino_lnd_1 lncli getinfo
 }
 
 run_tests() {
