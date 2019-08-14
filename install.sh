@@ -51,15 +51,12 @@ chroot_install() {
 }
 
 check_vm() {
-    if [ -d "/vagrant" ]; then
-        echo "Detected vagrant VM"
-        mkdir /media/noma
-        cp -R /vagrant/* /media/noma/ || exit
+    if [ -d "/media/noma" ]; then
+        # Vagrant mode
+        echo "Detected source directory"
         alpine_install
     else
-        echo "Vagrant not found!"
-        echo
-        echo "Fetching noma sources from github instead"
+        echo "Sources not found, fetching from github..."
         mkdir /media
         mkdir /media/noma
         cd /media/noma || exit
