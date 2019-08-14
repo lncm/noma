@@ -18,7 +18,8 @@ Vagrant.configure("2") do |config|
   config.vm.hostname = "alpine-vagrant"
   config.vm.synced_folder ".", "/vagrant",
                           type: "rsync",
-                          rsync__exclude: ".git/",
+                          rsync__exclude: [".git/",
+                                          ".DS_Store"],
                           rsync__args: ["--verbose",
                                         "--archive",
                                         "--delete"]
