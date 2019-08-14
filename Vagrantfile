@@ -14,7 +14,7 @@ if not plugins_to_install.empty?
 end
 
 Vagrant.configure("2") do |config|
-  config.vm.box = "generic/alpine39"
+  config.vm.box = "generic/alpine310"
   config.vm.hostname = "alpine-vagrant"
   config.vm.synced_folder ".", "/vagrant",
                           type: "rsync",
