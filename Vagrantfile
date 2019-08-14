@@ -20,7 +20,8 @@ Vagrant.configure("2") do |config|
                           type: "rsync",
                           rsync__exclude: ".git/",
                           rsync__args: ["--verbose",
-                                        "--archive"]
+                                        "--archive",
+                                        "--delete"]
 
   config.vm.provision "shell", inline: "cd /vagrant && ./install.sh"
 end
