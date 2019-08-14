@@ -22,7 +22,7 @@ Vagrant.configure("2") do |config|
                                           ".DS_Store"],
                           rsync__args: ["--verbose",
                                         "--archive",
-                                        "--delete"]
+                                        "--links"]
 
   config.vm.provision "shell", inline: "cd /vagrant && ./install.sh"
 end
