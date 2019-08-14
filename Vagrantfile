@@ -16,9 +16,9 @@ end
 Vagrant.configure("2") do |config|
   config.vm.box = "generic/alpine310"
   config.vm.hostname = "alpine-vagrant"
-  config.vm.synced_folder ".", "/vagrant",
+  config.vm.synced_folder ".", "/media/noma",
                           type: "nfs",
                           nfs_export: true
   config.vm.network "private_network", ip: "192.168.83.33"
-  config.vm.provision "shell", inline: "cd /vagrant && ./install.sh"
+  config.vm.provision "shell", inline: "cd /media/noma && ./install.sh"
 end
