@@ -17,7 +17,16 @@ alpine_install() {
     # run noma
     noma --version || exit 1
     noma --help || exit 1
-    run_tests
+    run_tests || exit 1
+    start_noma
+}
+
+start_noma() {
+    noma start
+    echo "Waiting 3s for lnd to start up..."
+    sleep 3 && noma lnd create
+    docker logs neutrino_lnd_1
+    docker exec -it neutrino_lnd_1 lncli getinfo
 }
 
 run_tests() {
