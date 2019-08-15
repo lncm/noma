@@ -1,0 +1,10 @@
+version: '3.7'
+services:
+  lnd:
+    image: lncm/lnd:0.7.1-neutrino-wt
+    volumes:
+      - /media/noma/lnd/neutrino:/root/.lnd
+      - /media/noma/lnd/neutrino/lnd.conf:/home/lncm/.lnd/lnd.conf
+      - /var/lib/tor:/var/lib/tor
+    restart: on-failure
+    network_mode: host

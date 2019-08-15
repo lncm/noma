@@ -1,3 +1,10 @@
+# lnd
+lnd/neutrino/data
+lnd/neutrino/tls.cert
+lnd/neutrino/tls.key
+lnd/seed.txt
+lnd/sesame.txt
+
 # PyCharm
 .idea
 
