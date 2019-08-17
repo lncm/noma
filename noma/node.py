@@ -1,3 +1,5 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
 """
 Node hardware and software management related functionality
 """
@@ -7,17 +9,7 @@ from subprocess import call
 import pathlib
 import time
 import psutil
-
-
-MEDIA_PATH = pathlib.Path("/media")
-ARCHIVE_PATH = MEDIA_PATH / pathlib.Path("archive/archive")
-VOLATILE_PATH = MEDIA_PATH / pathlib.Path("volatile/volatile")
-IMPORTANT_PATH = MEDIA_PATH / pathlib.Path("important/important")
-
-HOME_PATH = pathlib.Path.home()
-FACTORY_PATH = HOME_PATH / pathlib.Path("pi-factory")
-NOMA_PATH = MEDIA_PATH / "noma"
-COMPOSE_PATH = NOMA_PATH / "compose" / "neutrino"
+import noma.config as cfg
 
 def get_swap():
     """Return amount of swap"""
@@ -31,44 +23,45 @@ def get_ram():
 
 def check():
     """check box filesystem structure"""
-    archive_exists = ARCHIVE_DIR.is_dir()
-    important_exists = IMPORTANT_DIR.is_dir()
-    volatile_exists = VOLATILE_DIR.is_dir()
+    media_exists = cfg['media'].is_dir()
+    noma_exists = cfg['noma'].is_dir()
+    compose_exists = cfg['compose'].is_dir()
 
-    if archive_exists:
-        print("archive usb device exists")
+    if media_exists:
+        print("Media dir exists - ✅")
     else:
-        print("archive usb device is missing")
+        print("Media dir is missing or inaccessible - ❌")
 
-    if important_exists:
-        print("important usb device exists")
+    if noma_exists:
+        print("Noma dir exists - ✅")
     else:
-        print("important usb device is missing")
+        print("Noma dir is missing or inaccessible - ❌")
 
-    if volatile_exists:
-        print("volatile usb device exists")
+    if compose_exists:
+        print("Compose dir exists - ✅")
     else:
-        print("volatile usb device is missing")
+        print("Compose dir is is missing or inaccessible - ❌")
 
-    if archive_exists and important_exists and volatile_exists:
+    if media_exists and noma_exists and compose_exists:
         return True
     return False
 
 
 def start():
     """Start default docker compose"""
-    if COMPOSE_PATH.exists():
+    if cfg.dir['compose'].exists():
         # compose from noma repo
-        os.chdir(COMPOSE_PATH)
+        os.chdir(cfg.dir['compose'])
     else:
         print("Note: using compose from pi-factory repo")
         get_source()
-        os.chdir(COMPOSE_PATH)
+        os.chdir(cfg.dir['compose'])
 
     call(["docker-compose", "up", "-d"])
 
 
 def backup():
+    # TODO: replace alpine-specific with OS-agnostic function
     """Backup apkovl to important usb device"""
     call(["lbu", "pkg", IMPORTANT_PATH])
 
