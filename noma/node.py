@@ -55,27 +55,14 @@ def check():
 def start():
     """Start default docker compose"""
     if check():
-        if cfg.dir['compose'].exists():
-            # compose from noma source
-            os.chdir(cfg.dir['compose'])
-        else:
-            print("Fetching compose from noma repo")
-            get_source()
-            os.chdir(cfg.dir['compose'])
-
-        call(["docker-compose", "up", "-d"])
-    if check():
-        if cfg.dir['compose'].exists():
-            # compose from noma repo
-            os.chdir(cfg.dir['compose'])
-        else:
-            print("Fetching compose from noma repo")
-            get_source()
-            os.chdir(cfg.dir['compose'])
-
-        call(["docker-compose", "up", "-d"])
+        # compose from noma source
+        os.chdir(cfg.dirs['compose'])
     else:
-        print("Error starting noma")
+        print("Fetching compose from noma repo")
+        get_source()
+        os.chdir(cfg.dirs['compose'])
+
+    call(["docker-compose", "up", "-d"])
 
 
 def backup():
