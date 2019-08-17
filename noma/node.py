@@ -49,9 +49,16 @@ def check():
 
 def start():
     """Start default docker compose"""
-    if cfg.dir['compose'].exists():
-        # compose from noma repo
-        os.chdir(cfg.dir['compose'])
+    if check():
+        if cfg.dir['compose'].exists():
+            # compose from noma source
+            os.chdir(cfg.dir['compose'])
+        else:
+            print("Fetching compose from noma repo")
+            get_source()
+            os.chdir(cfg.dir['compose'])
+
+        call(["docker-compose", "up", "-d"])
     else:
         print("Note: using compose from pi-factory repo")
         get_source()
@@ -210,17 +217,17 @@ def install_git():
 
 
 def get_source():
-    """Get latest pi-factory source code or update"""
+    """Get latest noma source code or update"""
     install_git()
 
-    if FACTORY_PATH.is_dir():
-        print("source directory already exists")
-        print("going to update with git pull")
-        os.chdir(FACTORY_PATH)
+    if cfg.dir['noma'].is_dir():
+        print("Source directory already exists")
+        print("Going to update with git pull instead")
+        os.chdir(cfg.dir['noma'])
         call(["git", "pull"])
     else:
-        os.chdir(str(HOME_PATH))
-        call(["git", "clone", "https://github.com/lncm/pi-factory.git"])
+        os.chdir(cfg.dir['home'])
+        call(["git", "clone", "https://github.com/lncm/noma.git"])
 
 
 def tunnel(port, hostname):
