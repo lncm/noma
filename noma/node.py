@@ -11,6 +11,7 @@ import time
 import psutil
 import noma.config as cfg
 
+
 def get_swap():
     """Return amount of swap"""
     return round(psutil.swap_memory().total / 1048576)
@@ -68,7 +69,7 @@ def start():
 def backup():
     # TODO: replace alpine-specific with OS-agnostic function
     """Backup apkovl to important usb device"""
-    call(["lbu", "pkg", IMPORTANT_PATH])
+    call(["lbu", "pkg", cfg.dirs['noma']])
 
 
 def devtools():
@@ -218,13 +219,13 @@ def get_source():
     """Get latest noma source code or update"""
     install_git()
 
-    if cfg.dir['noma'].is_dir():
+    if cfg.dirs['noma'].is_dir():
         print("Source directory already exists")
         print("Going to update with git pull instead")
-        os.chdir(cfg.dir['noma'])
+        os.chdir(cfg.dirs['noma'])
         call(["git", "pull"])
     else:
-        os.chdir(cfg.dir['home'])
+        os.chdir(cfg.dirs['home'])
         call(["git", "clone", "https://github.com/lncm/noma.git"])
 
 
@@ -241,7 +242,7 @@ def tunnel(port, hostname):
                     "-o ServerAliveInterval=60",
                     "-o ServerAliveCountMax=10",
                     port_str,
-                    host,
+                    hostname,
                 ]
             )
         except Exception as error:
@@ -261,7 +262,7 @@ def reinstall():
     install_git()
     get_source()
 
-    os.chdir(FACTORY_DIR)
+    os.chdir(cfg.dirs['noma'])
     call(["git", "pull"])
     print("Migrating current WiFi credentials")
     supplicant_sd = pathlib.Path("/etc/wpa_supplicant/wpa_supplicant.conf")
@@ -284,7 +285,7 @@ def full_reinstall():
     print("Starting upgrade...")
     install_git()
     get_source()
-    os.chdir(FACTORY_DIR)
+    os.chdir(cfg.dirs['noma'])
     call(["git", "pull"])
     call(["make_upgrade.sh"])
 
@@ -295,15 +296,11 @@ def do_diff():
 
     def make_diff():
 
-        print("Generating {h}/etc.diff".format(h=HOME_DIR))
-        call(["diff", "-r", "etc", "{h}/pi-factory/etc".format(h=HOME_DIR)])
-        print("Generating {h}/usr.diff".format(h=HOME_DIR))
-        call(["diff", "-r", "usr", "{h}/pi-factory/usr".format(h=HOME_DIR)])
-        print("Generating {h}/home.diff".format(h=HOME_DIR))
-        call(["diff", "-r", "home", "{h}/pi-factory/home".format(h=HOME_DIR)])
+        print("Generating {h}/noma.diff".format(h=cfg.dirs['home']))
+        call(["diff", "-r", "/media/noma", "{h}/noma".format(h=cfg.dirs['home'])])
 
-    if FACTORY_DIR.is_dir():
-        os.chdir(HOME_DIR + "/pi-factory")
+    if cfg.dirs['noma'].is_dir():
+        os.chdir(cfg.dirs['noma'])
         print("Getting latest sources")
         call(["git", "pull"])
         make_diff()
