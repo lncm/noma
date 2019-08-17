@@ -23,24 +23,29 @@ def get_ram():
 
 def check():
     """check box filesystem structure"""
-    media_exists = cfg['media'].is_dir()
-    noma_exists = cfg['noma'].is_dir()
-    compose_exists = cfg['compose'].is_dir()
+    # TODO: only print when logging is enabled
+
+    media_exists = bool(cfg.dirs['media'].is_dir())
+    noma_exists = bool(cfg.dirs['noma'].is_dir())
+    compose_exists = bool(cfg.dirs['compose'].is_dir)
+
+    dir_exists_text = str(" dir exists")
+    dir_missing_text = str(" dir is missing or inaccessible")
 
     if media_exists:
-        print("Media dir exists - ✅")
+        print("✅ " + "Media" + dir_exists_text)
     else:
-        print("Media dir is missing or inaccessible - ❌")
+        print("❌ " + "Media" + dir_missing_text)
 
     if noma_exists:
-        print("Noma dir exists - ✅")
+        print("✅ " + "Noma" + dir_exists_text)
     else:
-        print("Noma dir is missing or inaccessible - ❌")
+        print("❌ " + "Noma" + dir_missing_text)
 
     if compose_exists:
-        print("Compose dir exists - ✅")
+        print("✅ " + "Compose" + dir_exists_text)
     else:
-        print("Compose dir is is missing or inaccessible - ❌")
+        print("❌ " + "Compose" + dir_missing_text)
 
     if media_exists and noma_exists and compose_exists:
         return True
@@ -49,13 +54,13 @@ def check():
 
 def start():
     """Start default docker compose"""
-    if cfg.dir['compose'].exists():
-        # compose from noma repo
-        os.chdir(cfg.dir['compose'])
+    if check():
+        # compose from noma source
+        os.chdir(cfg.dirs['compose'])
     else:
-        print("Note: using compose from pi-factory repo")
+        print("Fetching compose from noma repo")
         get_source()
-        os.chdir(cfg.dir['compose'])
+        os.chdir(cfg.dirs['compose'])
 
     call(["docker-compose", "up", "-d"])
 
@@ -210,17 +215,17 @@ def install_git():
 
 
 def get_source():
-    """Get latest pi-factory source code or update"""
+    """Get latest noma source code or update"""
     install_git()
 
-    if FACTORY_PATH.is_dir():
-        print("source directory already exists")
-        print("going to update with git pull")
-        os.chdir(FACTORY_PATH)
+    if cfg.dir['noma'].is_dir():
+        print("Source directory already exists")
+        print("Going to update with git pull instead")
+        os.chdir(cfg.dir['noma'])
         call(["git", "pull"])
     else:
-        os.chdir(str(HOME_PATH))
-        call(["git", "clone", "https://github.com/lncm/pi-factory.git"])
+        os.chdir(cfg.dir['home'])
+        call(["git", "clone", "https://github.com/lncm/noma.git"])
 
 
 def tunnel(port, hostname):
