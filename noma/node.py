@@ -27,7 +27,7 @@ def check():
 
     media_exists = bool(cfg.dirs['media'].is_dir())
     noma_exists = bool(cfg.dirs['noma'].is_dir())
-    compose_exists = bool(cfg.dirs['compose'].is_dir)
+    compose_exists = bool(cfg.dirs['compose'].is_dir())
 
     dir_exists_text = str(" dir exists")
     dir_missing_text = str(" dir is missing or inaccessible")
