@@ -20,13 +20,13 @@ def check_wallet():
     :return str: Status
     """
     if cfg.LND_PATH.exists():
-        if not pathlib.Path(cfg.LND_PATH / cfg.LND_MODE / "data" / "chain").exists():
+        if not cfg.WALLET_PATH.exists():
             create_wallet()
         else:
             print("Error: LND not initialized")
             print("Wallet already exists!")
-            print("Please backup and move: " + pathlib.Path(cfg.LND_PATH / cfg.LND_MODE / "data" / "chain"))
-            print("before restarting lnd")
+            print("Please backup and move: " + str(cfg.WALLET_PATH))
+            print("and then restart lnd")
 
     else:
         print("Error: lnd directory does not exist!")

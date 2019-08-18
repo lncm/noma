@@ -9,6 +9,7 @@ from pathlib import Path
 
 """LND Settings"""
 LND_MODE = "neutrino"
+LND_NET = "mainnet"
 
 """Filesystem"""
 MEDIA_PATH = Path("/media")
@@ -23,6 +24,7 @@ HOME_PATH = Path.home()
 
 """LND Paths"""
 LND_CONF = LND_PATH / LND_MODE / "lnd.conf"
+WALLET_PATH = LND_PATH / LND_MODE / "data" / "chain" / "bitcoin" / LND_NET / "wallet.db"
 TLS_CERT_PATH = LND_PATH / LND_MODE / "tls.cert"
 SEED_FILENAME = LND_PATH / "seed.txt"
 
