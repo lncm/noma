@@ -22,6 +22,7 @@ BITCOIND_PATH = NOMA_PATH / "bitcoind"
 HOME_PATH = Path.home()
 
 """LND Paths"""
+LND_CONF = LND_PATH / LND_MODE / "lnd.conf"
 TLS_CERT_PATH = LND_PATH / LND_MODE / "tls.cert"
 SEED_FILENAME = LND_PATH / "seed.txt"
 

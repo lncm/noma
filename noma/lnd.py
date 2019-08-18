@@ -2,7 +2,6 @@
 LND related functionality
 """
 import pathlib
-import shutil
 from subprocess import call
 from os import path
 from json import dumps
@@ -67,7 +66,7 @@ def get_kv(key, section="", config_path=""):
     from configparser import ConfigParser
 
     if not config_path:
-        config_path = pathlib.Path(cfg.LND_PATH / cfg.LND_MODE / "lnd.conf")
+        config_path = cfg.LND_CONF
     if not section:
         section = "Application Options"
 
@@ -95,7 +94,7 @@ def set_kv(key, value, section="", config_path=""):
     if not section:
         section = "Application Options"
     if not config_path:
-        config_path = pathlib.Path(cfg.LND_PATH / cfg.LND_MODE / "lnd.conf")
+        config_path = cfg.LND_CONF
     parser = ConfigParser(strict=False)
     with open(config_path) as lines:
         parser.read_file(lines)
@@ -123,17 +122,17 @@ def set_bitcoind(password, user="", lnd_config=""):
     if not user:
         user = "lncm"
     if not lnd_config:
-        lnd_config = pathlib.Path(cfg.LND_PATH / cfg.LND_MODE / "lnd.conf")
+        lnd_config = cfg.LND_CONF
     if pathlib.Path(lnd_config).is_file():
         set_kv("bitcoind.rpcuser", user, "Bitcoind", lnd_config)
         set_kv("bitcoind.rpcpass", password, "Bitcoind", lnd_config)
 
 
 def autoconnect(list_path=""):
-    """Autoconnect to a list of nodes in autoconnect.txt"""
+    """Auto-connect to a list of nodes in lnd/autoconnect.txt"""
     print("Connecting to:")
     if not list_path:
-        list_path = "/media/noma/lnd/autoconnect.txt"
+        list_path = pathlib.Path(cfg.LND_PATH / "autoconnect.txt")
 
     with open(list_path) as address_list:
         for address in address_list:
@@ -142,7 +141,7 @@ def autoconnect(list_path=""):
                 [
                     "docker",
                     "exec",
-                    "compose_lnd_1",
+                    cfg.LND_MODE + "_lnd_1",
                     "lncli",
                     "connect",
                     address.strip(),
@@ -152,21 +151,17 @@ def autoconnect(list_path=""):
 
 def check():
     """Check lnd filesystem structure"""
-
-    # check lnd filesystem structure
-    lnd_dir = cfg.LND_PATH.is_dir()
-    if lnd_dir:
+    if cfg.LND_PATH.is_dir():
         print("✅ lnd directory exists")
     else:
         print("❌ lnd directory missing")
 
-    lnd_conf = pathlib.Path(cfg.LND_PATH / cfg.LND_MODE / "lnd.conf").is_file()
-    if lnd_conf:
+    if cfg.LND_CONF.is_file():
         print("✅ lnd.conf exists")
     else:
         print("❌ lnd.conf missing")
 
-    if lnd_dir and lnd_conf:
+    if cfg.LND_PATH.is_dir() and cfg.LND_CONF.is_file():
         return True
     return False
 
