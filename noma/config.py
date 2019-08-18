@@ -1,8 +1,8 @@
 """
 config.py defines configuration of filesystem structure
 
-Pathlib objects represent PosixPaths and are exported as a
-dir object within noma.config
+Pathlib objects represent PosixPaths which are exported
+in config_obj.py as dot notation under cfg.*
 """
 from pathlib import Path
 
@@ -16,10 +16,3 @@ LND_PATH = NOMA_PATH / "lnd"
 BITCOIND_PATH = NOMA_PATH / "bitcoind"
 
 HOME_PATH = Path.home()
-
-dirs = {'media': MEDIA_PATH,
-        'noma': NOMA_PATH,
-        'compose': COMPOSE_MODE_PATH,
-        'lnd': LND_PATH,
-        'bitcoind': BITCOIND_PATH,
-        'home': HOME_PATH}

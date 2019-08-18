@@ -9,7 +9,8 @@ from subprocess import call
 import pathlib
 import time
 import psutil
-import noma.config as cfg
+from noma.config_obj import cfg
+
 
 def get_swap():
     """Return amount of swap"""
@@ -25,9 +26,9 @@ def check():
     """check box filesystem structure"""
     # TODO: only print when logging is enabled
 
-    media_exists = bool(cfg.dirs['media'].is_dir())
-    noma_exists = bool(cfg.dirs['noma'].is_dir())
-    compose_exists = bool(cfg.dirs['compose'].is_dir())
+    media_exists = bool(cfg.MEDIA_PATH.is_dir())
+    noma_exists = bool(cfg.NOMA_PATH.is_dir())
+    compose_exists = bool(cfg.COMPOSE_MODE_PATH.is_dir())
 
     dir_exists_text = str(" dir exists")
     dir_missing_text = str(" dir is missing or inaccessible")
@@ -56,11 +57,11 @@ def start():
     """Start default docker compose"""
     if check():
         # compose from noma source
-        os.chdir(cfg.dirs['compose'])
+        os.chdir(cfg.COMPOSE_MODE_PATH)
     else:
         print("Fetching compose from noma repo")
         get_source()
-        os.chdir(cfg.dirs['compose'])
+        os.chdir(cfg.COMPOSE_MODE_PATH)
 
     call(["docker-compose", "up", "-d"])
 
@@ -68,7 +69,7 @@ def start():
 def backup():
     # TODO: replace alpine-specific with OS-agnostic function
     """Backup apkovl to important usb device"""
-    call(["lbu", "pkg", IMPORTANT_PATH])
+    call(["lbu", "pkg", cfg.NOMA_PATH])
 
 
 def devtools():
