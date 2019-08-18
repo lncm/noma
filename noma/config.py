@@ -38,20 +38,3 @@ URL_GENSEED = "https://127.0.0.1:8080/v1/genseed"
 
 # Initialize wallet
 URL_INITWALLET = "https://127.0.0.1:8080/v1/initwallet"
-
-
-dirs = {'media': MEDIA_PATH,
-        'noma': NOMA_PATH,
-        'compose': COMPOSE_MODE_PATH,
-        'lnd': LND_PATH,
-        'tls_cert': TLS_CERT_PATH,
-        'temp_pass': TEMP_PASSWORD_FILE_PATH,
-        'save_pass': SAVE_PASSWORD_CONTROL_FILE,
-        'seed': SEED_FILENAME,
-        'sesame': SESAME_PATH,
-        'bitcoind': BITCOIND_PATH,
-        'home': HOME_PATH}
-
-lnd = {'mode': LND_MODE,
-       'genseed': URL_GENSEED,
-       'initwallet': URL_INITWALLET}
