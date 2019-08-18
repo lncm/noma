@@ -23,13 +23,13 @@ def check_wallet():
         if not cfg.WALLET_PATH.exists():
             create_wallet()
         else:
-            print("Error: LND not initialized")
+            print("❌ Error: LND not initialized")
             print("Wallet already exists!")
             print("Please backup and move: " + str(cfg.WALLET_PATH))
             print("and then restart lnd")
 
     else:
-        print("Error: lnd directory does not exist!")
+        print("❌ Error: lnd directory does not exist!")
 
 
 def autounlock():
@@ -277,11 +277,11 @@ def create_wallet():
         )
         if return_data.status_code == 200:
             # If create wallet was successful
-            print("Create wallet is successful")
+            print("✅ Create wallet is successful")
         else:
-            print("Create wallet is not successful")
+            print("❌ Create wallet is not successful")
     else:
-        print("Error: cannot proceed, wallet data is not defined")
+        print("❌ Error: cannot proceed, wallet data is not defined")
 
 
 if __name__ == "__main__":
