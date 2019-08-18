@@ -8,7 +8,7 @@ from os import path
 from json import dumps
 from base64 import b64encode
 from requests import get, post
-
+import noma.config as cfg
 
 def check_wallet():
     """
@@ -19,19 +19,17 @@ def check_wallet():
 
     :return str: Status
     """
-    if path.exists("/media/noma/lnd"):
-        if path.exists("/media/noma/lnd/neutrino/data/chain"):
+    if cfg.dirs['lnd'].exists():
+        if not pathlib.Path(cfg.dirs['lnd'] / cfg.lnd['mode'] / "data" / "chain").exists():
             create_wallet()
         else:
             print("Error: LND not initialized")
-            # print("Wallet already exists!")
-            # print(
-            #     "Please backup and move "
-            #     "/media/noma/lnd/neutrino/data/chain and then "
-            #     "restart lnd"
-            # )
+            print("Wallet already exists!")
+            print("Please backup and move: " + pathlib.Path(cfg.dirs['lnd'] / cfg.lnd['mode'] / "data" / "chain"))
+            print("before restarting lnd")
+
     else:
-        print("lnd directory does not exist!")
+        print("Error: lnd directory does not exist!")
 
 
 def autounlock():
@@ -157,15 +155,13 @@ def check():
     """Check lnd filesystem structure"""
 
     # check lnd filesystem structure
-    lnd_dir = pathlib.Path("/media/noma/lnd").is_dir()
+    lnd_dir = cfg.dirs['lnd'].is_dir()
     if lnd_dir:
         print("lnd directory exists")
     else:
         print("lnd directory missing")
 
-    lnd_conf = pathlib.Path(
-        "/media/noma/lnd/neutrino/lnd.conf"
-    ).is_file()
+    lnd_conf = pathlib.Path(cfg.dirs['lnd'] / cfg.lnd['mode'] / "lnd.conf").is_file()
     if lnd_conf:
         print("lnd conf exists")
     else:
@@ -185,45 +181,18 @@ def randompass(string_length=10):
     return "".join(choice(letters) for i in range(string_length))
 
 
-def create():
-    from noma.config import HOME
-
-    """Create lnd directory structure and config file"""
-    lnd_path = "/media/noma/lnd/"
-    pathlib.Path(lnd_path).mkdir(exist_ok=True)
-    shutil.copy("/media/noma/lnd/neutrino/lnd.conf", lnd_path + "/lnd.conf")
-
-
-# Generate seed
-URL_GENSEED = "https://127.0.0.1:8080/v1/genseed"
-
-# Initialize wallet
-URL_INITWALLET = "https://127.0.0.1:8080/v1/initwallet"
-
-TLS_CERT_PATH = "/media/noma/lnd/neutrino/tls.cert"
-SEED_FILENAME = "/media/noma/lnd/seed.txt"
-
-# save password control file (Add this file if we want to save passwords)
-SAVE_PASSWORD_CONTROL_FILE = "/media/noma/lnd/save_password"
-
-# Create password for writing
-TEMP_PASSWORD_FILE_PATH = "/media/noma/lnd/password.txt"
-
-SESAME_PATH = "/media/noma/lnd/sesame.txt"
-
-
 def _write_password(password_str):
     """Write a generated password to file, either the TEMP_PASSWORD_FILE_PATH
     or the SESAME_PATH depending on whether SAVE_PASSWORD_CONTROL_FILE
     exists."""
-    if not path.exists(SAVE_PASSWORD_CONTROL_FILE):
-        # Use tempory file if there is a password control file there
-        temp_password_file = open(TEMP_PASSWORD_FILE_PATH, "w")
+    if not path.exists(cfg.dirs['save_pass']):
+        # Use temporary file if there is a password control file there
+        temp_password_file = open(cfg.dirs['temp_pass'], "w")
         temp_password_file.write(password_str)
         temp_password_file.close()
     else:
         # Use sesame.txt if password_control_file exists
-        password_file = open(SESAME_PATH, "w")
+        password_file = open(cfg.dirs['sesame'], "w")
         password_file.write(password_str)
         password_file.close()
 
@@ -232,24 +201,24 @@ def _wallet_password():
     """Either load the wallet password from SESAME_PATH, or generate a new
     password, save it to file, and in either case return the password"""
     # Check if there is an existing file, if not generate a random password
-    if not path.exists(SESAME_PATH):
+    if not path.exists(cfg.dirs['sesame']):
         # sesame file doesnt exist
         password_str = randompass(string_length=15)
         _write_password(password_str)
     else:
         # Get password from file if sesame file already exists
-        password_str = open(SESAME_PATH, "r").read().rstrip()
+        password_str = open(cfg.dirs['sesame'], "r").read().rstrip()
     return password_str
 
 
 def _generate_and_save_seed():
     """Generate a wallet seed, save it to SEED_FILENAME, and return it"""
     mnemonic = None
-    return_data = get(URL_GENSEED, verify=TLS_CERT_PATH)
+    return_data = get(cfg.lnd['genseed'], verify=cfg.dirs['tls_cert'])
     if return_data.status_code == 200:
         json_seed_creation = return_data.json()
         mnemonic = json_seed_creation["cipher_seed_mnemonic"]
-        seed_file = open(SEED_FILENAME, "w")
+        seed_file = open(cfg.dirs['seed'], "w")
         for word in mnemonic:
             seed_file.write(word + "\n")
         seed_file.close()
@@ -261,7 +230,7 @@ def _generate_and_save_seed():
 def _load_seed():
     """Load the wallet seed from SEED_FILENAME and return it"""
     # Seed exists
-    seed_file = open(SEED_FILENAME, "r")
+    seed_file = open(cfg.dirs['seed'], "r")
     seed_file_words = seed_file.readlines()
     mnemonic = []
     for importword in seed_file_words:
@@ -275,7 +244,7 @@ def _wallet_data(password_str):
     # Convert password to byte encoded
     password_bytes = str(password_str).encode("utf-8")
     # Send request to generate seed if seed file doesnt exist
-    if not path.exists(SEED_FILENAME):
+    if not path.exists(cfg.dirs['seed']):
         mnemonic = _generate_and_save_seed()
     else:
         mnemonic = _load_seed()
@@ -290,8 +259,6 @@ def _wallet_data(password_str):
 
 def create_wallet():
     """
-    Documented logic
-
     1. Check if there's already a wallet. If there is, then exit.
     2. Check for sesame.txt
     3. If doesn't exist then check for whether we should save the password
@@ -302,16 +269,6 @@ def create_wallet():
     TEMP_PASSWORD_FILE_PATH
     6. Now start the wallet creation. Look for a seed defined in SEED_FILENAME,
     if not existing then generate a wallet based on the seed by LND.
-
-    Main entrypoint function
-
-    Testing creation notes:
-    rm $HOME/seed.txt
-    rm /media/important/important/lnd/sesame.txt
-
-    docker stop compose_lndbox_1
-    rm -fr /media/important/important/lnd/data/chain/
-    docker start compose_lndbox_1
     """
     password_str = _wallet_password()
 
@@ -322,7 +279,7 @@ def create_wallet():
     if data:
         # Data is defined so proceed
         return_data = post(
-            URL_INITWALLET, verify=TLS_CERT_PATH, data=dumps(data)
+            cfg.lnd['initwallet'], verify=cfg.dirs['tls_cert'], data=dumps(data)
         )
         if return_data.status_code == 200:
             # If create wallet was successful
