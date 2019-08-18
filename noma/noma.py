@@ -225,9 +225,6 @@ def node(args):
     elif args["restore"]:
         print("restore unimplemented")
 
-    elif args["start"]:
-        call(["service", "docker-compose", "start"])
-
     elif args["source"]:
         node.install_git()
         node.get_source()
