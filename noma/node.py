@@ -10,6 +10,7 @@ import pathlib
 import time
 import psutil
 import noma.config as cfg
+import noma.lnd
 
 
 def get_swap():
@@ -30,8 +31,8 @@ def check():
     noma_exists = bool(cfg.NOMA_PATH.is_dir())
     compose_exists = bool(cfg.COMPOSE_MODE_PATH.is_dir())
 
-    dir_exists_text = str(" dir exists")
-    dir_missing_text = str(" dir is missing or inaccessible")
+    dir_exists_text = str(" directory exists")
+    dir_missing_text = str(" directory is missing or inaccessible")
 
     if media_exists:
         print("✅ " + "Media" + dir_exists_text)
@@ -55,7 +56,7 @@ def check():
 
 def start():
     """Start default docker compose"""
-    if check():
+    if check() and noma.lnd.check():
         # compose from noma source
         os.chdir(cfg.COMPOSE_MODE_PATH)
     else:
