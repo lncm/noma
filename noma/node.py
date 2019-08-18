@@ -196,15 +196,13 @@ def memory(device=""):
 
 
 def logs(node=""):
-    """Show logs of node specified, defaults to bitcoind
-
-    return str: tailling logs"""
+    """Tail logs of node specified, defaults to lnd"""
     if node:
-        container_name = "compose_" + node + "_1"
+        container_name = cfg.LND_MODE + "_" + node + "_1"
         call(["docker", "logs", "-f", container_name])
     else:
-        # default to bitcoind if node not given
-        call(["docker", "logs", "-f", "compose_bitcoind_1"])
+        # default to lnd if node not given
+        call(["docker", "logs", "-f", cfg.LND_MODE + "_lnd_1"])
 
 
 def install_git():
@@ -220,13 +218,13 @@ def get_source():
     """Get latest noma source code or update"""
     install_git()
 
-    if cfg.dirs['noma'].is_dir():
+    if cfg.NOMA_PATH.is_dir():
         print("Source directory already exists")
         print("Going to update with git pull instead")
-        os.chdir(cfg.dirs['noma'])
+        os.chdir(cfg.NOMA_PATH)
         call(["git", "pull"])
     else:
-        os.chdir(cfg.dirs['home'])
+        os.chdir(cfg.HOME_PATH)
         call(["git", "clone", "https://github.com/lncm/noma.git"])
 
 
@@ -263,7 +261,7 @@ def reinstall():
     install_git()
     get_source()
 
-    os.chdir(cfg.dirs['noma'])
+    os.chdir(cfg.NOMA_PATH)
     call(["git", "pull"])
     print("Migrating current WiFi credentials")
     supplicant_sd = pathlib.Path("/etc/wpa_supplicant/wpa_supplicant.conf")
@@ -297,11 +295,11 @@ def do_diff():
 
     def make_diff():
 
-        print("Generating {h}/noma.diff".format(h=cfg.dirs['home']))
-        call(["diff", "-r", "/media/noma", "{h}/noma".format(h=cfg.dirs['home'])])
+        print("Generating {h}/noma.diff".format(h=cfg.HOME_PATH))
+        call(["diff", "-r", "/media/noma", "{h}/noma".format(h=cfg.HOME_PATH)])
 
-    if cfg.dirs['noma'].is_dir():
-        os.chdir(cfg.dirs['noma'])
+    if cfg.NOMA_PATH.is_dir():
+        os.chdir(cfg.NOMA_PATH)
         print("Getting latest sources")
         call(["git", "pull"])
         make_diff()

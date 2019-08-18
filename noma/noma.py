@@ -198,7 +198,7 @@ def node(args):
         call(["service", "docker-compose", "restart"])
 
     elif args["logs"]:
-        call(["tail", "/var/log/messages"])
+        node.logs()
 
     elif args["temp"]:
         print(node.temp())
