@@ -28,7 +28,7 @@ def check():
     # TODO: only print when logging is enabled
 
     media_exists = bool(cfg.MEDIA_PATH.is_dir())
-    noma_exists = bool(cfg.NOMA_PATH.is_dir())
+    noma_exists = bool(cfg.NOMA_SOURCE.is_dir())
     compose_exists = bool(cfg.COMPOSE_MODE_PATH.is_dir())
 
     dir_exists_text = str(" directory exists")
@@ -66,11 +66,15 @@ def start():
 
     call(["docker-compose", "up", "-d"])
 
+def backup():
+
+
 
 def backup():
+    # TODO: remote backups via ssh or rsync
     # TODO: replace alpine-specific with OS-agnostic function
-    """Backup apkovl to important usb device"""
-    call(["lbu", "pkg", cfg.NOMA_PATH])
+    """Backup cfg.MEDIA_PATH as gzip using alpine-lbu"""
+    call(["lbu", "pkg", cfg.MEDIA_PATH])
 
 
 def devtools():
@@ -218,13 +222,14 @@ def get_source():
     """Get latest noma source code or update"""
     install_git()
 
-    if cfg.NOMA_PATH.is_dir():
+    if cfg.NOMA_SOURCE.is_dir():
         print("Source directory already exists")
-        print("Going to update with git pull instead")
-        os.chdir(cfg.NOMA_PATH)
+        print("Going to attempt update with git pull")
+        os.chdir(cfg.NOMA_SOURCE)
         call(["git", "pull"])
     else:
-        os.chdir(cfg.HOME_PATH)
+        # source does not exist
+        os.chdir(cfg.NOMA_SOURCE)
         call(["git", "clone", "https://github.com/lncm/noma.git"])
 
 

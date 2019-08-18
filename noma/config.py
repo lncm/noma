@@ -1,6 +1,8 @@
 """
 config.py defines configuration of filesystem structure
 
+These constants are not to be changed during runtime
+
 Pathlib objects represent PosixPaths
 """
 from pathlib import Path
@@ -13,12 +15,13 @@ LND_NET = "mainnet"
 
 """Filesystem"""
 MEDIA_PATH = Path("/media")
+NOMA_SOURCE = MEDIA_PATH / "noma"
 
-NOMA_PATH = MEDIA_PATH / "noma"
 COMPOSE_MODE_PATH = NOMA_PATH / "compose" / LND_MODE
+NOMA_PATH = MEDIA_PATH / "noma"
 
-LND_PATH = NOMA_PATH / "lnd"
-BITCOIND_PATH = NOMA_PATH / "bitcoind"
+"""Do not change below here"""
+"""unless you know what you're doing"""
 
 HOME_PATH = Path.home()
 
