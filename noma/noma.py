@@ -2,30 +2,17 @@
 """noma [node management]
 
 Usage:
-  noma (info|start|stop|restart|logs|check|status)
-  noma (temp|swap|ram)
-  noma (freq|memory|voltage) [<device>]
-  noma turbo
-  noma usb-setup
-  noma install-box
-  noma create-swap
-  noma tunnel <port> <host>
-  noma (backup|restore|source|diff|devtools)
-  noma reinstall [--full]
-  noma bitcoind (start|stop|info|fastsync|status|check)
-  noma bitcoind get <key>
-  noma bitcoind set <key> <value>
-  noma bitcoind logs
-  noma bitcoind rpcauth <username> [<password>]
-  noma lnd (start|stop|info)
-  noma lnd logs
-  noma lnd connect <address>
-  noma lnd (create|unlock|status|check)
-  noma lnd lncli [<command>...]
-  noma lnd get <key> [<section>] [<path>]
-  noma lnd set <key> <value> [<section>] [<path>]
+  noma start
+  noma stop
+  noma check
+  noma logs
+  noma lnd info
+  noma lnd create
+  noma lnd backup
+  noma lnd restore
   noma lnd autounlock
   noma lnd autoconnect [<path>]
+  noma lnd savepeers
   noma (-h|--help)
   noma --version
 
@@ -37,57 +24,57 @@ Options:
 from docopt import docopt
 
 
-def bitcoind(args):
-    from noma import node
-    from noma import bitcoind
-    from subprocess import call
-
-    if args["start"]:
-        bitcoind.start()
-
-    elif args["stop"]:
-        bitcoind.stop()
-
-    elif args["logs"]:
-        if args["--tail"]:
-            call(["tail", "-f", "/media/volatile/volatile/bitcoin/debug.log"])
-        else:
-            if alt_log_path.is_file():
-                call(["tail", "-f", alt_log_path])
-            else:
-                node.logs("bitcoind")
-
-    elif args["info"]:
-        call(
-            ["docker", "exec", "compose_bitcoind_1", "bitcoin-cli", "-getinfo"]
-        )
-
-    elif args["fastsync"]:
-        bitcoind.fastsync()
-
-    elif args["check"]:
-        bitcoind.check()
-
-    elif args["status"]:
-        if node.is_running("bitcoind"):
-            print("bitcoind is running")
-        else:
-            print("bitcoind is not running")
-
-    elif args["set"]:
-        bitcoind.set_kv(
-            args["<first>"],
-            args["<second>"],
-            "/media/archive/archive/bitcoin_big/bitcoin.conf",
-        )
-
-    elif args["get"]:
-        bitcoind.get_kv(
-            args["<first>"], "/media/archive/archive/bitcoin_big/bitcoin.conf"
-        )
-
-    elif args["rpcauth"]:
-        bitcoind.generate_rpcauth(args["<username>"], args["<password>"])
+# def bitcoind(args):
+#     from noma import node
+#     from noma import bitcoind
+#     from subprocess import call
+#
+#     if args["start"]:
+#         bitcoind.start()
+#
+#     elif args["stop"]:
+#         bitcoind.stop()
+#
+#     elif args["logs"]:
+#         if args["--tail"]:
+#             call(["tail", "-f", "/media/volatile/volatile/bitcoin/debug.log"])
+#         else:
+#             if alt_log_path.is_file():
+#                 call(["tail", "-f", alt_log_path])
+#             else:
+#                 node.logs("bitcoind")
+#
+#     elif args["info"]:
+#         call(
+#             ["docker", "exec", "compose_bitcoind_1", "bitcoin-cli", "-getinfo"]
+#         )
+#
+#     elif args["fastsync"]:
+#         bitcoind.fastsync()
+#
+#     elif args["check"]:
+#         bitcoind.check()
+#
+#     elif args["status"]:
+#         if node.is_running("bitcoind"):
+#             print("bitcoind is running")
+#         else:
+#             print("bitcoind is not running")
+#
+#     elif args["set"]:
+#         bitcoind.set_kv(
+#             args["<first>"],
+#             args["<second>"],
+#             "/media/archive/archive/bitcoin_big/bitcoin.conf",
+#         )
+#
+#     elif args["get"]:
+#         bitcoind.get_kv(
+#             args["<first>"], "/media/archive/archive/bitcoin_big/bitcoin.conf"
+#         )
+#
+#     elif args["rpcauth"]:
+#         bitcoind.generate_rpcauth(args["<username>"], args["<password>"])
 
 
 def lnd(args):
@@ -192,10 +179,10 @@ def node(args):
         # now we can safely stop
         call(["service", "docker-compose", "stop"])
 
-    elif args["restart"]:
-        node.stop_daemons()
-        # now we can safely restart
-        call(["service", "docker-compose", "restart"])
+    # elif args["restart"]:
+    #     node.stop_daemons()
+    #     # now we can safely restart
+    #     call(["service", "docker-compose", "restart"])
 
     elif args["logs"]:
         node.logs()
@@ -285,9 +272,9 @@ def node(args):
 def main():
     args = docopt(__doc__, version="v0.4.3")
 
-    if args["bitcoind"]:
-        bitcoind(args)
-    elif args["lnd"]:
+    # if args["bitcoind"]:
+    #     bitcoind(args)
+    if args["lnd"]:
         lnd(args)
     else:
         node(args)
