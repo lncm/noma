@@ -9,7 +9,7 @@ from subprocess import call
 import pathlib
 import time
 import psutil
-from noma.config_obj import cfg
+import noma.config as cfg
 
 
 def get_swap():

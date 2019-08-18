@@ -1,8 +1,7 @@
 """
 config.py defines configuration of filesystem structure
 
-Pathlib objects represent PosixPaths which are exported
-in config_obj.py as dot notation under cfg.*
+Pathlib objects represent PosixPaths
 """
 from pathlib import Path
 
