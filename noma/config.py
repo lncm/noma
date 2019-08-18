@@ -1,8 +1,7 @@
 """
 config.py defines configuration of filesystem structure
 
-Pathlib objects represent PosixPaths and are exported as a
-dir object within noma.config
+Pathlib objects represent PosixPaths
 """
 from pathlib import Path
 
