@@ -14,14 +14,11 @@ if not plugins_to_install.empty?
 end
 
 Vagrant.configure("2") do |config|
-  config.vm.box = "generic/alpine39"
+  config.vm.box = "generic/alpine310"
   config.vm.hostname = "alpine-vagrant"
-  config.vm.synced_folder ".", "/vagrant",
-                          type: "rsync",
-                          rsync__exclude: ".git/",
-                          rsync__args: ["--verbose",
-                                        "--archive",
-                                        "--delete"]
-
-  config.vm.provision "shell", path: "install.sh"
+  config.vm.synced_folder ".", "/media/noma",
+                          type: "nfs",
+                          nfs_export: true
+  config.vm.network "private_network", ip: "192.168.83.33"
+  config.vm.provision "shell", inline: "cd /media/noma && ./install.sh"
 end
