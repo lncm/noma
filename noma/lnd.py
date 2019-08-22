@@ -275,7 +275,6 @@ def create_wallet():
             cfg.URL_INITWALLET, verify=cfg.TLS_CERT_PATH, data=dumps(data)
         )
         if return_data.status_code == 200:
-            # If create wallet was successful
             print("✅ Create wallet is successful")
         else:
             print("❌ Create wallet is not successful")

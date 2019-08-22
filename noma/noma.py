@@ -21,9 +21,10 @@ Options:
   --version     Show version.
 
 """
+import os
 from docopt import docopt
-
-
+import noma.config as cfg
+from noma import node
 # def bitcoind(args):
 #     from noma import node
 #     from noma import bitcoind
@@ -79,20 +80,27 @@ from docopt import docopt
 
 def lnd(args):
     from noma import lnd
-    from noma import node
     from subprocess import call
 
     if args["start"]:
         if node.is_running("lnd"):
             print("lnd is already running")
         else:
-            call(["docker", "start", "compose_lnd_1"])
+            node.start()
 
-    elif args["stop"]:
-        if node.is_running("lnd"):
-            call(["docker", "exec", "compose_lnd_1", "lncli", "stop"])
-        else:
-            print("lnd is already stopped")
+    # elif args["connect"]:
+    #     print(
+    #         call(
+    #             [
+    #                 "docker",
+    #                 "exec",
+    #                 "compose_lnd_1",
+    #                 "lncli",
+    #                 "connect",
+    #                 args["<address>"],
+    #             ]
+    #         )
+    #     )
 
     # elif args["connect"]:
     #     print(
@@ -131,6 +139,10 @@ def lnd(args):
 
     elif args["create"]:
         lnd.check_wallet()
+    #
+    # elif args["unlock"]:
+    #     # manually unlock lnd wallet
+    #     call(["docker", "exec", "-it", "compose_lnd_1", "lncli", "unlock"])
 
     # elif args["unlock"]:
     #     # manually unlock lnd wallet
@@ -160,20 +172,20 @@ def lnd(args):
 def node(args):
     from noma import node
     from subprocess import call
+    from noma import config as cfg
 
     if args["info"]:
         node.info()
 
     elif args["start"]:
-        if node.is_running("bitcoind"):
-            print("bitcoind is already running")
-        if node.is_running("lnd"):
-            print("lnd is already running")
+        # if node.is_running("bitcoind"):
+        #     print("bitcoind is already running")
+
         node.start()
 
     elif args["stop"]:
-        node.stop_daemons()
-        # now we can safely stop
+        node.stop()
+        # # now we can safely stop
         # call(["service", "docker-compose", "stop"])
 
     # elif args["restart"]:
@@ -267,14 +279,17 @@ def node(args):
 
 
 def main():
-    args = docopt(__doc__, version="v0.4.3")
+    args = docopt(__doc__, version="v0.5.0")
 
-    # if args["bitcoind"]:
-    #     bitcoind(args)
-    if args["lnd"]:
-        lnd(args)
+    if os.geteuid() == 0:
+        # if args["bitcoind"]:
+        #     bitcoind(args)
+        if args["lnd"]:
+            lnd(args)
+        else:
+            node(args)
     else:
-        node(args)
+        print("Sorry! You must be root")
 
 
 if __name__ == "__main__":

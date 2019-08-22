@@ -56,14 +56,14 @@ def check():
 
 def start():
     """Start default docker compose"""
-    if check() and noma.lnd.check():
-        # compose from noma source
-        os.chdir(cfg.COMPOSE_MODE_PATH)
-    else:
+    if is_running("lnd"):
+        print("lnd is already running")
+        exit(1)
+    if check() and not noma.lnd.check():
         print("Fetching compose from noma repo")
         get_source()
-        os.chdir(cfg.COMPOSE_MODE_PATH)
 
+    os.chdir(cfg.COMPOSE_MODE_PATH)
     call(["docker-compose", "up", "-d"])
 
 
@@ -106,9 +106,9 @@ def is_running(node=""):
     from docker import from_env
 
     if not node:
-        node = "bitcoind"
+        node = "lnd"
     docker_host = from_env()
-    compose_name = "neutrino_{}_1".format(node)
+    compose_name = cfg.LND_MODE + "_" + node + "_1"
     try:
         for container in docker_host.containers.list():
             if compose_name in container.name:
@@ -118,10 +118,33 @@ def is_running(node=""):
     return False
 
 
-def stop_daemons():
-    """Check and wait for clean shutdown of both bitcoind and lnd"""
-    if not is_running("bitcoind") and not is_running("lnd"):
-        print("bitcoind and lnd are already stopped")
+def stop(timeout=5):
+    """Check and wait for clean shutdown of lnd"""
+    def clean_stop():
+        # ensure clean shutdown of lnd
+        print("lnd is running, stopping with lncli stop")
+        success = call(["docker", "exec", cfg.LND_MODE + "_lnd_1", "lncli", "stop"])
+        if success:
+            print("lncli stop exited successfully")
+        else:
+            print("waiting " + str(timeout) + "s")
+            time.sleep(timeout)
+        if not is_running("lnd"):
+            print("lnd container stopped")
+            exit(0)
+        else:
+            print("lnd is running, stopping container")
+            import docker
+            client = docker.from_env()
+            for container in client.containers.list():
+                if container.name == "lnd":
+                    print("stopping container")
+                    container.stop()
+    if is_running("lnd"):
+        clean_stop()
+    else:
+        print("lnd is stopped")
+        exit(0)
 
     for i in range(5):
         if not is_running("bitcoind") and not is_running("lnd"):
@@ -135,23 +158,23 @@ def stop_daemons():
             # stop lnd
             call(["docker", "exec", "neutrino_lnd_1", "lncli", "stop"])
 
-        time.sleep(2)
-        i -= 1
+    # if container.name == "bitcoind" or "lnd":
 
-    for i in range(5):
-        import docker
+        # if not is_running("bitcoind") and not is_running("lnd"):
+        #     break
 
-        client = docker.from_env()
 
-        if not is_running("bitcoind") and not is_running("lnd"):
-            break
+    # if not is_running("bitcoind") and not is_running("lnd"):
+    #     print("bitcoind and lnd are already stopped")
 
-        for container in client.containers.list():
-            if container.name == "bitcoind" or "lnd":
-                container.stop()
-                time.sleep(2)
-                i -= 1
-
+    # for i in range(5):
+    #     if not is_running("bitcoind") and not is_running("lnd"):
+    #         break
+    #     if is_running("bitcoind"):
+    #         # stop bitcoind
+    #         call(
+    #             ["docker", "exec", LND_MODE + "_bitcoind_1", "bitcoin-cli", "stop"]
+    #         )
 
 def voltage(device=""):
     """
