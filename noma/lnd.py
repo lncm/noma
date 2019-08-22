@@ -8,7 +8,7 @@ from json import dumps
 from base64 import b64encode
 from requests import get, post
 import noma.config as cfg
-
+import base64, codecs, json
 
 def check_wallet():
     """
@@ -31,6 +31,33 @@ def check_wallet():
     else:
         print("❌ Error: lnd directory does not exist!")
 
+def encodemacaroons(macaroonfile='/media/important/important/lnd/data/chain/bitcoin/mainnet/admin.macaroon', tlsfile='/media/important/important/lnd/tls.cert'):
+    if path.exists(macaroonfile) and path.exists(tlsfile):
+        with open(path.expanduser(macaroonfile), "rb") as f:
+            macaroon_bytes = f.read()
+        with open(path.expanduser(tlsfile), "rb") as f:
+            tls_bytes = f.read()
+        macaroonencoded = codecs.encode(macaroon_bytes, 'base64').decode().replace("\n", "")
+        tlsencoded = tls_bytes.decode().replace("\n", "").replace("-----BEGIN CERTIFICATE-----", "").replace("-----END CERTIFICATE-----", "")
+        return {'status': 'OK', 'certificate': tlsencoded, 'macaroon': macaroonencoded}
+    else:
+        return {'status': 'File Not Found'}
+
+def lndconnectapp(ip='localhost:10009', macaroonfile='/media/important/important/lnd/data/chain/bitcoin/mainnet/admin.macaroon',tlsfile='/media/important/important/lnd/tls.cert'):
+    result = encodemacaroons(macaroonfile=macaroonfile, tlsfile=tlsfile)
+    if result['status'] == 'OK':
+        return {'c': result['certificate'], 'm': result['macaroon'], 'ip': ip}
+    else:
+        return result
+
+def lndconnectstring(hostname='localhost', macaroonfile='/media/important/important/lnd/data/chain/bitcoin/mainnet/admin.macaroon',tlsfile='/media/important/important/lnd/tls.cert'):
+    result = encodemacaroons(macaroonfile=macaroonfile, tlsfile=tlsfile)
+    if result['status'] == 'OK':
+        macaroon_string = result['macaroon'].replace("=","").replace("/","").replace("+","")
+        cert_string = result["certificate"].replace("=","").replace("/","").replace("+","")
+        return "lndconnect://" + hostname + "?cert=" + cert_string + "&macaroon=" + macaroon_string
+    else:
+        return result['status']
 
 def autounlock():
     """Auto-unlock lnd using password.txt, tls.cert"""

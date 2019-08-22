@@ -29,6 +29,10 @@ def lnd(args):
     from noma import lnd
 
     if args["create"]:
+    elif args["lndconnectapp"]:
+        print(lnd.lndconnectapp(ip=args["<hostport>"]))
+    elif args["lndconnectstring"]:
+        print(lnd.lndconnectstring(ip=args["<hostport>"]))
         lnd.check_wallet()
 
     elif args["autounlock"]:
