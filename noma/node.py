@@ -66,8 +66,11 @@ def start():
 
     call(["docker-compose", "up", "-d"])
 
-def backup():
 
+def info():
+    # Show dashboard with aggregated information
+    call(["docker", "exec", cfg.LND_MODE + "_lnd_1", "lncli", "getinfo"])
+    # call(["docker", "exec", cfg.LND_MODE + "_bitcoind_1", "bitcoin-cli", "-getinfo"])
 
 
 def backup():
@@ -105,7 +108,7 @@ def is_running(node=""):
     if not node:
         node = "bitcoind"
     docker_host = from_env()
-    compose_name = "compose_{}_1".format(node)
+    compose_name = "neutrino_{}_1".format(node)
     try:
         for container in docker_host.containers.list():
             if compose_name in container.name:
@@ -126,11 +129,11 @@ def stop_daemons():
         if is_running("bitcoind"):
             # stop bitcoind
             call(
-                ["docker", "exec", "compose_bitcoind_1", "bitcoin-cli", "stop"]
+                ["docker", "exec", "neutrino_bitcoind_1", "bitcoin-cli", "stop"]
             )
         if is_running("lnd"):
             # stop lnd
-            call(["docker", "exec", "compose_lnd_1", "lncli", "stop"])
+            call(["docker", "exec", "neutrino_lnd_1", "lncli", "stop"])
 
         time.sleep(2)
         i -= 1
@@ -266,7 +269,7 @@ def reinstall():
     install_git()
     get_source()
 
-    os.chdir(cfg.NOMA_PATH)
+    os.chdir(cfg.NOMA_SOURCE)
     call(["git", "pull"])
     print("Migrating current WiFi credentials")
     supplicant_sd = pathlib.Path("/etc/wpa_supplicant/wpa_supplicant.conf")
@@ -303,8 +306,8 @@ def do_diff():
         print("Generating {h}/noma.diff".format(h=cfg.HOME_PATH))
         call(["diff", "-r", "/media/noma", "{h}/noma".format(h=cfg.HOME_PATH)])
 
-    if cfg.NOMA_PATH.is_dir():
-        os.chdir(cfg.NOMA_PATH)
+    if cfg.NOMA_SOURCE.is_dir():
+        os.chdir(cfg.NOMA_SOURCE)
         print("Getting latest sources")
         call(["git", "pull"])
         make_diff()
