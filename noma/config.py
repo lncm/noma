@@ -17,8 +17,7 @@ LND_NET = "mainnet"
 MEDIA_PATH = Path("/media")
 NOMA_SOURCE = MEDIA_PATH / "noma"
 
-COMPOSE_MODE_PATH = NOMA_PATH / "compose" / LND_MODE
-NOMA_PATH = MEDIA_PATH / "noma"
+COMPOSE_MODE_PATH = NOMA_SOURCE / "compose" / LND_MODE
 
 """Do not change below here"""
 """unless you know what you're doing"""
@@ -26,18 +25,17 @@ NOMA_PATH = MEDIA_PATH / "noma"
 HOME_PATH = Path.home()
 
 """LND Paths"""
-LND_CONF = LND_PATH / LND_MODE / "lnd.conf"
-WALLET_PATH = LND_PATH / LND_MODE / "data" / "chain" / "bitcoin" / LND_NET / "wallet.db"
-TLS_CERT_PATH = LND_PATH / LND_MODE / "tls.cert"
+LND_PATH = NOMA_SOURCE / "lnd" / LND_MODE
+LND_CONF = LND_PATH / "lnd.conf"
+WALLET_PATH = LND_PATH / "data" / "chain" / "bitcoin" / LND_NET / "wallet.db"
+TLS_CERT_PATH = LND_PATH / "tls.cert"
 SEED_FILENAME = LND_PATH / "seed.txt"
 
 # Save password control file (Add this file to save passwords)
 SAVE_PASSWORD_CONTROL_FILE = LND_PATH / "save_password"
 
 # Create password for writing
-TEMP_PASSWORD_FILE_PATH = LND_PATH / "password.txt"
-
-SESAME_PATH = LND_PATH / "sesame.txt"
+PASSWORD_FILE_PATH = LND_PATH / "password.txt"
 
 """LND Endpoints"""
 # Generate seed
