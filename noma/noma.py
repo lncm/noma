@@ -12,6 +12,8 @@ Usage:
   noma lnd autounlock
   noma lnd autoconnect [<path>]
   noma lnd savepeers
+  noma lnd connectapp
+  noma lnd connectstring
   noma (-h|--help)
   noma --version
 
@@ -29,10 +31,6 @@ def lnd(args):
     from noma import lnd
 
     if args["create"]:
-    elif args["lndconnectapp"]:
-        print(lnd.lndconnectapp(ip=args["<hostport>"]))
-    elif args["lndconnectstring"]:
-        print(lnd.lndconnectstring(ip=args["<hostport>"]))
         lnd.check_wallet()
 
     elif args["autounlock"]:
@@ -46,6 +44,12 @@ def lnd(args):
 
     elif args["savepeers"]:
         lnd.savepeers()
+
+    elif args["connectapp"]:
+        print(lnd.connectapp())
+
+    elif args["connectstring"]:
+        print(lnd.connectstring())
 
 
 def node(args):
