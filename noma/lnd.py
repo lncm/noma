@@ -166,6 +166,17 @@ def check():
     return False
 
 
+def backup():
+    # TODO: wallet/channel backup
+    # remote backups via ssh or rsync
+    print("Not implemented yet")
+
+
+def savepeers():
+    # TODO: export list of peers to text file on disk
+    print("Not implemented yet")
+
+
 def randompass(string_length=10):
     """Generate random password"""
     from random import choice

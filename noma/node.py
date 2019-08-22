@@ -75,15 +75,6 @@ def info():
     else:
         print("lnd is not running")
 
-    # call(["docker", "exec", cfg.LND_MODE + "_bitcoind_1", "bitcoin-cli", "-getinfo"])
-
-
-def backup():
-    # TODO: remote backups via ssh or rsync
-    # TODO: replace alpine-specific with OS-agnostic function
-    """Backup cfg.MEDIA_PATH as gzip using alpine-lbu"""
-    call(["lbu", "pkg", cfg.MEDIA_PATH])
-
 
 def devtools():
     """Install common development tools, nano, tmux, git, etc"""
