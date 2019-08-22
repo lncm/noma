@@ -118,63 +118,30 @@ def is_running(node=""):
     return False
 
 
-def stop(timeout=5):
+def stop(timeout=1, retries=5):
     """Check and wait for clean shutdown of lnd"""
     def clean_stop():
         # ensure clean shutdown of lnd
         print("lnd is running, stopping with lncli stop")
         success = call(["docker", "exec", cfg.LND_MODE + "_lnd_1", "lncli", "stop"])
-        if success:
-            print("lncli stop exited successfully")
+        if success is 0:
+            print("✅ lncli stop returned success")
         else:
-            print("waiting " + str(timeout) + "s")
-            time.sleep(timeout)
-        if not is_running("lnd"):
-            print("lnd container stopped")
-            exit(0)
-        else:
-            print("lnd is running, stopping container")
-            import docker
-            client = docker.from_env()
-            for container in client.containers.list():
-                if container.name == "lnd":
-                    print("stopping container")
-                    container.stop()
-    if is_running("lnd"):
-        clean_stop()
-    else:
-        print("lnd is stopped")
-        exit(0)
+            print("❌ lncli stop failed")
 
-    for i in range(5):
-        if not is_running("bitcoind") and not is_running("lnd"):
-            break
-        if is_running("bitcoind"):
-            # stop bitcoind
-            call(
-                ["docker", "exec", "neutrino_bitcoind_1", "bitcoin-cli", "stop"]
-            )
+        print("waiting " + str(timeout) + "s for lnd to stop...")
+        time.sleep(timeout)
+
+    for tries in range(retries):
         if is_running("lnd"):
-            # stop lnd
-            call(["docker", "exec", "neutrino_lnd_1", "lncli", "stop"])
+            clean_stop()
+            retries -= 1
+        else:
+            print("✅ lnd is stopped")
+            exit(0)
 
-    # if container.name == "bitcoind" or "lnd":
+    print("❌ Failed to stop lnd")
 
-        # if not is_running("bitcoind") and not is_running("lnd"):
-        #     break
-
-
-    # if not is_running("bitcoind") and not is_running("lnd"):
-    #     print("bitcoind and lnd are already stopped")
-
-    # for i in range(5):
-    #     if not is_running("bitcoind") and not is_running("lnd"):
-    #         break
-    #     if is_running("bitcoind"):
-    #         # stop bitcoind
-    #         call(
-    #             ["docker", "exec", LND_MODE + "_bitcoind_1", "bitcoin-cli", "stop"]
-    #         )
 
 def voltage(device=""):
     """
