@@ -33,10 +33,10 @@ def check_wallet():
 
 
 def autounlock():
-    """Auto-unlock lnd using sesame.txt, tls.cert"""
+    """Auto-unlock lnd using password.txt, tls.cert"""
 
     password_str = (
-        open(cfg.SESAME_PATH, "r").read().rstrip()
+        open(cfg.PASSWORD_FILE_PATH, "r").read().rstrip()
     )
     password_bytes = str(password_str).encode("utf-8")
     data = {"wallet_password": b64encode(password_bytes).decode()}
@@ -177,31 +177,31 @@ def randompass(string_length=10):
 
 def _write_password(password_str):
     """Write a generated password to file, either the TEMP_PASSWORD_FILE_PATH
-    or the SESAME_PATH depending on whether SAVE_PASSWORD_CONTROL_FILE
+    or the PASSWORD_FILE_PATH depending on whether SAVE_PASSWORD_CONTROL_FILE
     exists."""
     if not path.exists(cfg.SAVE_PASSWORD_CONTROL_FILE):
         # Use temporary file if there is a password control file there
-        temp_password_file = open(cfg.TEMP_PASSWORD_FILE_PATH, "w")
+        temp_password_file = open(cfg.PASSWORD_FILE_PATH, "w")
         temp_password_file.write(password_str)
         temp_password_file.close()
     else:
-        # Use sesame.txt if password_control_file exists
-        password_file = open(cfg.SESAME_PATH, "w")
+        # Use password.txt if password_control_file exists
+        password_file = open(cfg.PASSWORD_FILE_PATH, "w")
         password_file.write(password_str)
         password_file.close()
 
 
 def _wallet_password():
-    """Either load the wallet password from SESAME_PATH, or generate a new
+    """Either load the wallet password from PASSWORD_FILE_PATH, or generate a new
     password, save it to file, and in either case return the password"""
     # Check if there is an existing file, if not generate a random password
-    if not path.exists(cfg.SESAME_PATH):
-        # sesame file doesnt exist
+    if not path.exists(cfg.PASSWORD_FILE_PATH):
+        # password file doesnt exist
         password_str = randompass(string_length=15)
         _write_password(password_str)
     else:
-        # Get password from file if sesame file already exists
-        password_str = open(cfg.SESAME_PATH, "r").read().rstrip()
+        # Get password from file if password file already exists
+        password_str = open(cfg.PASSWORD_FILE_PATH, "r").read().rstrip()
     return password_str
 
 
@@ -254,13 +254,12 @@ def _wallet_data(password_str):
 def create_wallet():
     """
     1. Check if there's already a wallet. If there is, then exit.
-    2. Check for sesame.txt
+    2. Check for password.txt
     3. If doesn't exist then check for whether we should save the password
     (SAVE_PASSWORD_CONTROL_FILE exists) or not
-    4. If sesame.txt exists import password in.
-    5. If sesame.txt doesn't exist ans we don't save the password, create a
-    password and save it in temporary path as defined in
-    TEMP_PASSWORD_FILE_PATH
+    4. If password.txt exists import password in.
+    5. If password.txt doesn't exist and we don't save the password, create a
+    password and save it in temporary path as defined in PASSWORD_FILE_PATH
     6. Now start the wallet creation. Look for a seed defined in SEED_FILENAME,
     if not existing then generate a wallet based on the seed by LND.
     """
