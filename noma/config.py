@@ -29,6 +29,8 @@ LND_CONF = LND_PATH / "lnd.conf"
 CHAIN_PATH = LND_PATH / "data" / "chain" / "bitcoin"
 WALLET_PATH = CHAIN_PATH / LND_NET / "wallet.db"
 TLS_CERT_PATH = LND_PATH / "tls.cert"
+
+MACAROON_PATH = CHAIN_PATH / LND_NET / "admin.macaroon"
 SEED_FILENAME = LND_PATH / "seed.txt"
 
 """LND Create Password"""
