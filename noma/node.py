@@ -59,7 +59,7 @@ def start():
     if is_running("lnd"):
         print("lnd is already running")
         exit(1)
-    if check() and not noma.lnd.check():
+    if not check() and not noma.lnd.check():
         print("Fetching compose from noma repo")
         get_source()
 
@@ -69,7 +69,12 @@ def start():
 
 def info():
     # Show dashboard with aggregated information
-    call(["docker", "exec", cfg.LND_MODE + "_lnd_1", "lncli", "getinfo"])
+    if is_running("lnd"):
+        print("lnd is running")
+        call(["docker", "exec", cfg.LND_MODE + "_lnd_1", "lncli", "getinfo"])
+    else:
+        print("lnd is not running")
+
     # call(["docker", "exec", cfg.LND_MODE + "_bitcoind_1", "bitcoin-cli", "-getinfo"])
 
 
@@ -222,8 +227,7 @@ def get_source():
         call(["git", "pull"])
     else:
         # source does not exist
-        os.chdir(cfg.NOMA_SOURCE)
-        call(["git", "clone", "https://github.com/lncm/noma.git"])
+        call(["git", "clone", "https://github.com/lncm/noma.git", cfg.NOMA_SOURCE])
 
 
 def tunnel(port, hostname):
