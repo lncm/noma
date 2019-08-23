@@ -5,10 +5,9 @@ import pathlib
 from subprocess import call
 from os import path
 from json import dumps
-from base64 import b64encode
 from requests import get, post
 import noma.config as cfg
-import base64, codecs, json
+import base64
 
 
 def check_wallet():
@@ -64,9 +63,9 @@ def connectstring(hostname=cfg.URL_GRPC, macaroonfile=cfg.MACAROON_PATH, tlsfile
     if result['status'] == 'OK':
         macaroon_string = str(result['macaroon'], 'utf-8')
         cert_string = str(result["certificate"], 'utf-8')
-        return "lndconnect://" + hostname + "?cert=" + cert_string + "&macaroon=" + macaroon_string
+        print("lndconnect://" + hostname + "?cert=" + cert_string + "&macaroon=" + macaroon_string)
     else:
-        return result['status']
+        print(result['status'])
 
 
 def autounlock():
