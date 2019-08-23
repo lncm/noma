@@ -100,6 +100,7 @@ def is_running(node=""):
 
     :return bool: container is running"""
     from docker import from_env
+    import requests
 
     if not node:
         node = "lnd"
@@ -111,6 +112,11 @@ def is_running(node=""):
                 return True
     except AttributeError:
         return None
+    except ConnectionError:
+        return None
+    except requests.exceptions.ConnectionError:
+        return None
+
     return False
 
 
