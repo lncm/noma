@@ -1,21 +1,20 @@
 #!/usr/bin/env python3
-"""noma [node management]
+"""Noma [node management]
 
-Usage:
-  noma start
-  noma stop
-  noma check
-  noma logs
-  noma info
-  noma lnd create
-  noma lnd backup
-  noma lnd autounlock
-  noma lnd autoconnect [<path>]
-  noma lnd savepeers
-  noma lnd connectapp
-  noma lnd connectstring
-  noma (-h|--help)
-  noma --version
+Usage:  noma start
+        noma stop
+        noma check
+        noma logs
+        noma info
+        noma lnd create
+        noma lnd backup
+        noma lnd autounlock
+        noma lnd autoconnect [<path>]
+        noma lnd savepeers
+        noma lnd connectapp
+        noma lnd connectstring
+        noma (-h|--help)
+        noma --version
 
 Options:
   -h --help     Show this screen.
@@ -46,10 +45,10 @@ def lnd(args):
         lnd.savepeers()
 
     elif args["connectapp"]:
-        print(lnd.connectapp())
+        lnd.connectapp()
 
     elif args["connectstring"]:
-        print(lnd.connectstring())
+        lnd.connectstring()
 
 
 def node(args):
@@ -72,7 +71,7 @@ def node(args):
 
 
 def main():
-    args = docopt(__doc__, version="v0.5.0")
+    args = docopt(__doc__, version="Noma v0.5.0")
 
     if os.geteuid() == 0:
         if args["lnd"]:
