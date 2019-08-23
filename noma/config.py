@@ -40,7 +40,7 @@ SAVE_PASSWORD_CONTROL_FILE = LND_PATH / "save_password"
 PASSWORD_FILE_PATH = LND_PATH / "password.txt"
 
 """LND Endpoints"""
-URL_GRPC = 192.168.83.33:10009
+URL_GRPC = "192.168.83.33:10009"
 # Generate seed
 URL_GENSEED = "https://127.0.0.1:8080/v1/genseed"
 # Initialize wallet
