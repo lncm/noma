@@ -1,0 +1,30 @@
+version: '3.7'
+services:
+  bitcoind:
+    image: lncm/bitcoind:0.17.1
+    volumes:
+      - /media/noma/bitcoind/:/root/.bitcoin/
+    restart: on-failure
+    network_mode: host
+
+  lnd:
+    image: lncm/lnd:0.6.0
+    volumes:
+      - /media/noma/lnd:/root/.lnd
+      - /media/noma/lnd/lnd.conf:/home/lncm/.lnd/lnd.conf
+    depends_on:
+      - bitcoind
+    restart: on-failure
+    network_mode: host
+
+  invoicer:
+    image: lncm/invoicer:0.4.0
+    volumes:
+      - /media/noma/invoicer:/root/.lncm
+      - /media/lnd:/lnd
+      - /home/pi-factory/home/lncm/public_html:/static
+      - /media/invoicer:/logs
+    depends_on:
+      - lnd
+    restart: on-failure
+    network_mode: host

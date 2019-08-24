@@ -1,7 +1,7 @@
 """
 bitcoind related functionality
 """
-from subprocess import call, run, PIPE
+from subprocess import call, run, PIPE, STDOUT, DEVNULL
 import os
 import pathlib
 import shutil
@@ -57,32 +57,58 @@ def fastsync():
 
     def extract_snapshot():
         print("Extract snapshot")
-        tar = run(["tar", "xf", snapshot])
+        os.chdir(bitcoind_dir_path)
+        tar = run(["tar", "xf", snapshot_path])
         print("Extracting done")
         if tar.returncode == 0:
             set_permissions(bitcoind_dir_path)
 
     def remove_snapshot():
-        print("Removing corrupt snapshot")
-        os.remove(snapshot_path)
-        os.remove(snapshot_path + ".st")
+        assert IOError("Corrupt snapshot file")
+        if snapshot_path.is_file():
+            print("Remove the utxoset-snapshot.* files to try again")
+        #     # os.remove(snapshot_path)
+        #
+        # state_file = pathlib.Path(snapshot_path + ".st")
+        # if state_file.is_file():
+        #     pass
+        #     # os.remove(snapshot_path + ".st")
 
     def compare_checksums():
         print("Comparing checksums")
-        shasum = run(["sha256sum", snapshot_path], stdout=PIPE, stderr=PIPE)
-        if shasum.returncode == 0:
-            if shasum.stdout == checksum:
-                print("Checksums match")
-                return True
-            print("Checksums do not match: " + str(shasum.stdout))
-            return False
-        raise OSError("Cannot compare hashes: " + str(shasum.stderr))
+        openssl_location = run(["which", "openssl"], stdout=DEVNULL, stderr=DEVNULL)
+        if openssl_location.returncode == 0:
+            # openssl is installed
+            openssl = run(["openssl", "dgst", "-sha256", snapshot_path], stdout=PIPE, stderr=PIPE)
+            if openssl.returncode == 0:
+                hash = str(bytes.decode(openssl.stdout))
+                hash = hash.split(' ')[1].rstrip()
+
+                if hash == checksum:
+                    print("Checksums match")
+                    return True
+                print("Checksums do not match:")
+                print("Expected: " + str(checksum))
+                print("  Actual: " + str(hash))
+                return False
+            raise OSError("Cannot compare hashes: " + bytes.decode(openssl.stderr))
+        else:
+            shasum = run(["sha256sum", snapshot_path], stdout=PIPE, stderr=PIPE)
+            if shasum.returncode == 0:
+                hash = shasum.stdout.split(' ')[0]
+                print(hash)
+                if hash == checksum:
+                    print("Checksums match")
+                    return True
+                print("Checksums do not match: " + bytes.decode(shasum.stdout))
+                return False
+            raise OSError("Cannot compare hashes: " + bytes.decode(shasum.stderr))
 
     def download_snapshot():
         os.chdir(bitcoind_dir_path)
         print("Download snapshot")
         download = run(
-            ["axel", "--quiet", "--no-clobber", url], stdout=PIPE, stderr=PIPE
+            ["axel", "--quiet", "--no-clobber", url], stdout=PIPE, stderr=STDOUT
         )
         if download.returncode == 0:
             if compare_checksums():
@@ -91,8 +117,7 @@ def fastsync():
                 remove_snapshot()
                 download_snapshot()
         else:
-            print("Download failed, retrying" + str(download.stderr))
-            download_snapshot()
+            raise OSError("Download failed" + str(download.stdout))
 
     print("Checking existing filesystem structure")
     if bitcoind_dir_exists:
@@ -107,8 +132,10 @@ def fastsync():
                 print("Bitcoin chainstate directory exists, stopping")
                 print("Remove the directory to fastsync")
                 return
-            compare_checksums()
-            download_snapshot()
+            if compare_checksums():
+                extract_snapshot()
+            else:
+                download_snapshot()
         else:
             download_snapshot()
     else:

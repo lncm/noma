@@ -34,6 +34,17 @@ def is_mounted(device):
     return False
 
 
+def fs_size(fs_path):
+    """Return filesystem size in bytes
+
+    :param fs_path: path to mounted filesystem
+    :return: filesystem size in bytes
+    """
+    import shutil
+    total, used, free = shutil.disk_usage(fs_path)
+    return total
+
+
 def dev_size(device):
     """Return device size in bytes
 
@@ -90,7 +101,7 @@ def sd_part_size(partition):
     """
     try:
         device_path = "/sys/block/"
-        device = partition[:-2]
+        device = partition[:-1]
         num_sectors = (
             open(device_path + device + "/" + partition + "/size")
             .read()

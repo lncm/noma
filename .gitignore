@@ -1,5 +1,11 @@
+# lnd
+lnd/neutrino/
+
 # PyCharm
 .idea
+
+# Vagrant
+.vagrant
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
@@ -124,3 +130,7 @@ dmypy.json
 
 # Pyre type checker
 .pyre/
+
+\.DS_Store
+
+lnd/neutrino/

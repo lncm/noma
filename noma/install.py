@@ -16,9 +16,8 @@ def create_dir(path):
     return False
 
 
-def check_installed():
+def check_installed(installed='/media/mmcblk0p1/installed'):
     """Check if LNCM-Box is installed"""
-    installed = "/media/mmcblk0p1/installed"
     if Path(installed).is_file():
         with open(installed, "r") as file:
             lines = file.readlines()
@@ -28,12 +27,10 @@ def check_installed():
     return False
 
 
-def move_cache():
+def move_cache(cache_dir="/media/mmcblk0p1/cache", var_cache="/var/cache/apk"):
     """Let apk cache live on persistent volume"""
     print("Let apk cache live on persistent volume")
-    cache_dir = Path("/media/mmcblk0p1/cache")
-    var_cache = "/var/cache/apk"
-    if cache_dir.is_dir():
+    if Path(cache_dir).is_dir():
         print("Removing {v}".format(v=var_cache))
         shutil.rmtree(var_cache)
 
@@ -398,14 +395,25 @@ def usb_setup():
     return True
 
 
+def rc_add(service, runlevel=''):
+    print("Enable {s} at boot".format(s=service))
+    call(["rc-update", "add", service, runlevel])
+
+
 def install_crontab():
+    from noma.config import HOME
+
     print("Installing crontab")
-    call(["/usr/bin/crontab", "/home/lncm/crontab"])
+    exitcode = call(["/usr/bin/crontab", "/home/lncm/crontab"])
+    return exitcode
 
 
 def enable_compose():
+    # TODO: Change init script to run "noma start" and "noma stop"
     print("Enable docker-compose at boot")
-    exitcode = call(["rc-update", "add", "docker-compose", "default"])
+    check_to_fetch("/etc/init.d/docker-compose",
+                   "https://raw.githubusercontent.com/lncm/pi-factory/b12c6f43d11be58dac03a2513cfd2abbb16f6526/etc/init.d/docker-compose")
+    exitcode = call(["rc-update", "add", "docker-compose"])
     return exitcode
 
 
@@ -414,11 +422,6 @@ def install_tor():
     if add_tor.returncode == 0:
         start_tor = run(["/sbin/service", "tor", "start"])
         return start_tor.returncode
-
-
-def enable_tor():
-    persist_tor = run(["rc-update", "add", "tor", "default"])
-    return persist_tor.returncode
 
 
 def install_box():
@@ -436,9 +439,12 @@ def install_box():
     install_firmware()  # for raspberry-pi
     install_apk_deps()  # curl & jq; are these really necessary?
     install_compose()
+    rc_add("dbus")
+    rc_add("avahi-daemon")
+    rc_add("docker")
     enable_compose()
     install_tor()
-    enable_tor()
+    rc_add("tor", "default")
 
     # html
     check_to_fetch(
