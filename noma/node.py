@@ -10,6 +10,7 @@ import pathlib
 import time
 import psutil
 import noma.config as cfg
+import noma.lnd
 
 
 def get_swap():
@@ -27,11 +28,11 @@ def check():
     # TODO: only print when logging is enabled
 
     media_exists = bool(cfg.MEDIA_PATH.is_dir())
-    noma_exists = bool(cfg.NOMA_PATH.is_dir())
+    noma_exists = bool(cfg.NOMA_SOURCE.is_dir())
     compose_exists = bool(cfg.COMPOSE_MODE_PATH.is_dir())
 
-    dir_exists_text = str(" dir exists")
-    dir_missing_text = str(" dir is missing or inaccessible")
+    dir_exists_text = str(" directory exists")
+    dir_missing_text = str(" directory is missing or inaccessible")
 
     if media_exists:
         print("✅ " + "Media" + dir_exists_text)
@@ -55,21 +56,24 @@ def check():
 
 def start():
     """Start default docker compose"""
-    if check():
-        # compose from noma source
-        os.chdir(cfg.COMPOSE_MODE_PATH)
-    else:
+    if is_running("lnd"):
+        print("lnd is already running")
+        exit(1)
+    if not check() and not noma.lnd.check():
         print("Fetching compose from noma repo")
         get_source()
-        os.chdir(cfg.COMPOSE_MODE_PATH)
 
+    os.chdir(cfg.COMPOSE_MODE_PATH)
     call(["docker-compose", "up", "-d"])
 
 
-def backup():
-    # TODO: replace alpine-specific with OS-agnostic function
-    """Backup apkovl to important usb device"""
-    call(["lbu", "pkg", cfg.NOMA_PATH])
+def info():
+    # Show dashboard with aggregated information
+    if is_running("lnd"):
+        print("lnd is running")
+        call(["docker", "exec", cfg.LND_MODE + "_lnd_1", "lncli", "getinfo"])
+    else:
+        print("lnd is not running")
 
 
 def devtools():
@@ -96,53 +100,49 @@ def is_running(node=""):
 
     :return bool: container is running"""
     from docker import from_env
+    import requests
 
     if not node:
-        node = "bitcoind"
+        node = "lnd"
     docker_host = from_env()
-    compose_name = "compose_{}_1".format(node)
+    compose_name = cfg.LND_MODE + "_" + node + "_1"
     try:
         for container in docker_host.containers.list():
             if compose_name in container.name:
                 return True
     except AttributeError:
         return None
+    except ConnectionError:
+        return None
+    except requests.exceptions.ConnectionError:
+        return None
+
     return False
 
 
-def stop_daemons():
-    """Check and wait for clean shutdown of both bitcoind and lnd"""
-    if not is_running("bitcoind") and not is_running("lnd"):
-        print("bitcoind and lnd are already stopped")
+def stop(timeout=1, retries=5):
+    """Check and wait for clean shutdown of lnd"""
+    def clean_stop():
+        # ensure clean shutdown of lnd
+        print("lnd is running, stopping with lncli stop")
+        success = call(["docker", "exec", cfg.LND_MODE + "_lnd_1", "lncli", "stop"])
+        if success is 0:
+            print("✅ lncli stop returned success")
+        else:
+            print("❌ lncli stop failed")
 
-    for i in range(5):
-        if not is_running("bitcoind") and not is_running("lnd"):
-            break
-        if is_running("bitcoind"):
-            # stop bitcoind
-            call(
-                ["docker", "exec", "compose_bitcoind_1", "bitcoin-cli", "stop"]
-            )
+        print("waiting " + str(timeout) + "s for lnd to stop...")
+        time.sleep(timeout)
+
+    for tries in range(retries):
         if is_running("lnd"):
-            # stop lnd
-            call(["docker", "exec", "compose_lnd_1", "lncli", "stop"])
+            clean_stop()
+            retries -= 1
+        else:
+            print("✅ lnd is stopped")
+            exit(0)
 
-        time.sleep(2)
-        i -= 1
-
-    for i in range(5):
-        import docker
-
-        client = docker.from_env()
-
-        if not is_running("bitcoind") and not is_running("lnd"):
-            break
-
-        for container in client.containers.list():
-            if container.name == "bitcoind" or "lnd":
-                container.stop()
-                time.sleep(2)
-                i -= 1
+    print("❌ Failed to stop lnd")
 
 
 def voltage(device=""):
@@ -195,15 +195,13 @@ def memory(device=""):
 
 
 def logs(node=""):
-    """Show logs of node specified, defaults to bitcoind
-
-    return str: tailling logs"""
+    """Tail logs of node specified, defaults to lnd"""
     if node:
-        container_name = "compose_" + node + "_1"
+        container_name = cfg.LND_MODE + "_" + node + "_1"
         call(["docker", "logs", "-f", container_name])
     else:
-        # default to bitcoind if node not given
-        call(["docker", "logs", "-f", "compose_bitcoind_1"])
+        # default to lnd if node not given
+        call(["docker", "logs", "-f", cfg.LND_MODE + "_lnd_1"])
 
 
 def install_git():
@@ -219,14 +217,14 @@ def get_source():
     """Get latest noma source code or update"""
     install_git()
 
-    if cfg.dir['noma'].is_dir():
+    if cfg.NOMA_SOURCE.is_dir():
         print("Source directory already exists")
-        print("Going to update with git pull instead")
-        os.chdir(cfg.dir['noma'])
+        print("Going to attempt update with git pull")
+        os.chdir(cfg.NOMA_SOURCE)
         call(["git", "pull"])
     else:
-        os.chdir(cfg.dir['home'])
-        call(["git", "clone", "https://github.com/lncm/noma.git"])
+        # source does not exist
+        call(["git", "clone", "https://github.com/lncm/noma.git", cfg.NOMA_SOURCE])
 
 
 def tunnel(port, hostname):
@@ -242,7 +240,7 @@ def tunnel(port, hostname):
                     "-o ServerAliveInterval=60",
                     "-o ServerAliveCountMax=10",
                     port_str,
-                    host,
+                    hostname,
                 ]
             )
         except Exception as error:
@@ -262,7 +260,7 @@ def reinstall():
     install_git()
     get_source()
 
-    os.chdir(FACTORY_DIR)
+    os.chdir(cfg.NOMA_SOURCE)
     call(["git", "pull"])
     print("Migrating current WiFi credentials")
     supplicant_sd = pathlib.Path("/etc/wpa_supplicant/wpa_supplicant.conf")
@@ -285,7 +283,7 @@ def full_reinstall():
     print("Starting upgrade...")
     install_git()
     get_source()
-    os.chdir(FACTORY_DIR)
+    os.chdir(cfg.dirs['noma'])
     call(["git", "pull"])
     call(["make_upgrade.sh"])
 
@@ -296,15 +294,11 @@ def do_diff():
 
     def make_diff():
 
-        print("Generating {h}/etc.diff".format(h=HOME_DIR))
-        call(["diff", "-r", "etc", "{h}/pi-factory/etc".format(h=HOME_DIR)])
-        print("Generating {h}/usr.diff".format(h=HOME_DIR))
-        call(["diff", "-r", "usr", "{h}/pi-factory/usr".format(h=HOME_DIR)])
-        print("Generating {h}/home.diff".format(h=HOME_DIR))
-        call(["diff", "-r", "home", "{h}/pi-factory/home".format(h=HOME_DIR)])
+        print("Generating {h}/noma.diff".format(h=cfg.HOME_PATH))
+        call(["diff", "-r", "/media/noma", "{h}/noma".format(h=cfg.HOME_PATH)])
 
-    if FACTORY_DIR.is_dir():
-        os.chdir(HOME_DIR + "/pi-factory")
+    if cfg.NOMA_SOURCE.is_dir():
+        os.chdir(cfg.NOMA_SOURCE)
         print("Getting latest sources")
         call(["git", "pull"])
         make_diff()

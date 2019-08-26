@@ -12,7 +12,6 @@ services:
     volumes:
       - /media/noma/lnd:/root/.lnd
       - /media/noma/lnd/lnd.conf:/home/lncm/.lnd/lnd.conf
-      - /var/lib/tor:/var/lib/tor
     depends_on:
       - bitcoind
     restart: on-failure

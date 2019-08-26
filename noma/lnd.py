@@ -2,12 +2,12 @@
 LND related functionality
 """
 import pathlib
-import shutil
 from subprocess import call
 from os import path
 from json import dumps
-from base64 import b64encode
 from requests import get, post
+import noma.config as cfg
+import base64
 
 
 def check_wallet():
@@ -19,33 +19,60 @@ def check_wallet():
 
     :return str: Status
     """
-    if path.exists("/media/noma/lnd"):
-        if path.exists("/media/noma/lnd/neutrino/data/chain"):
+    if cfg.LND_PATH.exists():
+        if not cfg.WALLET_PATH.exists():
             create_wallet()
         else:
-            print("Error: LND not initialized")
-            # print("Wallet already exists!")
-            # print(
-            #     "Please backup and move "
-            #     "/media/noma/lnd/neutrino/data/chain and then "
-            #     "restart lnd"
-            # )
+            print("❌ Error: LND not initialized")
+            print("Wallet already exists!")
+            print("Please backup and move: " + str(cfg.WALLET_PATH))
+            print("and then restart lnd")
+
     else:
-        print("lnd directory does not exist!")
+        print("❌ Error: lnd directory does not exist!")
+
+
+def encodemacaroons(macaroonfile=cfg.MACAROON_PATH, tlsfile=cfg.TLS_CERT_PATH):
+    if path.exists(macaroonfile) and path.exists(tlsfile):
+        with open(path.expanduser(macaroonfile), "rb") as f:
+            macaroon_bytes = f.read()
+        with open(path.expanduser(tlsfile), "rb") as f:
+            tls_bytes = f.read()
+        macaroonencoded = base64.urlsafe_b64encode(macaroon_bytes)
+        tlsdecoded = tls_bytes.decode('utf-8')
+        tlstrim = tlsdecoded.replace("\n", "")\
+            .replace("-----BEGIN CERTIFICATE-----", "")\
+            .replace("-----END CERTIFICATE-----", "")\
+            .replace("+", "-")\
+            .replace("/", "_")\
+            .replace("=", "")
+        tlsencoded = tlstrim.encode('utf-8')
+
+        return {'status': 'OK', 'certificate': tlsencoded, 'macaroon': macaroonencoded}
+    else:
+        return {'status': 'File Not Found'}
+
+
+def connectstring(hostname=cfg.URL_GRPC, macaroonfile=cfg.MACAROON_PATH, tlsfile=cfg.TLS_CERT_PATH):
+    result = encodemacaroons(macaroonfile=macaroonfile, tlsfile=tlsfile)
+    if result['status'] == 'OK':
+        macaroon_string = str(result['macaroon'], 'utf-8')
+        cert_string = str(result["certificate"], 'utf-8')
+        print("lndconnect://" + hostname + "?cert=" + cert_string + "&macaroon=" + macaroon_string)
+    else:
+        print(result['status'])
 
 
 def autounlock():
-    """Autounlock lnd using sesame.txt, tls.cert"""
+    """Auto-unlock lnd using password.txt, tls.cert"""
 
-    url = "https://127.0.0.1:8080/v1/unlockwallet"
-    cert_path = "/media/noma/lnd/neutrino/tls.cert"
     password_str = (
-        open("/media/noma/lnd/sesame.txt", "r").read().rstrip()
+        open(cfg.PASSWORD_FILE_PATH, "r").read().rstrip()
     )
     password_bytes = str(password_str).encode("utf-8")
-    data = {"wallet_password": b64encode(password_bytes).decode()}
+    data = {"wallet_password": base64.b64encode(password_bytes).decode()}
     try:
-        response = post(url, verify=cert_path, data=dumps(data))
+        response = post(cfg.URL_UNLOCKWALLET, verify=cfg.TLS_CERT_PATH, data=dumps(data))
     except Exception:
         # Silence connection errors when lnd is not running
         pass
@@ -70,7 +97,7 @@ def get_kv(key, section="", config_path=""):
     from configparser import ConfigParser
 
     if not config_path:
-        config_path = "/media/noma/lnd/neutrino/lnd.conf"
+        config_path = cfg.LND_CONF
     if not section:
         section = "Application Options"
 
@@ -98,7 +125,7 @@ def set_kv(key, value, section="", config_path=""):
     if not section:
         section = "Application Options"
     if not config_path:
-        config_path = "/media/noma/lnd/neutrino/lnd.conf"
+        config_path = cfg.LND_CONF
     parser = ConfigParser(strict=False)
     with open(config_path) as lines:
         parser.read_file(lines)
@@ -126,17 +153,17 @@ def set_bitcoind(password, user="", lnd_config=""):
     if not user:
         user = "lncm"
     if not lnd_config:
-        lnd_config = "/media/noma/lnd/neutrino/lnd.conf"
+        lnd_config = cfg.LND_CONF
     if pathlib.Path(lnd_config).is_file():
         set_kv("bitcoind.rpcuser", user, "Bitcoind", lnd_config)
         set_kv("bitcoind.rpcpass", password, "Bitcoind", lnd_config)
 
 
 def autoconnect(list_path=""):
-    """Autoconnect to a list of nodes in autoconnect.txt"""
+    """Auto-connect to a list of nodes in lnd/autoconnect.txt"""
     print("Connecting to:")
     if not list_path:
-        list_path = "/media/noma/lnd/autoconnect.txt"
+        list_path = pathlib.Path(cfg.LND_PATH / "autoconnect.txt")
 
     with open(list_path) as address_list:
         for address in address_list:
@@ -145,7 +172,7 @@ def autoconnect(list_path=""):
                 [
                     "docker",
                     "exec",
-                    "compose_lnd_1",
+                    cfg.LND_MODE + "_lnd_1",
                     "lncli",
                     "connect",
                     address.strip(),
@@ -155,25 +182,30 @@ def autoconnect(list_path=""):
 
 def check():
     """Check lnd filesystem structure"""
-
-    # check lnd filesystem structure
-    lnd_dir = pathlib.Path("/media/noma/lnd").is_dir()
-    if lnd_dir:
-        print("lnd directory exists")
+    if cfg.LND_PATH.is_dir():
+        print("✅ lnd directory exists")
     else:
-        print("lnd directory missing")
+        print("❌ lnd directory missing")
 
-    lnd_conf = pathlib.Path(
-        "/media/noma/lnd/neutrino/lnd.conf"
-    ).is_file()
-    if lnd_conf:
-        print("lnd conf exists")
+    if cfg.LND_CONF.is_file():
+        print("✅ lnd.conf exists")
     else:
-        print("lnd conf missing")
+        print("❌ lnd.conf missing")
 
-    if lnd_dir and lnd_conf:
+    if cfg.LND_PATH.is_dir() and cfg.LND_CONF.is_file():
         return True
     return False
+
+
+def backup():
+    # TODO: wallet/channel backup
+    # remote backups via ssh or rsync
+    print("Not implemented yet")
+
+
+def savepeers():
+    # TODO: export list of peers to text file on disk
+    print("Not implemented yet")
 
 
 def randompass(string_length=10):
@@ -185,71 +217,44 @@ def randompass(string_length=10):
     return "".join(choice(letters) for i in range(string_length))
 
 
-def create():
-    from noma.config import HOME
-
-    """Create lnd directory structure and config file"""
-    lnd_path = "/media/noma/lnd/"
-    pathlib.Path(lnd_path).mkdir(exist_ok=True)
-    shutil.copy("/media/noma/lnd/neutrino/lnd.conf", lnd_path + "/lnd.conf")
-
-
-# Generate seed
-URL_GENSEED = "https://127.0.0.1:8080/v1/genseed"
-
-# Initialize wallet
-URL_INITWALLET = "https://127.0.0.1:8080/v1/initwallet"
-
-TLS_CERT_PATH = "/media/noma/lnd/neutrino/tls.cert"
-SEED_FILENAME = "/media/noma/lnd/seed.txt"
-
-# save password control file (Add this file if we want to save passwords)
-SAVE_PASSWORD_CONTROL_FILE = "/media/noma/lnd/save_password"
-
-# Create password for writing
-TEMP_PASSWORD_FILE_PATH = "/media/noma/lnd/password.txt"
-
-SESAME_PATH = "/media/noma/lnd/sesame.txt"
-
-
 def _write_password(password_str):
     """Write a generated password to file, either the TEMP_PASSWORD_FILE_PATH
-    or the SESAME_PATH depending on whether SAVE_PASSWORD_CONTROL_FILE
+    or the PASSWORD_FILE_PATH depending on whether SAVE_PASSWORD_CONTROL_FILE
     exists."""
-    if not path.exists(SAVE_PASSWORD_CONTROL_FILE):
-        # Use tempory file if there is a password control file there
-        temp_password_file = open(TEMP_PASSWORD_FILE_PATH, "w")
+    if not path.exists(cfg.SAVE_PASSWORD_CONTROL_FILE):
+        # Use temporary file if there is a password control file there
+        temp_password_file = open(cfg.PASSWORD_FILE_PATH, "w")
         temp_password_file.write(password_str)
         temp_password_file.close()
     else:
-        # Use sesame.txt if password_control_file exists
-        password_file = open(SESAME_PATH, "w")
+        # Use password.txt if password_control_file exists
+        password_file = open(cfg.PASSWORD_FILE_PATH, "w")
         password_file.write(password_str)
         password_file.close()
 
 
 def _wallet_password():
-    """Either load the wallet password from SESAME_PATH, or generate a new
+    """Either load the wallet password from PASSWORD_FILE_PATH, or generate a new
     password, save it to file, and in either case return the password"""
     # Check if there is an existing file, if not generate a random password
-    if not path.exists(SESAME_PATH):
-        # sesame file doesnt exist
+    if not path.exists(cfg.PASSWORD_FILE_PATH):
+        # password file doesnt exist
         password_str = randompass(string_length=15)
         _write_password(password_str)
     else:
-        # Get password from file if sesame file already exists
-        password_str = open(SESAME_PATH, "r").read().rstrip()
+        # Get password from file if password file already exists
+        password_str = open(cfg.PASSWORD_FILE_PATH, "r").read().rstrip()
     return password_str
 
 
 def _generate_and_save_seed():
     """Generate a wallet seed, save it to SEED_FILENAME, and return it"""
     mnemonic = None
-    return_data = get(URL_GENSEED, verify=TLS_CERT_PATH)
+    return_data = get(cfg.URL_GENSEED, verify=cfg.TLS_CERT_PATH)
     if return_data.status_code == 200:
         json_seed_creation = return_data.json()
         mnemonic = json_seed_creation["cipher_seed_mnemonic"]
-        seed_file = open(SEED_FILENAME, "w")
+        seed_file = open(cfg.SEED_FILENAME, "w")
         for word in mnemonic:
             seed_file.write(word + "\n")
         seed_file.close()
@@ -261,7 +266,7 @@ def _generate_and_save_seed():
 def _load_seed():
     """Load the wallet seed from SEED_FILENAME and return it"""
     # Seed exists
-    seed_file = open(SEED_FILENAME, "r")
+    seed_file = open(cfg.SEED_FILENAME, "r")
     seed_file_words = seed_file.readlines()
     mnemonic = []
     for importword in seed_file_words:
@@ -275,7 +280,7 @@ def _wallet_data(password_str):
     # Convert password to byte encoded
     password_bytes = str(password_str).encode("utf-8")
     # Send request to generate seed if seed file doesnt exist
-    if not path.exists(SEED_FILENAME):
+    if not path.exists(cfg.SEED_FILENAME):
         mnemonic = _generate_and_save_seed()
     else:
         mnemonic = _load_seed()
@@ -290,28 +295,15 @@ def _wallet_data(password_str):
 
 def create_wallet():
     """
-    Documented logic
-
     1. Check if there's already a wallet. If there is, then exit.
-    2. Check for sesame.txt
+    2. Check for password.txt
     3. If doesn't exist then check for whether we should save the password
     (SAVE_PASSWORD_CONTROL_FILE exists) or not
-    4. If sesame.txt exists import password in.
-    5. If sesame.txt doesn't exist ans we don't save the password, create a
-    password and save it in temporary path as defined in
-    TEMP_PASSWORD_FILE_PATH
+    4. If password.txt exists import password in.
+    5. If password.txt doesn't exist and we don't save the password, create a
+    password and save it in temporary path as defined in PASSWORD_FILE_PATH
     6. Now start the wallet creation. Look for a seed defined in SEED_FILENAME,
     if not existing then generate a wallet based on the seed by LND.
-
-    Main entrypoint function
-
-    Testing creation notes:
-    rm $HOME/seed.txt
-    rm /media/important/important/lnd/sesame.txt
-
-    docker stop compose_lndbox_1
-    rm -fr /media/important/important/lnd/data/chain/
-    docker start compose_lndbox_1
     """
     password_str = _wallet_password()
 
@@ -322,15 +314,14 @@ def create_wallet():
     if data:
         # Data is defined so proceed
         return_data = post(
-            URL_INITWALLET, verify=TLS_CERT_PATH, data=dumps(data)
+            cfg.URL_INITWALLET, verify=cfg.TLS_CERT_PATH, data=dumps(data)
         )
         if return_data.status_code == 200:
-            # If create wallet was successful
-            print("Create wallet is successful")
+            print("✅ Create wallet is successful")
         else:
-            print("Create wallet is not successful")
+            print("❌ Create wallet is not successful")
     else:
-        print("Error: cannot proceed, wallet data is not defined")
+        print("❌ Error: cannot proceed, wallet data is not defined")
 
 
 if __name__ == "__main__":

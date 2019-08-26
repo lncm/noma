@@ -1,10 +1,5 @@
 # lnd
-lnd/neutrino/data
-lnd/neutrino/tls.cert
-lnd/neutrino/tls.key
-lnd/neutrino/logs
-lnd/seed.txt
-lnd/sesame.txt
+lnd/neutrino/
 
 # PyCharm
 .idea
