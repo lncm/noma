@@ -22,7 +22,6 @@ noma lnd backup
 noma lnd autounlock
 noma lnd autoconnect [<path>]
 noma lnd savepeers
-noma lnd connectapp
 noma lnd connectstring
 ```
 **noma:**
