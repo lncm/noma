@@ -40,10 +40,13 @@ def encodemacaroons(macaroonfile=cfg.MACAROON_PATH, tlsfile=cfg.TLS_CERT_PATH):
             tls_bytes = f.read()
         macaroonencoded = base64.urlsafe_b64encode(macaroon_bytes)
         tlsdecoded = tls_bytes.decode('utf-8')
-        tlstrim = tlsdecoded.replace('\n', '')\
+        tlstrim = tlsdecoded.replace("\n", "")\
             .replace("-----BEGIN CERTIFICATE-----", "")\
-            .replace("-----END CERTIFICATE-----", "")
-        tlsencoded = base64.urlsafe_b64encode(tlstrim.encode('utf-8'))
+            .replace("-----END CERTIFICATE-----", "")\
+            .replace("+", "-")\
+            .replace("/", "_")\
+            .replace("=", "")
+        tlsencoded = tlstrim.encode('utf-8')
 
         return {'status': 'OK', 'certificate': tlsencoded, 'macaroon': macaroonencoded}
     else:
@@ -75,7 +78,7 @@ def autounlock():
         open(cfg.PASSWORD_FILE_PATH, "r").read().rstrip()
     )
     password_bytes = str(password_str).encode("utf-8")
-    data = {"wallet_password": b64encode(password_bytes).decode()}
+    data = {"wallet_password": base64.b64encode(password_bytes).decode()}
     try:
         response = post(cfg.URL_UNLOCKWALLET, verify=cfg.TLS_CERT_PATH, data=dumps(data))
     except Exception:
