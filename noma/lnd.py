@@ -288,7 +288,7 @@ def _wallet_data(password_str):
         # Generate init wallet file from what was posted
         return {
             "cipher_seed_mnemonic": mnemonic,
-            "wallet_password": b64encode(password_bytes).decode(),
+            "wallet_password": base64.b64encode(password_bytes).decode(),
         }
     return {}
 
