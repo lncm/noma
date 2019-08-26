@@ -53,14 +53,6 @@ def encodemacaroons(macaroonfile=cfg.MACAROON_PATH, tlsfile=cfg.TLS_CERT_PATH):
         return {'status': 'File Not Found'}
 
 
-def connectapp(ip=cfg.URL_GRPC, macaroonfile=cfg.MACAROON_PATH, tlsfile=cfg.TLS_CERT_PATH):
-    result = encodemacaroons(macaroonfile=macaroonfile, tlsfile=tlsfile)
-    if result['status'] == 'OK':
-        return {'c': result['certificate'], 'm': result['macaroon'], 'ip': ip}
-    else:
-        return result
-
-
 def connectstring(hostname=cfg.URL_GRPC, macaroonfile=cfg.MACAROON_PATH, tlsfile=cfg.TLS_CERT_PATH):
     result = encodemacaroons(macaroonfile=macaroonfile, tlsfile=tlsfile)
     if result['status'] == 'OK':

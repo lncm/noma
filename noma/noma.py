@@ -44,9 +44,6 @@ def lnd(args):
     elif args["savepeers"]:
         lnd.savepeers()
 
-    elif args["connectapp"]:
-        lnd.connectapp()
-
     elif args["connectstring"]:
         lnd.connectstring()
 
