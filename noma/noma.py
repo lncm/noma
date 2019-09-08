@@ -23,12 +23,14 @@ Options:
 """
 import os
 from docopt import docopt
+from noma import lnd
 from noma import node
 
 
-def lnd(args):
-    from noma import lnd
-
+def lnd_fn(args):
+    """
+    lnd related functionality
+    """
     if args["create"]:
         lnd.check_wallet()
 
@@ -48,9 +50,10 @@ def lnd(args):
         lnd.connectstring()
 
 
-def node(args):
-    from noma import node
-
+def node_fn(args):
+    """
+    node related functionality
+    """
     if args["info"]:
         node.info()
 
@@ -68,13 +71,16 @@ def node(args):
 
 
 def main():
+    """
+    main noma entrypoint function
+    """
     args = docopt(__doc__, version="Noma v0.5.0")
 
     if os.geteuid() == 0:
         if args["lnd"]:
-            lnd(args)
+            lnd_fn(args)
         else:
-            node(args)
+            node_fn(args)
     else:
         print("Sorry! You must be root")
 
