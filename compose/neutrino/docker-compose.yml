@@ -7,3 +7,15 @@ services:
       - /media/noma/lnd/neutrino/lnd.conf:/home/lncm/.lnd/lnd.conf
     restart: on-failure
     network_mode: host
+
+  invoicer:
+    image: lncm/invoicer:0.5.1
+    volumes:
+      - /media/noma/invoicer:/root/.lncm
+      - /media/noma/lnd/neutrino:/lnd
+      - /media/noma/public_html:/static
+      - /media/noma/invoicer:/logs
+    depends_on:
+      - lnd
+    restart: on-failure
+    network_mode: host
