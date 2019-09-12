@@ -42,7 +42,7 @@ debian_install() {
     apt-get install -y python3-pip python3-cffi libffi-dev libssl-dev git
 
     # check if source keyword exists to guard against bashism
-    if type source; then
+    if type source >/dev/null 2>&1; then
         # reload profile to update PATH
         source ~/.profile
 
@@ -133,9 +133,10 @@ main() {
         echo "Sources not found, fetching from github..."
         mkdir /media
         mkdir /media/noma
-        cd /media/noma || exit 1
+        cd /media/noma
         install_git
     fi
+    fetch_html
     run_noma
 }
 main
