@@ -1,7 +1,7 @@
 version: '3.7'
 services:
   lnd:
-    image: lncm/lnd:0.7.1-neutrino-wt
+    image: lncm/lnd:0.7.1-experimental-watchtower-neutrino
     volumes:
       - /media/noma/lnd/neutrino:/root/.lnd
       - /media/noma/lnd/neutrino/lnd.conf:/home/lncm/.lnd/lnd.conf
