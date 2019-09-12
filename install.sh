@@ -123,6 +123,24 @@ check_root() {
     fi
 }
 
+fetch_html() {
+    if ! command -v wget >/dev/null 2<&1; then
+        echo "Error: wget not available"
+        return 1
+    fi
+
+    if ! [ -d "public_html" ]; then
+        echo "Error: public_html directory not found"
+        return 1
+    fi
+
+    if ! [ -f "public_html/index.html" ]; then
+        wget -O public_html/index.html \
+        https://raw.githubusercontent.com/lncm/invoicer-ui/master/dist/index.html
+        return 0
+    fi
+}
+
 main() {
     check_root
     if [ -d "/media/noma" ]; then
