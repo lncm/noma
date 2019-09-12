@@ -14,13 +14,15 @@ if not plugins_to_install.empty?
 end
 
 Vagrant.configure("2") do |config|
-  config.vm.box = "generic/alpine310"
-  config.vm.hostname = "alpine-vagrant"
-  config.vm.synced_folder ".", "/media/noma",
-                          type: "nfs",
-                          nfs_export: true
-  config.vm.network "private_network", ip: "192.168.83.33"
-  config.vm.provision "shell", inline: "cd /media/noma && ./install.sh"
+  config.vm.define "alpine", autostart: true do |alpine|
+    config.vm.box = "generic/alpine310"
+    config.vm.hostname = "alpine-vagrant"
+    config.vm.synced_folder ".", "/media/noma",
+                            type: "nfs",
+                            nfs_export: true
+    config.vm.network "private_network", ip: "192.168.83.33"
+    config.vm.provision "shell", inline: "cd /media/noma && ./install.sh"
+  end
 
   config.vm.define "debian", autostart: false do |debian|
     debian.vm.box = "generic/debian10"
