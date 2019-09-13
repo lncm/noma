@@ -5,9 +5,10 @@ import pathlib
 from subprocess import call
 from os import path
 from json import dumps
+import base64
 from requests import get, post
 import noma.config as cfg
-import base64
+
 
 
 def check_wallet():
@@ -33,6 +34,7 @@ def check_wallet():
 
 
 def encodemacaroons(macaroonfile=cfg.MACAROON_PATH, tlsfile=cfg.TLS_CERT_PATH):
+    """base64url encode macaroon and TLS certificate"""
     if path.exists(macaroonfile) and path.exists(tlsfile):
         with open(path.expanduser(macaroonfile), "rb") as f:
             macaroon_bytes = f.read()
@@ -54,6 +56,7 @@ def encodemacaroons(macaroonfile=cfg.MACAROON_PATH, tlsfile=cfg.TLS_CERT_PATH):
 
 
 def connectstring(hostname=cfg.URL_GRPC, macaroonfile=cfg.MACAROON_PATH, tlsfile=cfg.TLS_CERT_PATH):
+    """Show lndconnect string for remote wallets such as Zap"""
     result = encodemacaroons(macaroonfile=macaroonfile, tlsfile=tlsfile)
     if result['status'] == 'OK':
         macaroon_string = str(result['macaroon'], 'utf-8')
@@ -198,12 +201,14 @@ def check():
 
 
 def backup():
+    """Export and backup latest channel.db from lnd via ssh"""
     # TODO: wallet/channel backup
     # remote backups via ssh or rsync
     print("Not implemented yet")
 
 
 def savepeers():
+    """Save list of peers to file on disk for reconnecting"""
     # TODO: export list of peers to text file on disk
     print("Not implemented yet")
 
