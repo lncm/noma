@@ -4,6 +4,8 @@
 # Debian-based Linux systems or run with
 # "vagrant up" to create VM
 
+set -e
+
 alpine_install() {
     # noma dependencies
     apk add python3 py3-psutil
@@ -19,41 +21,52 @@ alpine_install() {
 
 run_noma() {
     # run noma
-    noma --version || exit 1
-    noma --help || exit 1
-    run_tests || exit 1
+    noma --version
+    noma --help
+    run_tests
     start_noma
 }
 
 debian_install() {
-    if [ -x "$(command -v apt-get)" ]; then
-        # docker
-        curl -fsSL https://get.docker.com -o get-docker.sh
-        sh get-docker.sh
-        # dependencies
-        apt-get install python3-pip python3-cffi libffi-dev libssl-dev git -y
+    if ! command -v apt-get >/dev/null 2>&1; then
+        echo "Error: apt-get not available"
+        return 1
+    fi
+
+    if ! command -v docker >/dev/null 2>&1; then
+        # only install docker if missing
+        curl -fsSL https://get.docker.com | sh
+    fi
+
+    # apt dependencies
+    apt-get install -y python3-pip python3-cffi libffi-dev libssl-dev git
+
+    # check if source keyword exists to guard against bashism
+    if type source >/dev/null 2>&1; then
         # reload profile to update PATH
         source ~/.profile
+
         # python virtual environment
         pip3 install virtualenv
         virtualenv /media/noma/venv
+
+        # source python virtual environment
         source /media/noma/venv/bin/activate
-        # docker-compose
-        pip3 install docker-compose
-        # noma
-        python3 setup.py develop
-    else
-        echo "Error: apt-get not available"
     fi
+
+    # docker-compose
+    pip3 install docker-compose
+    # noma
+    python3 setup.py develop
 }
 
 start_noma() {
     noma start
-    echo "Waiting 3s for lnd to start up..."
-    sleep 3 && noma lnd create
+    echo "Waiting 5s for lnd to start up..."
+    sleep 5 && noma lnd create
     docker logs neutrino_lnd_1
     echo "Waiting 5s for wallet to be created..."
-    sleep 5 && docker exec neutrino_lnd_1 lncli getinfo
+    sleep 5 && noma info
 }
 
 run_tests() {
@@ -88,22 +101,44 @@ chroot_install() {
 
 check_os() {
     if [ -f "/etc/alpine-release" ]; then
-        alpine_install || exit 1
-    elif [ -x "$(command -v apt-get)" ]; then
-        debian_install || exit 1
-    else
-        echo "Not an Alpine or Debian-based Linux system"
-        echo
-        echo "Attempting to create Alpine chroot"
-        chroot_install || exit 1
+        alpine_install
+        return 0
     fi
+
+    if [ -x "$(command -v apt-get)" ]; then
+        debian_install
+        return 0
+    fi
+
+    echo "Not an Alpine or Debian-based Linux system"
+    echo
+    echo "Attempting to create Alpine chroot"
+    chroot_install
 }
 
 check_root() {
-if ! [ $(id -u) = 0 ]; then
-   echo "Error: You must be root to install"
-   exit 1
-fi
+    if [ "$(id -u)" != "0" ]; then
+       echo "Error: You must be root to install"
+       exit 1
+    fi
+}
+
+fetch_html() {
+    if ! command -v wget >/dev/null 2<&1; then
+        echo "Error: wget not available"
+        return 1
+    fi
+
+    if ! [ -d "public_html" ]; then
+        echo "Error: public_html directory not found"
+        return 1
+    fi
+
+    if ! [ -f "public_html/index.html" ]; then
+        wget -O public_html/index.html \
+        https://raw.githubusercontent.com/lncm/invoicer-ui/master/dist/index.html
+        return 0
+    fi
 }
 
 main() {
@@ -116,9 +151,10 @@ main() {
         echo "Sources not found, fetching from github..."
         mkdir /media
         mkdir /media/noma
-        cd /media/noma || exit 1
+        cd /media/noma
         install_git
     fi
+    fetch_html
     run_noma
 }
 main
