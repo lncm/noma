@@ -2,9 +2,9 @@ from setuptools import setup
 
 setup(
     name="noma",
-    version="0.4.5",
+    version="0.5.0",
     packages=["noma"],
-    install_requires=["psutil", "docopt", "requests"],
+    install_requires=["psutil", "docopt", "requests", "docker-compose"],
     entry_points={"console_scripts": ["noma = noma.noma:main"]},
     # metadata to display on PyPI
     zip_safe=True,
