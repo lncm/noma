@@ -35,7 +35,7 @@ def check_wallet():
 
 def encodemacaroons(macaroonfile=cfg.MACAROON_PATH, tlsfile=cfg.TLS_CERT_PATH):
     """base64url encode macaroon and TLS certificate"""
-    if path.exists(macaroonfile) and path.exists(tlsfile):
+    if path.exists(str(macaroonfile)) and path.exists(str(tlsfile)):
         with open(path.expanduser(macaroonfile), "rb") as f:
             macaroon_bytes = f.read()
         with open(path.expanduser(tlsfile), "rb") as f:
@@ -57,7 +57,7 @@ def encodemacaroons(macaroonfile=cfg.MACAROON_PATH, tlsfile=cfg.TLS_CERT_PATH):
 
 def connectstring(hostname=cfg.URL_GRPC, macaroonfile=cfg.MACAROON_PATH, tlsfile=cfg.TLS_CERT_PATH):
     """Show lndconnect string for remote wallets such as Zap"""
-    result = encodemacaroons(macaroonfile=macaroonfile, tlsfile=tlsfile)
+    result = encodemacaroons(macaroonfile=str(macaroonfile), tlsfile=str(tlsfile))
     if result['status'] == 'OK':
         macaroon_string = str(result['macaroon'], 'utf-8')
         cert_string = str(result["certificate"], 'utf-8')
