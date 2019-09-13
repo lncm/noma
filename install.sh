@@ -14,7 +14,6 @@ alpine_install() {
     service docker start
     # docker-compose
     apk add libffi-dev py3-cffi python3-dev build-base python3 openssl-dev
-    pip3 install docker-compose
     # install noma
     python3 setup.py develop
 }
@@ -53,9 +52,6 @@ debian_install() {
         # source python virtual environment
         source /media/noma/venv/bin/activate
     fi
-
-    # docker-compose
-    pip3 install docker-compose
     # noma
     python3 setup.py develop
 }
