@@ -21,6 +21,10 @@ Vagrant.configure("2") do |config|
                             type: "nfs",
                             nfs_export: true
     config.vm.network "private_network", ip: "192.168.83.33"
+    config.vm.network "forwarded_port", guest: 9735, host: 9735
+    config.vm.network "forwarded_port", guest: 10009, host: 10009
+    config.vm.network "forwarded_port", guest: 8080, host: 8080
+    config.vm.network "forwarded_port", guest: 8181, host: 8181
     config.vm.provision "shell", inline: "cd /media/noma && ./install.sh"
   end
 
