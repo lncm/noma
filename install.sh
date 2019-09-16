@@ -1,7 +1,10 @@
 #!/bin/sh
 
-# install noma and dependencies within alpine linux
-# or run with "vagrant up" to create alpine VM
+# install noma and dependencies on Alpine and
+# Debian-based Linux systems or run with
+# "vagrant up" to create VM
+
+set -e
 
 alpine_install() {
     # noma dependencies
@@ -14,20 +17,56 @@ alpine_install() {
     pip3 install docker-compose
     # install noma
     python3 setup.py develop
+}
+
+run_noma() {
     # run noma
-    noma --version || exit 1
-    noma --help || exit 1
-    run_tests || exit 1
+    noma --version
+    noma --help
+    run_tests
     start_noma
+}
+
+debian_install() {
+    if ! command -v apt-get >/dev/null 2>&1; then
+        echo "Error: apt-get not available"
+        return 1
+    fi
+
+    # only install docker if missing
+    if ! command -v docker >/dev/null 2>&1; then
+        curl -fsSL https://get.docker.com | sh
+    fi
+
+    # apt dependencies
+    apt-get install -y python3-pip python3-cffi libffi-dev libssl-dev git
+
+    # check if source keyword exists to guard against bashism
+    if type source >/dev/null 2>&1; then
+        # reload profile to update PATH
+        source ~/.profile
+
+        # python virtual environment
+        pip3 install virtualenv
+        virtualenv /media/noma/venv
+
+        # source python virtual environment
+        source /media/noma/venv/bin/activate
+    fi
+
+    # docker-compose
+    pip3 install docker-compose
+    # noma
+    python3 setup.py develop
 }
 
 start_noma() {
     noma start
-    echo "Waiting 3s for lnd to start up..."
-    sleep 3 && noma lnd create
+    echo "Waiting 5s for lnd to start up..."
+    sleep 5 && noma lnd create
     docker logs neutrino_lnd_1
     echo "Waiting 5s for wallet to be created..."
-    sleep 5 && docker exec neutrino_lnd_1 lncli getinfo
+    sleep 5 && noma info
 }
 
 run_tests() {
@@ -45,9 +84,9 @@ install_git() {
     apk add git
     git clone https://github.com/lncm/noma.git
     if [ ! -f setup.py ]; then
-        cd noma || exit
+        cd noma || exit 1
     fi
-    alpine_install
+    check_os
 }
 
 chroot_install() {
@@ -57,33 +96,65 @@ chroot_install() {
         || exit 1
     chmod +x ./alpine-chroot-install || exit 1
     ./alpine-chroot-install -d /alpine-v310 -b v3.10
-    /alpine-v310/enter-chroot install.sh
+    /alpine-v310/enter-chroot ./install.sh
 }
 
-check_vm() {
-    if [ -d "/media/noma" ]; then
-        # Vagrant mode
-        echo "Detected source directory"
+check_os() {
+    if [ -f "/etc/alpine-release" ]; then
         alpine_install
-    else
-        echo "Sources not found, fetching from github..."
-        mkdir /media
-        mkdir /media/noma
-        cd /media/noma || exit
-        install_git
+        return 0
+    fi
+
+    if command -v apt-get >/dev/null 2>&1; then
+        debian_install
+        return 0
+    fi
+
+    echo "Not an Alpine or Debian-based Linux system"
+    echo
+    echo "Attempting to create Alpine chroot"
+    chroot_install
+}
+
+check_root() {
+    if [ "$(id -u)" != "0" ]; then
+       echo "Error: You must be root to install"
+       exit 1
+    fi
+}
+
+fetch_html() {
+    if ! command -v wget >/dev/null 2<&1; then
+        echo "Error: wget not available"
+        return 1
+    fi
+
+    if ! [ -d "public_html" ]; then
+        echo "Error: public_html directory not found"
+        return 1
+    fi
+
+    if ! [ -f "public_html/index.html" ]; then
+        wget -O public_html/index.html \
+        https://raw.githubusercontent.com/lncm/invoicer-ui/master/dist/index.html
+        return 0
     fi
 }
 
 main() {
-    if [ -f "/etc/alpine-release" ]; then
-        check_vm
+    check_root
+    if [ -d "/media/noma" ]; then
+        echo "Detected source directory"
+        # Vagrant mode
+        check_os
     else
-        echo "Not an alpine linux system!"
-        echo
-        echo "Attempting to create alpine chroot"
-        chroot_install || exit 1
-        check_vm
-
+        echo "Sources not found, fetching from github..."
+        mkdir /media
+        mkdir /media/noma
+        cd /media/noma
+        install_git
     fi
+    fetch_html
+    run_noma
 }
 main
