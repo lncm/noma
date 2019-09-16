@@ -32,8 +32,8 @@ debian_install() {
         return 1
     fi
 
+    # only install docker if missing
     if ! command -v docker >/dev/null 2>&1; then
-        # only install docker if missing
         curl -fsSL https://get.docker.com | sh
     fi
 
@@ -101,7 +101,7 @@ check_os() {
         return 0
     fi
 
-    if [ -x "$(command -v apt-get)" ]; then
+    if command -v apt-get >/dev/null 2>&1; then
         debian_install
         return 0
     fi
