@@ -27,18 +27,13 @@ run_noma() {
 }
 
 debian_install() {
-    if ! command -v apt-get >/dev/null 2>&1; then
-        echo "Error: apt-get not available"
-        return 1
-    fi
-
     # only install docker if missing
     if ! command -v docker >/dev/null 2>&1; then
         curl -fsSL https://get.docker.com | sh
     fi
 
     # apt dependencies
-    apt-get install -y python3-pip python3-cffi libffi-dev libssl-dev git
+    apt-get install -y python3-pip python3-cffi libffi-dev libssl-dev
 
     # check if source keyword exists to guard against bashism
     if type source >/dev/null 2>&1; then
@@ -52,6 +47,7 @@ debian_install() {
         # source python virtual environment
         source /media/noma/venv/bin/activate
     fi
+
     # noma
     python3 setup.py develop
 }
@@ -77,7 +73,7 @@ run_tests() {
 }
 
 install_git() {
-    apk add git
+    apk add git >/dev/null 2<&1 || apt-get install git -y >/dev/null 2<&1
     git clone https://github.com/lncm/noma.git
     if [ ! -f setup.py ]; then
         cd noma || exit 1
@@ -120,20 +116,21 @@ check_root() {
 }
 
 fetch_html() {
-    if ! command -v wget >/dev/null 2<&1; then
-        echo "Error: wget not available"
-        return 1
-    fi
-
-    if ! [ -d "public_html" ]; then
-        echo "Error: public_html directory not found"
+    apk add curl >/dev/null 2<&1 || apt-get install curl -y >/dev/null 2<&1
+    if ! command -v curl >/dev/null 2<&1; then
+        echo "Error: curl not available"
         return 1
     fi
 
     if ! [ -f "public_html/index.html" ]; then
-        wget -O public_html/index.html \
-        https://raw.githubusercontent.com/lncm/invoicer-ui/master/dist/index.html
+        curl https://raw.githubusercontent.com/lncm/invoicer-ui/master/dist/index.html \
+        --create-dirs -o public_html/index.html
         return 0
+    fi
+
+    if ! [ -f "public_html/index.html" ]; then
+        echo "Error: index.html missing"
+        return 1
     fi
 }
 
@@ -145,9 +142,8 @@ main() {
         check_os
     else
         echo "Sources not found, fetching from github..."
-        mkdir /media
-        mkdir /media/noma
-        cd /media/noma
+        mkdir -p /media
+        cd /media
         install_git
     fi
     fetch_html
