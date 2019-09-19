@@ -12,10 +12,15 @@ LND_MODE = "neutrino"
 LND_NET = "mainnet"
 
 """Filesystem"""
-
 MEDIA_PATH = Path("/media")
 NOMA_SOURCE = MEDIA_PATH / "noma"
 
+"""Remote SSH backup host"""
+SSH_PORT = "22"
+# Make sure to use a passphrase-less private key
+SSH_IDENTITY = "~/.ssh/id_ed25519"
+# [user@]host:[path]
+SSH_TARGET = "user@ssh-hostname:/path/to/backup/dir/"
 
 """Do not change below here"""
 """unless you know what you're doing"""
@@ -32,6 +37,7 @@ TLS_CERT_PATH = LND_PATH / "tls.cert"
 
 MACAROON_PATH = CHAIN_PATH / LND_NET / "admin.macaroon"
 SEED_FILENAME = LND_PATH / "seed.txt"
+CHANNEL_BACKUP = CHAIN_PATH / LND_NET / "channel.backup"
 
 """LND Create Password"""
 # Save password control file (Add this file to save passwords)
@@ -46,4 +52,3 @@ URL_GENSEED = "https://127.0.0.1:8080/v1/genseed"
 # Initialize wallet
 URL_INITWALLET = "https://127.0.0.1:8080/v1/initwallet"
 URL_UNLOCKWALLET = "https://127.0.0.1:8080/v1/unlockwallet"
-
