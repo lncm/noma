@@ -38,7 +38,9 @@ def fastsync():
     bitcoind_dir = pathlib.Path(bitcoind_dir_path)
     location = "http://utxosets.blob.core.windows.net/public/"
     snapshot = "utxo-snapshot-bitcoin-mainnet-565305.tar"
-    checksum = "8e18176138be351707aee95f349dd1debc714cc2cc4f0c76d6a7380988bf0d22"
+    checksum = (
+        "8e18176138be351707aee95f349dd1debc714cc2cc4f0c76d6a7380988bf0d22"
+    )
     snapshot_path = bitcoind_dir / snapshot
     url = location + snapshot
 
@@ -76,13 +78,19 @@ def fastsync():
 
     def compare_checksums():
         print("Comparing checksums")
-        openssl_location = run(["which", "openssl"], stdout=DEVNULL, stderr=DEVNULL)
+        openssl_location = run(
+            ["which", "openssl"], stdout=DEVNULL, stderr=DEVNULL
+        )
         if openssl_location.returncode == 0:
             # openssl is installed
-            openssl = run(["openssl", "dgst", "-sha256", snapshot_path], stdout=PIPE, stderr=PIPE)
+            openssl = run(
+                ["openssl", "dgst", "-sha256", snapshot_path],
+                stdout=PIPE,
+                stderr=PIPE,
+            )
             if openssl.returncode == 0:
                 hash = str(bytes.decode(openssl.stdout))
-                hash = hash.split(' ')[1].rstrip()
+                hash = hash.split(" ")[1].rstrip()
 
                 if hash == checksum:
                     print("Checksums match")
@@ -91,24 +99,32 @@ def fastsync():
                 print("Expected: " + str(checksum))
                 print("  Actual: " + str(hash))
                 return False
-            raise OSError("Cannot compare hashes: " + bytes.decode(openssl.stderr))
+            raise OSError(
+                "Cannot compare hashes: " + bytes.decode(openssl.stderr)
+            )
         else:
-            shasum = run(["sha256sum", snapshot_path], stdout=PIPE, stderr=PIPE)
+            shasum = run(
+                ["sha256sum", snapshot_path], stdout=PIPE, stderr=PIPE
+            )
             if shasum.returncode == 0:
-                hash = shasum.stdout.split(' ')[0]
+                hash = shasum.stdout.split(" ")[0]
                 print(hash)
                 if hash == checksum:
                     print("Checksums match")
                     return True
                 print("Checksums do not match: " + bytes.decode(shasum.stdout))
                 return False
-            raise OSError("Cannot compare hashes: " + bytes.decode(shasum.stderr))
+            raise OSError(
+                "Cannot compare hashes: " + bytes.decode(shasum.stderr)
+            )
 
     def download_snapshot():
         os.chdir(bitcoind_dir_path)
         print("Download snapshot")
         download = run(
-            ["axel", "--quiet", "--no-clobber", url], stdout=PIPE, stderr=STDOUT
+            ["axel", "--quiet", "--no-clobber", url],
+            stdout=PIPE,
+            stderr=STDOUT,
         )
         if download.returncode == 0:
             if compare_checksums():
