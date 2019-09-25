@@ -2,7 +2,7 @@
 LND related functionality
 """
 import pathlib
-from subprocess import call
+from subprocess import call, run
 from os import path
 from json import dumps
 import base64
@@ -218,9 +218,21 @@ def check():
 
 def backup():
     """Export and backup latest channel.db from lnd via ssh"""
-    # TODO: wallet/channel backup
-    # remote backups via ssh or rsync
-    print("Not implemented yet")
+    # secure remote backups via scp
+    if cfg.CHANNEL_BACKUP.is_file():
+        # scp options:
+        # -B for non-interactive batch mode
+        # -p to preserve modification & access time, modes
+        complete = run(["scp",
+                        "-B",
+                        "-i {}".format(cfg.SSH_IDENTITY),
+                        "-p",
+                        "-P {}".format(cfg.SSH_PORT),
+                        "{}".format(cfg.CHANNEL_BACKUP),
+                        "{}".format(cfg.SSH_TARGET)])
+        return complete.returncode
+    print("Error: channel.backup not found")
+    return exit(1)
 
 
 def savepeers():
