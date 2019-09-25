@@ -37,5 +37,6 @@ jobs:
         noma --version
         noma --help
     - name: Publish
+      run: |
         python setup.py sdist bdist_wheel
-	twine upload dist/*
+        twine upload dist/*
