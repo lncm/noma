@@ -41,4 +41,5 @@ jobs:
     - name: Publish
       run: |
         python setup.py sdist bdist_wheel
-        twine upload dist/*
+        twine upload --username "${{ secrets.TWINE_USERNAME }}" \
+        --password "${{ secrets.TWINE_PASSWORD }}" dist/*
