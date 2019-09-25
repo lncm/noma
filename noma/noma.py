@@ -74,7 +74,7 @@ def main():
     """
     main noma entrypoint function
     """
-    args = docopt(__doc__, version="Noma v0.5.0")
+    args = docopt(__doc__, version="Noma v0.5.1")
 
     if os.geteuid() == 0:
         if args["lnd"]:
