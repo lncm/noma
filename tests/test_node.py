@@ -22,14 +22,14 @@ class TestNode(unittest.TestCase):
             print(e)
             raise
 
-    def testVoltage(self):
-        try:
-            result = noma.node.voltage("core")
-            self.assertIsInstance(result, str)
-        except FileNotFoundError as e:
-            print("Error: file not found")
-            print(e)
-            raise
+    # def testVoltage(self):
+    #     try:
+    #         result = noma.node.voltage("core")
+    #         self.assertIsInstance(result, str)
+    #     except FileNotFoundError as e:
+    #         print("Error: file not found")
+    #         print(e)
+    #         raise
 
     def testSwap(self):
         result = noma.node.get_swap()

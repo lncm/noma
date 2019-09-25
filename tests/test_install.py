@@ -67,9 +67,9 @@ class TestNode(unittest.TestCase):
         result = noma.install.enable_swap()
         self.assertTrue(result)
 
-    def test_install_firmware(self):
-        result = noma.install.install_firmware()
-        self.assertTrue(result)
+    # def test_install_firmware(self):
+    #     result = noma.install.install_firmware()
+    #     self.assertTrue(result)
 
 
 # Create test suite
