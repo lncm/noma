@@ -66,9 +66,7 @@ def connectstring(
     tlsfile=cfg.TLS_CERT_PATH,
 ):
     """Show lndconnect string for remote wallets such as Zap"""
-    result = encodemacaroons(
-        macaroonfile=str(macaroonfile), tlsfile=str(tlsfile)
-    )
+    result = encodemacaroons(macaroonfile, tlsfile)
     if result["status"] == "OK":
         macaroon_string = str(result["macaroon"], "utf-8")
         cert_string = str(result["certificate"], "utf-8")

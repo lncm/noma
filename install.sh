@@ -125,7 +125,6 @@ fetch_html() {
     if ! [ -f "public_html/index.html" ]; then
         curl https://raw.githubusercontent.com/lncm/invoicer-ui/master/dist/index.html \
         --create-dirs -o public_html/index.html
-        return 0
     fi
 
     if ! [ -f "public_html/index.html" ]; then
