@@ -38,8 +38,14 @@ jobs:
       run: |
         noma --version
         noma --help
-    - name: Publish
+    - name: Publish to PyPI
       run: |
         python setup.py sdist bdist_wheel
         twine upload --username "${{ secrets.TWINE_USERNAME }}" \
         --password "${{ secrets.TWINE_PASSWORD }}" dist/*
+      - name: Github Release
+        uses: meeDamian/github-release@v1.0.0
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          gzip: false
+          files: dist/*
