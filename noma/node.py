@@ -291,7 +291,7 @@ def full_reinstall():
     print("Starting upgrade...")
     install_git()
     get_source()
-    os.chdir(cfg.dirs["noma"])
+    os.chdir(cfg.NOMA_SOURCE)
     call(["git", "pull"])
     call(["make_upgrade.sh"])
 
