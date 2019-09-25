@@ -31,7 +31,7 @@ jobs:
     - name: Lint with pylint
       run: |
         pip install pylint
-        pylint --errors-only .
+        pylint --errors-only *.py noma/*.py tests/*.py
     - name: Test
       run: |
         python tests/test_lnd.py
