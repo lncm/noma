@@ -10,7 +10,6 @@ from requests import get, post
 import noma.config as cfg
 
 
-
 def check_wallet():
     """
     This will either import an existing seed (or our own generated one),
@@ -41,41 +40,58 @@ def encodemacaroons(macaroonfile=cfg.MACAROON_PATH, tlsfile=cfg.TLS_CERT_PATH):
         with open(path.expanduser(tlsfile), "rb") as f:
             tls_bytes = f.read()
         macaroonencoded = base64.urlsafe_b64encode(macaroon_bytes)
-        tlsdecoded = tls_bytes.decode('utf-8')
-        tlstrim = tlsdecoded.replace("\n", "")\
-            .replace("-----BEGIN CERTIFICATE-----", "")\
-            .replace("-----END CERTIFICATE-----", "")\
-            .replace("+", "-")\
-            .replace("/", "_")\
+        tlsdecoded = tls_bytes.decode("utf-8")
+        tlstrim = (
+            tlsdecoded.replace("\n", "")
+            .replace("-----BEGIN CERTIFICATE-----", "")
+            .replace("-----END CERTIFICATE-----", "")
+            .replace("+", "-")
+            .replace("/", "_")
             .replace("=", "")
-        tlsencoded = tlstrim.encode('utf-8')
+        )
+        tlsencoded = tlstrim.encode("utf-8")
 
-        return {'status': 'OK', 'certificate': tlsencoded, 'macaroon': macaroonencoded}
+        return {
+            "status": "OK",
+            "certificate": tlsencoded,
+            "macaroon": macaroonencoded,
+        }
     else:
-        return {'status': 'File Not Found'}
+        return {"status": "File Not Found"}
 
 
-def connectstring(hostname=cfg.URL_GRPC, macaroonfile=cfg.MACAROON_PATH, tlsfile=cfg.TLS_CERT_PATH):
+def connectstring(
+    hostname=cfg.URL_GRPC,
+    macaroonfile=cfg.MACAROON_PATH,
+    tlsfile=cfg.TLS_CERT_PATH,
+):
     """Show lndconnect string for remote wallets such as Zap"""
-    result = encodemacaroons(macaroonfile=str(macaroonfile), tlsfile=str(tlsfile))
-    if result['status'] == 'OK':
-        macaroon_string = str(result['macaroon'], 'utf-8')
-        cert_string = str(result["certificate"], 'utf-8')
-        print("lndconnect://" + hostname + "?cert=" + cert_string + "&macaroon=" + macaroon_string)
+    result = encodemacaroons(macaroonfile, tlsfile)
+    if result["status"] == "OK":
+        macaroon_string = str(result["macaroon"], "utf-8")
+        cert_string = str(result["certificate"], "utf-8")
+        print(
+            "lndconnect://"
+            + hostname
+            + "?cert="
+            + cert_string
+            + "&macaroon="
+            + macaroon_string
+        )
     else:
-        print(result['status'])
+        print(result["status"])
 
 
 def autounlock():
     """Auto-unlock lnd using password.txt, tls.cert"""
 
-    password_str = (
-        open(cfg.PASSWORD_FILE_PATH, "r").read().rstrip()
-    )
+    password_str = open(cfg.PASSWORD_FILE_PATH, "r").read().rstrip()
     password_bytes = str(password_str).encode("utf-8")
     data = {"wallet_password": base64.b64encode(password_bytes).decode()}
     try:
-        response = post(cfg.URL_UNLOCKWALLET, verify=cfg.TLS_CERT_PATH, data=dumps(data))
+        response = post(
+            cfg.URL_UNLOCKWALLET, verify=cfg.TLS_CERT_PATH, data=dumps(data)
+        )
     except Exception:
         # Silence connection errors when lnd is not running
         pass

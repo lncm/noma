@@ -16,7 +16,7 @@ def create_dir(path):
     return False
 
 
-def check_installed(installed='/media/mmcblk0p1/installed'):
+def check_installed(installed="/media/mmcblk0p1/installed"):
     """Check if LNCM-Box is installed"""
     if Path(installed).is_file():
         with open(installed, "r") as file:
@@ -395,7 +395,7 @@ def usb_setup():
     return True
 
 
-def rc_add(service, runlevel=''):
+def rc_add(service, runlevel=""):
     print("Enable {s} at boot".format(s=service))
     call(["rc-update", "add", service, runlevel])
 
@@ -411,8 +411,10 @@ def install_crontab():
 def enable_compose():
     # TODO: Change init script to run "noma start" and "noma stop"
     print("Enable docker-compose at boot")
-    check_to_fetch("/etc/init.d/docker-compose",
-                   "https://raw.githubusercontent.com/lncm/pi-factory/b12c6f43d11be58dac03a2513cfd2abbb16f6526/etc/init.d/docker-compose")
+    check_to_fetch(
+        "/etc/init.d/docker-compose",
+        "https://raw.githubusercontent.com/lncm/pi-factory/b12c6f43d11be58dac03a2513cfd2abbb16f6526/etc/init.d/docker-compose",
+    )
     exitcode = call(["rc-update", "add", "docker-compose"])
     return exitcode
 
