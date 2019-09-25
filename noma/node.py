@@ -122,10 +122,13 @@ def is_running(node=""):
 
 def stop(timeout=1, retries=5):
     """Check and wait for clean shutdown of lnd"""
+
     def clean_stop():
         # ensure clean shutdown of lnd
         print("lnd is running, stopping with lncli stop")
-        success = call(["docker", "exec", cfg.LND_MODE + "_lnd_1", "lncli", "stop"])
+        success = call(
+            ["docker", "exec", cfg.LND_MODE + "_lnd_1", "lncli", "stop"]
+        )
         if success is 0:
             print("✅ lncli stop returned success")
         else:
@@ -224,7 +227,14 @@ def get_source():
         call(["git", "pull"])
     else:
         # source does not exist
-        call(["git", "clone", "https://github.com/lncm/noma.git", cfg.NOMA_SOURCE])
+        call(
+            [
+                "git",
+                "clone",
+                "https://github.com/lncm/noma.git",
+                cfg.NOMA_SOURCE,
+            ]
+        )
 
 
 def tunnel(port, hostname):
@@ -283,7 +293,7 @@ def full_reinstall():
     print("Starting upgrade...")
     install_git()
     get_source()
-    os.chdir(cfg.dirs['noma'])
+    os.chdir(cfg.dirs["noma"])
     call(["git", "pull"])
     call(["make_upgrade.sh"])
 

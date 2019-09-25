@@ -41,6 +41,7 @@ def fs_size(fs_path):
     :return: filesystem size in bytes
     """
     import shutil
+
     total, used, free = shutil.disk_usage(fs_path)
     return total
 

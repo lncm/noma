@@ -5,9 +5,9 @@ import pathlib
 from subprocess import call
 from os import path
 from json import dumps
+import base64
 from requests import get, post
 import noma.config as cfg
-import base64
 
 
 def check_wallet():
@@ -33,46 +33,65 @@ def check_wallet():
 
 
 def encodemacaroons(macaroonfile=cfg.MACAROON_PATH, tlsfile=cfg.TLS_CERT_PATH):
-    if path.exists(macaroonfile) and path.exists(tlsfile):
+    """base64url encode macaroon and TLS certificate"""
+    if path.exists(str(macaroonfile)) and path.exists(str(tlsfile)):
         with open(path.expanduser(macaroonfile), "rb") as f:
             macaroon_bytes = f.read()
         with open(path.expanduser(tlsfile), "rb") as f:
             tls_bytes = f.read()
         macaroonencoded = base64.urlsafe_b64encode(macaroon_bytes)
-        tlsdecoded = tls_bytes.decode('utf-8')
-        tlstrim = tlsdecoded.replace("\n", "")\
-            .replace("-----BEGIN CERTIFICATE-----", "")\
-            .replace("-----END CERTIFICATE-----", "")\
-            .replace("+", "-")\
-            .replace("/", "_")\
+        tlsdecoded = tls_bytes.decode("utf-8")
+        tlstrim = (
+            tlsdecoded.replace("\n", "")
+            .replace("-----BEGIN CERTIFICATE-----", "")
+            .replace("-----END CERTIFICATE-----", "")
+            .replace("+", "-")
+            .replace("/", "_")
             .replace("=", "")
-        tlsencoded = tlstrim.encode('utf-8')
+        )
+        tlsencoded = tlstrim.encode("utf-8")
 
-        return {'status': 'OK', 'certificate': tlsencoded, 'macaroon': macaroonencoded}
+        return {
+            "status": "OK",
+            "certificate": tlsencoded,
+            "macaroon": macaroonencoded,
+        }
     else:
-        return {'status': 'File Not Found'}
+        return {"status": "File Not Found"}
 
 
-def connectstring(hostname=cfg.URL_GRPC, macaroonfile=cfg.MACAROON_PATH, tlsfile=cfg.TLS_CERT_PATH):
-    result = encodemacaroons(macaroonfile=macaroonfile, tlsfile=tlsfile)
-    if result['status'] == 'OK':
-        macaroon_string = str(result['macaroon'], 'utf-8')
-        cert_string = str(result["certificate"], 'utf-8')
-        print("lndconnect://" + hostname + "?cert=" + cert_string + "&macaroon=" + macaroon_string)
+def connectstring(
+    hostname=cfg.URL_GRPC,
+    macaroonfile=cfg.MACAROON_PATH,
+    tlsfile=cfg.TLS_CERT_PATH,
+):
+    """Show lndconnect string for remote wallets such as Zap"""
+    result = encodemacaroons(macaroonfile, tlsfile)
+    if result["status"] == "OK":
+        macaroon_string = str(result["macaroon"], "utf-8")
+        cert_string = str(result["certificate"], "utf-8")
+        print(
+            "lndconnect://"
+            + hostname
+            + "?cert="
+            + cert_string
+            + "&macaroon="
+            + macaroon_string
+        )
     else:
-        print(result['status'])
+        print(result["status"])
 
 
 def autounlock():
     """Auto-unlock lnd using password.txt, tls.cert"""
 
-    password_str = (
-        open(cfg.PASSWORD_FILE_PATH, "r").read().rstrip()
-    )
+    password_str = open(cfg.PASSWORD_FILE_PATH, "r").read().rstrip()
     password_bytes = str(password_str).encode("utf-8")
     data = {"wallet_password": base64.b64encode(password_bytes).decode()}
     try:
-        response = post(cfg.URL_UNLOCKWALLET, verify=cfg.TLS_CERT_PATH, data=dumps(data))
+        response = post(
+            cfg.URL_UNLOCKWALLET, verify=cfg.TLS_CERT_PATH, data=dumps(data)
+        )
     except Exception:
         # Silence connection errors when lnd is not running
         pass
@@ -198,12 +217,14 @@ def check():
 
 
 def backup():
+    """Export and backup latest channel.db from lnd via ssh"""
     # TODO: wallet/channel backup
     # remote backups via ssh or rsync
     print("Not implemented yet")
 
 
 def savepeers():
+    """Save list of peers to file on disk for reconnecting"""
     # TODO: export list of peers to text file on disk
     print("Not implemented yet")
 
