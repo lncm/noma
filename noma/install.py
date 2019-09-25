@@ -378,7 +378,7 @@ def usb_setup():
             import noma.lnd
 
             print("Creating lnd files")
-            noma.lnd.create()
+            noma.lnd.check_wallet()
             if noma.lnd.check():
                 noma.lnd.setup_tor()
 
@@ -401,8 +401,6 @@ def rc_add(service, runlevel=""):
 
 
 def install_crontab():
-    from noma.config import HOME
-
     print("Installing crontab")
     exitcode = call(["/usr/bin/crontab", "/home/lncm/crontab"])
     return exitcode
@@ -465,9 +463,6 @@ def install_box():
         if noma.lnd.check():
             print("Checking lnd wallet")
             noma.lnd.check_wallet()
-        if noma.node.check():
-            print("Backup system state (apkovl) to important usb device")
-            noma.node.backup()
 
     print("Removing post-install from default runlevel")
     call(["rc-update", "del", "lncm-post", "default"])
