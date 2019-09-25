@@ -126,10 +126,8 @@ def stop(timeout=1, retries=5):
     def clean_stop():
         # ensure clean shutdown of lnd
         print("lnd is running, stopping with lncli stop")
-        success = call(
-            ["docker", "exec", cfg.LND_MODE + "_lnd_1", "lncli", "stop"]
-        )
-        if success is 0:
+        success = call(["docker", "exec", cfg.LND_MODE + "_lnd_1", "lncli", "stop"])
+        if success == 0:
             print("✅ lncli stop returned success")
         else:
             print("❌ lncli stop failed")
