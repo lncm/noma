@@ -56,7 +56,7 @@ start_noma() {
     noma start
     echo "Waiting 5s for lnd to start up..."
     sleep 5 && noma lnd create
-    docker logs neutrino_lnd_1
+    noma logs
     echo "Waiting 5s for wallet to be created..."
     sleep 5 && noma info
 }
