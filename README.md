@@ -59,49 +59,68 @@ noma --version
 
 ### Dependencies
 
-To get the most out of this tool we highly recommend to have `docker` and `docker-compose` installed.
+To get the most out of this tool we highly recommend to have Docker installed.
 
 Note: some `noma` functions are specific to Raspberry Pi hardware.
 
 ## Installation
 
-#### MacOS Docker
-- Install Docker and docker-compose
-```base
-brew cask install docker
-brew install docker-compose
-```
-- Ensure the /media directory is writable and added to shares in Docker
+### MacOS Vagrant
 
-`sudo mkdir /media`
+The simplest method to try out or work on noma is to use Vagrant, which will automatically set up a small Linux VM, ensuring your environment stays clean.
 
-- Ensure Docker is running
+* Install Vagrant & VirtualBox
 
-- Install and start the node
+With brew available:
 ```bash
-pip3 install noma
-sudo noma start
+brew cask install virtualbox
+brew cask install vagrant
 ```
-
-#### Vagrant (MacOS/Windows)
-
-- Install Vagrant, VirtualBox (or other virtual-machine such as Parallels or VMware)
-
+Then, start the VM using vagrant
 ```bash
 cd noma
 vagrant up
 ```
 
-#### Linux
+#### MacOS Docker
+
+Using Docker outside of Vagrant requires manual setup and is only recommend for those who are already running Docker.
+
+- Install Docker and docker-compose
+```bash
+brew cask install docker
+brew install docker-compose
+```
+
+Create /media directory
+```bash
+sudo mkdir /media
+```
+
+* Ensure the /media directory is writable and added to shares in Docker
+* Ensure Docker is running
+
+Install and start the node
+```bash
+pip3 install noma
+sudo noma start
+```
+
+### Linux
+
+With Python 3 and Docker installed
 
 ```
 pip install noma 
 sudo noma start
 ```
-
-* Make sure to use Python 3. 
-
 Note: You may need to use `pip3` instead of `pip`
+
+For convenience `install.sh` may be used to bootstrap Python 3, Docker and Noma on Debian-based and Alpine systems.
+
+### Windows
+
+While not officially supported Windows is likely to work using Vagrant, with the caveat that NFS shares are not available and need to be replaced.
 
 ## Usage
 
@@ -130,7 +149,7 @@ now you can run noma and inspect code changes immediately
 ### Build instructions
 
 ```
-pip3 install wheel docker docker-compose
+pip3 install wheel
 python3 setup.py bdist_wheel
 pip3 install dist/noma-*-py3-none-any.whl
 ```
