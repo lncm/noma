@@ -10,8 +10,8 @@ services:
   lnd:
     image: lncm/lnd:0.7.1-experimental-watchtower-neutrino
     volumes:
-      - /media/noma/lnd/neutrino:/root/.lnd
-      - /media/noma/lnd/neutrino/lnd.conf:/home/lncm/.lnd/lnd.conf
+      - /media/noma/lnd/fullnode:/root/.lnd
+      - /media/noma/lnd/fullnode/lnd.conf:/home/lncm/.lnd/lnd.conf
     restart: on-failure
     network_mode: host
 
