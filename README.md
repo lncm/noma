@@ -10,7 +10,7 @@ CLI utility and Python API to manage bitcoin lightning nodes.
 Noma provides a complete bitcoin + lightning stack for [LNCM's](https://lncm.io) Point-of-Sale app and extendable templates for your own project development.
 
 ### How does it work?
-Multi-platform `docker` containers are orchestrated by `docker-compose` and `noma`, a thin layer of python. The golang `invoicer` middleware serves `invoicer-ui`, a react webapp and provides the payment API synthesizing `lnd` and `bitcoind`. Internally `lnd` utilizes the light-client neutrino network, while `bitcoind` operates as a full-node with optional pruning.
+Multi-platform `docker` containers are orchestrated by `docker-compose` and `noma`, a thin layer of python. The golang `invoicer` middleware serves `invoicer-ui`, a react webapp and provides the payment API synthesizing `lnd` and `bitcoind`. Internally `lnd` utilizes the light-client neutrino network, while `bitcoind` operates as a fully validating node with optional pruning.
 
 ### Highlights
 Our containers provide minimal [Alpine](https://alpinelinux.org) environments on 32-bit & 64-bit ARM in addition to the common AMD64 architecture. Special attention been paid to create lightweight images suitable for embedded deployments such as Raspberry Pi's.
@@ -29,6 +29,9 @@ At the current level of automation we expect users to be familiar with the Linux
 
 Given the minimal nature of our stack, Raspberry Pi's and similar SBC's are an ideal candidate. Likewise, low-end VPS will benefit from the reduced resource usage.
 
+Disk and network resource consumption varies according to mode. In the most conservative configuration, using neutrino only, on-disk storage requirements are expected to be around 250-300MB.
+
+In bitcoin full-node mode, the latest 550 blocks are stored and continually fetched for verification. This adds around 6.6GB of permanently reserved space and at least 144MB of internet traffic per day, equivalent to 4.4GB per month.
 
 ### CLI:
 **node:**
