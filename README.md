@@ -84,7 +84,7 @@ vagrant up
 
 #### MacOS Docker
 
-Using Docker outside of Vagrant requires manual setup and is only recommend for those who are already running Docker.
+Using Docker outside of Vagrant requires manual setup and is only recommended for those who are already running Docker.
 
 - Install Docker and docker-compose
 ```bash
@@ -120,7 +120,7 @@ For convenience `install.sh` may be used to bootstrap Python 3, Docker and Noma 
 
 ### Windows
 
-While not officially supported Windows is likely to work using Vagrant, with the caveat that NFS shares are not available and need to be replaced.
+While not officially supported, Windows is likely to work using Vagrant, with the caveat that NFS shares are not available and need to be replaced.
 
 ## Usage
 
