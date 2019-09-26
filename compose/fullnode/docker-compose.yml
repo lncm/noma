@@ -1,0 +1,29 @@
+version: '3.7'
+services:
+  bitcoind:
+    image: lncm/bitcoind:0.18
+    volumes:
+      - /media/noma/bitcoind:/root/.bitcoin
+    restart: on-failure
+    network_mode: host
+
+  lnd:
+    image: lncm/lnd:0.7.1-experimental-watchtower-neutrino
+    volumes:
+      - /media/noma/lnd/neutrino:/root/.lnd
+      - /media/noma/lnd/neutrino/lnd.conf:/home/lncm/.lnd/lnd.conf
+    restart: on-failure
+    network_mode: host
+
+  invoicer:
+    image: lncm/invoicer:v0.6.2
+    volumes:
+      - /media/noma/invoicer:/root/.lncm
+      - /media/noma/lnd/neutrino:/lnd
+      - /media/noma/public_html:/static
+      - /media/noma/invoicer:/logs
+    depends_on:
+      - bitcoind
+      - lnd
+    restart: on-failure
+    network_mode: host
