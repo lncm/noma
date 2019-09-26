@@ -8,7 +8,7 @@ Pathlib objects represent PosixPaths
 from pathlib import Path
 
 """LND Settings"""
-LND_MODE = "neutrino"
+LND_MODE = "fullnode"
 LND_NET = "mainnet"
 
 """Filesystem"""
@@ -46,7 +46,10 @@ SAVE_PASSWORD_CONTROL_FILE = LND_PATH / "save_password"
 PASSWORD_FILE_PATH = LND_PATH / "password.txt"
 
 """LND Endpoints"""
-URL_GRPC = "192.168.83.33:10009"
+# Change this to match your network
+URL_GRPC = "192.168.83.33:10009" # Vagrant
+# URL_GPRC = "127.0.0.1:10009" # Host networking
+
 # Generate seed
 URL_GENSEED = "https://127.0.0.1:8080/v1/genseed"
 # Initialize wallet
