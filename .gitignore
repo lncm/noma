@@ -1,5 +1,8 @@
 # lnd
-lnd/neutrino/
+lnd/
+
+# bitcoin
+bitcoind/
 
 # PyCharm
 .idea
