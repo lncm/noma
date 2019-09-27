@@ -5,7 +5,9 @@ from subprocess import call, run, PIPE, STDOUT, DEVNULL
 import os
 import pathlib
 import shutil
+from configobj import ConfigObj
 from noma import rpcauth
+from noma import config as cfg
 
 
 def start():
@@ -190,19 +192,27 @@ def set_prune(prune_target, config_path=""):
     set_kv("prune", prune_target, config_path)
 
 
-def set_rpcauth(config_path):
-    """Write new rpc auth to bitcoind and lnd config"""
-    import noma.lnd
-
+def set_rpcauth(bitcoin_conf, invoicer_conf):
+    """Write rpcauth to bitcoind and invoicer configs"""
     # TODO: Generate usernames too
-    if not config_path:
-        config_path = "/media/archive/archive/bitcoin/bitcoin.conf"
-    if pathlib.Path(config_path).is_file():
-        auth_value, password = generate_rpcauth("lncm")
-        set_kv("rpcauth", auth_value, config_path)
-        noma.lnd.set_bitcoind(password)
+
+    if not bitcoin_conf:
+        bitcoin_conf = cfg.BITCOIN_CONF
+    if not invoicer_conf:
+        invoicer_conf = cfg.INVOICER_CONF
+
+    auth_value, password = generate_rpcauth("lncm")
+
+    if pathlib.Path(bitcoin_conf).is_file():
+        set_kv("user", "lncm", invoicer_conf, "bitcoind")
+        set_kv("pass", password, invoicer_conf, "bitcoind")
     else:
-        create()
+        print("Error: bitcoin.conf not found")
+
+    if pathlib.Path(invoicer_conf).is_file():
+        set_kv("rpcauth", auth_value, bitcoin_conf, None)
+    else:
+        print("Error invoicer.conf not found")
 
 
 def generate_rpcauth(username, password=""):
@@ -248,7 +258,7 @@ def check():
     return False
 
 
-def get_kv(key, config_path):
+def get_kv(config_path, key, section):
     """
     Parse key-value config files and print out values
 
@@ -256,19 +266,14 @@ def get_kv(key, config_path):
     :param config_path: path to file
     :return: value of key
     """
-    import itertools
-    import configparser
 
-    parser = configparser.ConfigParser(strict=False)
-    with open(config_path) as lines:
-        lines = itertools.chain(
-            ("[main]",), lines
-        )  # workaround: prepend dummy section
-        parser.read_file(lines)
-        return parser.get("main", key)
+    config = ConfigObj(config_path)
+    if section:
+        return config[section][key]
+    return config[key]
 
 
-def set_kv(key, value, config_path):
+def set_kv(key, value, config_path, section):
     """
     Set key to value in path
     kv pairs are separated by "="
@@ -278,7 +283,6 @@ def set_kv(key, value, config_path):
     :param config_path: config file path
     :return str: string written
     """
-    from fileinput import FileInput
 
     path = pathlib.Path(config_path)
     config_exists = path.is_file()
@@ -289,22 +293,19 @@ def set_kv(key, value, config_path):
 
     current_val = None
     try:
-        current_val = get_kv(key, config_path)
+        current_val = get_kv(config_path, key, section)
     except Exception as err:
         print(err)
     if value == current_val:
         # nothing to do
         print("{k} already set to {v}".format(k=key, v=value))
         return
-    if current_val is None:
-        # key does not exist yet
-        with open(config_path, "a") as file:
-            # append kv pair to file
-            file.write("\n{k}={v}".format(k=key, v=value))
-    else:
-        with FileInput(config_path, inplace=True, backup=".bak") as file:
-            for line in file:
-                print(line.replace(current_val, value), end="")
+
+    config = ConfigObj(config_path)
+    if section:
+        config[section][key] = value
+    config[key] = value
+    config.write()
 
 
 if __name__ == "__main__":
