@@ -189,7 +189,7 @@ def set_prune(prune_target, config_path=""):
     """Set bitcoind prune target, minimum 550"""
     if not config_path:
         config_path = "/media/archive/archive/bitcoin/bitcoin.conf"
-    set_kv("prune", prune_target, config_path)
+    set_kv("prune", prune_target, config_path, None)
 
 
 def set_rpcauth(bitcoin_conf, invoicer_conf):

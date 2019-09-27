@@ -371,9 +371,9 @@ def usb_setup():
             noma.bitcoind.create()
             if noma.bitcoind.check():
                 noma.bitcoind.set_prune("550")
-                noma.bitcoind.set_rpcauth(
-                    "/media/archive/archive/bitcoin/bitcoin.conf"
-                )
+                # noma.bitcoind.set_rpcauth(
+                #     "/media/archive/archive/bitcoin/bitcoin.conf"
+                # )
 
             import noma.lnd
 
