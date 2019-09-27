@@ -192,27 +192,22 @@ def set_prune(prune_target, config_path=""):
     set_kv("prune", prune_target, config_path, None)
 
 
-def set_rpcauth(bitcoin_conf, invoicer_conf):
+def set_rpcauth(bitcoin_conf=str(cfg.BITCOIN_CONF), invoicer_conf=str(cfg.INVOICER_CONF)):
     """Write rpcauth to bitcoind and invoicer configs"""
-    # TODO: Generate usernames too
-
-    if not bitcoin_conf:
-        bitcoin_conf = cfg.BITCOIN_CONF
-    if not invoicer_conf:
-        invoicer_conf = cfg.INVOICER_CONF
-
     auth_value, password = generate_rpcauth("lncm")
 
-    if pathlib.Path(bitcoin_conf).is_file():
+    try:
+        rpcauth_val = get_kv(bitcoin_conf, "rpcauth", None)
+    except IOError:
+        print("Error: bitcoin config file not found")
+        raise
+
+    if rpcauth_val == '': # only change if value is unset
+        set_kv("rpcauth", auth_value, bitcoin_conf, None)
         set_kv("user", "lncm", invoicer_conf, "bitcoind")
         set_kv("pass", password, invoicer_conf, "bitcoind")
-    else:
-        print("Error: bitcoin.conf not found")
-
-    if pathlib.Path(invoicer_conf).is_file():
-        set_kv("rpcauth", auth_value, bitcoin_conf, None)
-    else:
-        print("Error invoicer.conf not found")
+        print("Set rpcauth successfully")
+    print("Warning: not changing rpcauth, already set")
 
 
 def generate_rpcauth(username, password=""):
@@ -256,7 +251,6 @@ def get_kv(config_path, key, section):
     :param config_path: path to file
     :return: value of key
     """
-
     config = ConfigObj(config_path, file_error=True, encoding='utf-8')
     if section:
         return config[section][key]
