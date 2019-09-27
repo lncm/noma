@@ -11,6 +11,7 @@ import time
 import psutil
 import noma.config as cfg
 import noma.lnd
+import noma.bitcoind
 
 
 def get_swap():
@@ -62,7 +63,7 @@ def start():
     if not check() and not noma.lnd.check():
         print("Fetching compose from noma repo")
         get_source()
-
+    noma.bitcoind.set_rpcauth()
     os.chdir(cfg.COMPOSE_MODE_PATH)
     call(["docker-compose", "up", "-d"])
 

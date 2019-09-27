@@ -207,6 +207,7 @@ def set_rpcauth(bitcoin_conf=str(cfg.BITCOIN_CONF), invoicer_conf=str(cfg.INVOIC
         set_kv("user", "lncm", invoicer_conf, "bitcoind")
         set_kv("pass", password, invoicer_conf, "bitcoind")
         print("Set rpcauth successfully")
+        return
     print("Warning: not changing rpcauth, already set")
 
 
