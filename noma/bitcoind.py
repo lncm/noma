@@ -222,16 +222,6 @@ def generate_rpcauth(username, password=""):
     salt = rpcauth.generate_salt(16)
     password_hmac = rpcauth.password_to_hmac(salt, password)
     auth_value = "{0}:{1}${2}".format(username, salt, password_hmac)
-    try:
-        with open("/media/important/important/rpc.txt", "a") as file:
-            file.write(
-                "rpcauth={r}\nusername={u}\npassword={p}".format(
-                    r=auth_value, u=username, p=password
-                )
-            )
-    except Exception as error:
-        print(error.__class__.__name__, ":", error)
-
     return auth_value, password
 
 
@@ -267,7 +257,7 @@ def get_kv(config_path, key, section):
     :return: value of key
     """
 
-    config = ConfigObj(config_path)
+    config = ConfigObj(config_path, file_error=True, encoding='utf-8')
     if section:
         return config[section][key]
     return config[key]
@@ -281,30 +271,13 @@ def set_kv(key, value, config_path, section):
     :param key: key to set
     :param value: value to set
     :param config_path: config file path
-    :return str: string written
+    :param section: config section
     """
-
-    path = pathlib.Path(config_path)
-    config_exists = path.is_file()
-
-    if not config_exists:
-        # create empty config file
-        path.touch()
-
-    current_val = None
-    try:
-        current_val = get_kv(config_path, key, section)
-    except Exception as err:
-        print(err)
-    if value == current_val:
-        # nothing to do
-        print("{k} already set to {v}".format(k=key, v=value))
-        return
-
-    config = ConfigObj(config_path)
+    config = ConfigObj(config_path, create_empty=True, encoding='utf-8')
     if section:
         config[section][key] = value
-    config[key] = value
+    else:
+        config[key] = value
     config.write()
 
 
