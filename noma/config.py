@@ -28,6 +28,14 @@ SSH_TARGET = "user@ssh-hostname:/path/to/backup/dir/"
 HOME_PATH = Path.home()
 COMPOSE_MODE_PATH = NOMA_SOURCE / "compose" / LND_MODE
 
+"""Bitcoind Paths"""
+BITCOIN_PATH = NOMA_SOURCE / "bitcoind"
+BITCOIN_CONF = BITCOIN_PATH / "bitcoin.conf"
+
+"""Invoicer Paths"""
+INVOICER_PATH = NOMA_SOURCE / "invoicer"
+INVOICER_CONF = INVOICER_PATH / "invoicer.conf"
+
 """LND Paths"""
 LND_PATH = NOMA_SOURCE / "lnd" / LND_MODE
 LND_CONF = LND_PATH / "lnd.conf"
