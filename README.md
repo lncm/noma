@@ -31,7 +31,7 @@ Given the minimal nature of our stack, Raspberry Pi's and similar SBC's are an i
 
 Disk and network resource consumption varies according to mode. In the most conservative configuration, using neutrino only, on-disk storage requirements are expected to be around 250-300MB.
 
-In bitcoin full-node mode, the latest 550 blocks are stored and continually fetched for verification. This adds around 6.6GB of permanently reserved space and at least 144MB of internet traffic per day, equivalent to 4.4GB per month.
+In bitcoin full-node mode, the latest 550 blocks are stored and continually fetched for verification. This adds around 4GB of permanently reserved space and at least 144MB of internet traffic per day, equivalent to 4.4GB per month.
 
 ### CLI:
 **node:**
@@ -81,6 +81,13 @@ Then, start the VM using vagrant
 cd noma
 vagrant up
 ```
+
+Once installation has completed, you may log in
+```bash
+vagrant ssh alpine
+```
+
+Tip: `vagrant up [vm-name]` where `vm-name` can be any of: `alpine`, `ubuntu`, `debian`. Adapt `vagrant ssh alpine` accordingly.
 
 #### MacOS Docker
 
