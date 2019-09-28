@@ -3,7 +3,7 @@ from setuptools import setup
 setup(
     name="noma",
     version="0.5.1",
-    packages=["noma"],
+    packages=["noma", "configobj"],
     install_requires=["psutil", "docopt", "requests", "docker-compose", "toml"],
     entry_points={"console_scripts": ["noma = noma.noma:main"]},
     # metadata to display on PyPI
