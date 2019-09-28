@@ -36,19 +36,19 @@ def check():
     dir_missing_text = str(" directory is missing or inaccessible")
 
     if media_exists:
-        print("✅ " + "Media" + dir_exists_text)
+        print("✅ " + "media" + dir_exists_text)
     else:
-        print("❌ " + "Media" + dir_missing_text)
+        print("❌ " + "media" + dir_missing_text)
 
     if noma_exists:
-        print("✅ " + "Noma" + dir_exists_text)
+        print("✅ " + "noma" + dir_exists_text)
     else:
-        print("❌ " + "Noma" + dir_missing_text)
+        print("❌ " + "noma" + dir_missing_text)
 
     if compose_exists:
-        print("✅ " + "Compose" + dir_exists_text)
+        print("✅ " + "compose" + dir_exists_text)
     else:
-        print("❌ " + "Compose" + dir_missing_text)
+        print("❌ " + "compose" + dir_missing_text)
 
     if media_exists and noma_exists and compose_exists:
         return True
@@ -63,13 +63,15 @@ def start():
     if not check() and not noma.lnd.check():
         print("Fetching compose from noma repo")
         get_source()
+    noma.bitcoind.check()
     noma.bitcoind.set_rpcauth()
+    noma.lnd.check()
     os.chdir(cfg.COMPOSE_MODE_PATH)
     call(["docker-compose", "up", "-d"])
 
 
 def info():
-    # Show dashboard with aggregated information
+    """Show dashboard with aggregated information"""
     if is_running("lnd"):
         print("lnd is running")
         call(["docker", "exec", cfg.LND_MODE + "_lnd_1", "lncli", "getinfo"])

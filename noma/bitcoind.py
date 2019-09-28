@@ -199,16 +199,19 @@ def set_rpcauth(bitcoin_conf=str(cfg.BITCOIN_CONF), invoicer_conf=str(cfg.INVOIC
     try:
         rpcauth_val = get_kv(bitcoin_conf, "rpcauth", None)
     except IOError:
-        print("Error: bitcoin config file not found")
+        print("❌ Error: bitcoin config file not found")
         raise
+    except KeyError:
+        print("rpcauth unset")
 
     if rpcauth_val == '': # only change if value is unset
         set_kv("rpcauth", auth_value, bitcoin_conf, None)
+        # TODO: use toml for invoicer.conf
         set_kv("user", "lncm", invoicer_conf, "bitcoind")
         set_kv("pass", password, invoicer_conf, "bitcoind")
-        print("Set rpcauth successfully")
+        print("✅ Set rpcauth successfully")
         return
-    print("Warning: not changing rpcauth, already set")
+    print("⚠️ Warning: not changing rpcauth, already set")
 
 
 def generate_rpcauth(username, password=""):
@@ -223,39 +226,44 @@ def generate_rpcauth(username, password=""):
 
 def check():
     """Check bitcoind filesystem structure"""
-    bitcoind_dir = "/media/archive/archive/bitcoin"
-    bitcoind_dir_exists = pathlib.Path(bitcoind_dir).is_dir()
-
-    if bitcoind_dir_exists:
-        print("bitcoind directory exists")
+    if cfg.BITCOIN_PATH.is_dir():
+        print("✅ bitcoind directory exists")
     else:
-        print("bitcoin folder missing")
+        raise IOError("❌ bitcoin directory missing")
 
-    bitcoind_conf = "/media/archive/archive/bitcoin/bitcoin.conf"
-    bitcoind_conf_exists = pathlib.Path(bitcoind_conf).is_file()
-
-    if bitcoind_conf_exists:
-        print("bitcoin.conf exists")
+    if cfg.BITCOIN_CONF.is_file():
+        print("✅ bitcoind config file exists")
     else:
-        print("bitcoin.conf missing")
+        raise IOError("❌ bitcoin config file is missing")
+    return True
 
-    if bitcoind_conf_exists and bitcoind_dir_exists:
-        return True
-    return False
+
+class IniConfig(ConfigObj):
+    """Allow ini-style ; comments"""
+    COMMENT_MARKERS = ['#', ';']
 
 
 def get_kv(config_path, key, section):
     """
-    Parse key-value config files and print out values
+    Parse ini-style config files and print out values
 
     :param key: left part of key value pair
     :param config_path: path to file
     :return: value of key
     """
-    config = ConfigObj(config_path, file_error=True, encoding='utf-8')
-    if section:
-        return config[section][key]
-    return config[key]
+    try:
+        config = IniConfig(config_path, file_error=True, encoding='utf-8')
+    except SyntaxError as error:
+        print("⚠️ " + str(error))
+    else:
+        if section:
+            return config[section][key]
+        try:
+            value = config[key]
+        except KeyError:
+            print("❌ key '{k}' does not exist".format(k=key))
+        else:
+            return value
 
 
 def set_kv(key, value, config_path, section):
@@ -268,12 +276,16 @@ def set_kv(key, value, config_path, section):
     :param config_path: config file path
     :param section: config section
     """
-    config = ConfigObj(config_path, create_empty=True, encoding='utf-8')
-    if section:
-        config[section][key] = value
+    try:
+        config = IniConfig(config_path, file_error=True, encoding='utf-8')
+    except SyntaxError as error:
+        print("⚠️ " + str(error))
     else:
-        config[key] = value
-    config.write()
+        if section:
+            config[section][key] = value
+        else:
+            config[key] = value
+        config.write(delimiter='=')
 
 
 if __name__ == "__main__":
