@@ -5,6 +5,7 @@ services:
     entrypoint: bitcoind
     volumes:
       - /media/noma/bitcoind:/root/.bitcoin
+      - /media/noma/bitcoind:/datadir
     restart: on-failure
     network_mode: host
 
