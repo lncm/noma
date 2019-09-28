@@ -1944,7 +1944,7 @@ class ConfigObj(Section):
                 section[entry].configspec = configspec[entry]
 
 
-    def _write_line(self, indent_string, entry, this_entry, comment):
+    def _write_line(self, indent_string, entry, this_entry, comment, delimiter):
         """Write an individual line, for the write method"""
         # NOTE: the calls to self._quote here handles non-StringType values.
         if not self.unrepr:
@@ -1953,7 +1953,7 @@ class ConfigObj(Section):
             val = repr(this_entry)
         return '%s%s%s%s%s' % (indent_string,
                                self._decode_element(self._quote(entry, multiline=False)),
-                               ' = ',
+                               delimiter,
                                val,
                                self._decode_element(comment))
 
@@ -1984,7 +1984,7 @@ class ConfigObj(Section):
 
     # Public methods
 
-    def write(self, outfile=None, section=None):
+    def write(self, outfile=None, section=None, delimiter=" = "):
         """
         Write the current ConfigObj as a file
 
@@ -2043,7 +2043,8 @@ class ConfigObj(Section):
                     indent_string,
                     entry,
                     this_entry,
-                    comment))
+                    comment,
+                    delimiter))
 
         if section is self:
             for line in self.final_comment:
