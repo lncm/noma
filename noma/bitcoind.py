@@ -5,6 +5,7 @@ from subprocess import call, run, PIPE, STDOUT, DEVNULL
 import os
 import pathlib
 import shutil
+import toml
 from configobj import ConfigObj
 from noma import rpcauth
 from noma import config as cfg
@@ -188,8 +189,8 @@ def create():
 def set_prune(prune_target, config_path=""):
     """Set bitcoind prune target, minimum 550"""
     if not config_path:
-        config_path = "/media/archive/archive/bitcoin/bitcoin.conf"
-    set_kv("prune", prune_target, config_path, None)
+        config_path = cfg.BITCOIN_CONF
+    set_ini_kv("prune", prune_target, config_path, None)
 
 
 def set_rpcauth(bitcoin_conf=str(cfg.BITCOIN_CONF), invoicer_conf=str(cfg.INVOICER_CONF)):
@@ -197,7 +198,7 @@ def set_rpcauth(bitcoin_conf=str(cfg.BITCOIN_CONF), invoicer_conf=str(cfg.INVOIC
     auth_value, password = generate_rpcauth("lncm")
 
     try:
-        rpcauth_val = get_kv(bitcoin_conf, "rpcauth", None)
+        rpcauth_val = get_ini_kv(bitcoin_conf, "rpcauth", None)
     except IOError:
         print("❌ Error: bitcoin config file not found")
         raise
@@ -205,10 +206,9 @@ def set_rpcauth(bitcoin_conf=str(cfg.BITCOIN_CONF), invoicer_conf=str(cfg.INVOIC
         print("rpcauth unset")
 
     if rpcauth_val == '': # only change if value is unset
-        set_kv("rpcauth", auth_value, bitcoin_conf, None)
-        # TODO: use toml for invoicer.conf
-        set_kv("user", "lncm", invoicer_conf, "bitcoind")
-        set_kv("pass", password, invoicer_conf, "bitcoind")
+        set_ini_kv("rpcauth", auth_value, bitcoin_conf, None)
+        set_toml_kv(invoicer_conf, "user", "lncm", "bitcoind")
+        set_toml_kv(invoicer_conf, "pass", password, "bitcoind")
         print("✅ Set rpcauth successfully")
         return
     print("⚠️ Warning: not changing rpcauth, already set")
@@ -243,7 +243,7 @@ class IniConfig(ConfigObj):
     COMMENT_MARKERS = ['#', ';']
 
 
-def get_kv(config_path, key, section):
+def get_ini_kv(config_path, key, section):
     """
     Parse ini-style config files and print out values
 
@@ -266,7 +266,7 @@ def get_kv(config_path, key, section):
             return value
 
 
-def set_kv(key, value, config_path, section):
+def set_ini_kv(key, value, config_path, section):
     """
     Set key to value in path
     kv pairs are separated by "="
@@ -286,6 +286,27 @@ def set_kv(key, value, config_path, section):
         else:
             config[key] = value
         config.write(delimiter='=')
+
+
+def get_toml_kv(config_path, key, section=""):
+    """get toml key value"""
+    config = toml.load(config_path)
+    if section:
+        value = config[section][key]
+    else:
+        value = config[key]
+    return value
+
+
+def set_toml_kv(config_path, key, value, section=""):
+    """set toml key value"""
+    config = toml.load(config_path)
+    if section:
+        config[section][key] = value
+    else:
+        config[key] = value
+    with open(config_path, "w") as toml_file:
+        toml.dump(config, toml_file)
 
 
 if __name__ == "__main__":
