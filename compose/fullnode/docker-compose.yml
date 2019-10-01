@@ -1,7 +1,7 @@
 version: '3.7'
 services:
   bitcoind:
-    image: lncm/bitcoind:0.18
+    image: lncm/bitcoind:v0.18.1
     entrypoint: bitcoind
     volumes:
       - /media/noma/bitcoind:/root/.bitcoin
