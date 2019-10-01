@@ -4,7 +4,7 @@ setup(
     name="noma",
     version="0.5.1",
     packages=["noma", "configobj"],
-    install_requires=["psutil", "docopt", "requests", "docker-compose", "toml"],
+    install_requires=["psutil", "docopt", "requests>=2.22.0", "docker-compose", "toml"],
     entry_points={"console_scripts": ["noma = noma.noma:main"]},
     # metadata to display on PyPI
     zip_safe=True,
