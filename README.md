@@ -13,7 +13,7 @@ Noma provides a complete bitcoin + lightning stack for [LNCM's](https://lncm.io)
 Multi-platform `docker` containers are orchestrated by `docker-compose` and `noma`, a thin layer of python. The golang `invoicer` middleware serves `invoicer-ui`, a react webapp and provides the payment API synthesizing `lnd` and `bitcoind`. Internally `lnd` utilizes the light-client neutrino network, while `bitcoind` operates as a fully validating node with optional pruning.
 
 ### Highlights
-Our containers provide minimal [Alpine](https://alpinelinux.org) environments on 32-bit & 64-bit ARM in addition to the common AMD64 architecture. Special attention been paid to create lightweight images suitable for embedded deployments such as Raspberry Pi's.
+Our containers provide minimal [Alpine](https://alpinelinux.org) environments on 32-bit & 64-bit ARM in addition to the common AMD64 architecture. Special attention has been paid to create lightweight images suitable for embedded deployments such as Raspberry Pi's.
 
 Significant effort has been expended to make bootstrapping convenient on Ubuntu, Debian, Alpine and MacOS while staying flexible to support your deployment method of choice.
 
