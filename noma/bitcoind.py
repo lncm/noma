@@ -205,13 +205,15 @@ def set_rpcauth(bitcoin_conf=str(cfg.BITCOIN_CONF), invoicer_conf=str(cfg.INVOIC
     except KeyError:
         print("rpcauth unset")
 
-    if rpcauth_val == '': # only change if value is unset
-        set_ini_kv("rpcauth", auth_value, bitcoin_conf, None)
-        set_toml_kv(invoicer_conf, "user", "lncm", "bitcoind")
-        set_toml_kv(invoicer_conf, "pass", password, "bitcoind")
-        print("✅ Set rpcauth successfully")
+    if rpcauth_val != '': 
+        print("⚠️ Warning: not changing rpcauth, already set")
         return
-    print("⚠️ Warning: not changing rpcauth, already set")
+
+    set_ini_kv("rpcauth", auth_value, bitcoin_conf)
+    set_toml_kv(invoicer_conf, "user", "lncm", "bitcoind")
+    set_toml_kv(invoicer_conf, "pass", password, "bitcoind")
+    print("✅ set rpcauth successfully")
+    return
 
 
 def generate_rpcauth(username, password=""):
@@ -226,15 +228,14 @@ def generate_rpcauth(username, password=""):
 
 def check():
     """Check bitcoind filesystem structure"""
-    if cfg.BITCOIN_PATH.is_dir():
-        print("✅ bitcoind directory exists")
-    else:
+    if not cfg.BITCOIN_PATH.is_dir():
         raise IOError("❌ bitcoin directory missing")
+    print("✅ bitcoind directory exists")
 
-    if cfg.BITCOIN_CONF.is_file():
-        print("✅ bitcoind config file exists")
-    else:
+    if not cfg.BITCOIN_CONF.is_file():
         raise IOError("❌ bitcoin config file is missing")
+    print("✅ bitcoind config file exists")
+
     return True
 
 
@@ -258,13 +259,13 @@ def get_ini_kv(config_path, key, section=""):
         print("⚠️ " + str(error))
     else:
         if section:
-            return config[section][key]
-        try:
-            value = config[key]
-        except KeyError:
-            print("❌ key '{k}' does not exist".format(k=key))
-        else:
-            return value
+            if section in config:
+                config = config[section]
+                return config[key]
+            print("❌ section '{s}' does not exist".format(s=section))
+        if key in config:
+            return config[key]
+        print("❌ key '{k}' does not exist".format(k=key))
 
 
 def set_ini_kv(key, value, config_path, section=""):
@@ -293,19 +294,16 @@ def get_toml_kv(config_path, key, section=""):
     """get toml key value"""
     config = toml.load(config_path)
     if section:
-        value = config[section][key]
-    else:
-        value = config[key]
-    return value
+        config = config[section]
+    return config[key]
 
 
 def set_toml_kv(config_path, key, value, section=""):
     """set toml key value"""
     config = toml.load(config_path)
     if section:
-        config[section][key] = value
-    else:
-        config[key] = value
+        config = config[section]
+    config[key] = value
     with open(config_path, "w") as toml_file:
         toml.dump(config, toml_file)
 
