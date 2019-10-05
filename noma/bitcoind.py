@@ -190,7 +190,7 @@ def set_prune(prune_target, config_path=""):
     """Set bitcoind prune target, minimum 550"""
     if not config_path:
         config_path = cfg.BITCOIN_CONF
-    set_ini_kv("prune", prune_target, config_path, None)
+    set_ini_kv("prune", prune_target, config_path)
 
 
 def set_rpcauth(bitcoin_conf=str(cfg.BITCOIN_CONF), invoicer_conf=str(cfg.INVOICER_CONF)):
@@ -198,7 +198,7 @@ def set_rpcauth(bitcoin_conf=str(cfg.BITCOIN_CONF), invoicer_conf=str(cfg.INVOIC
     auth_value, password = generate_rpcauth("lncm")
 
     try:
-        rpcauth_val = get_ini_kv(bitcoin_conf, "rpcauth", None)
+        rpcauth_val = get_ini_kv(bitcoin_conf, "rpcauth")
     except IOError:
         print("❌ Error: bitcoin config file not found")
         raise
@@ -243,7 +243,7 @@ class IniConfig(ConfigObj):
     COMMENT_MARKERS = ['#', ';']
 
 
-def get_ini_kv(config_path, key, section):
+def get_ini_kv(config_path, key, section=""):
     """
     Parse ini-style config files and print out values
 
@@ -266,7 +266,7 @@ def get_ini_kv(config_path, key, section):
             return value
 
 
-def set_ini_kv(key, value, config_path, section):
+def set_ini_kv(key, value, config_path, section=""):
     """
     Set key to value in path
     kv pairs are separated by "="
