@@ -364,12 +364,14 @@ def usb_setup():
             setup_nginx()
 
     def setup_important():
+        # Currently unused routine
         if usb.is_mounted(smallest):
             import noma.bitcoind
 
             print("Creating bitcoind files")
             noma.bitcoind.create()
             if noma.bitcoind.check():
+                # TODO: Update or remove
                 noma.bitcoind.set_prune("550")
                 # noma.bitcoind.set_rpcauth(
                 #     "/media/archive/archive/bitcoin/bitcoin.conf"
