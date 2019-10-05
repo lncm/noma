@@ -247,8 +247,9 @@ def get_ini_kv(config_path, key, section=""):
     """
     Parse ini-style config files and print out values
 
-    :param key: left part of key value pair
     :param config_path: path to file
+    :param key: left part of key value pair
+    :param section: section of ini file
     :return: value of key
     """
     try:
