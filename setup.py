@@ -3,6 +3,8 @@ from setuptools import setup
 setup(
     name="noma",
     version="0.5.1",
+    # Added fork of ConfigObj to repo for ini support
+    # To be removed once PR is merged upstream
     packages=["noma", "configobj"],
     install_requires=["psutil", "docopt", "requests>=2.22.0", "docker-compose", "toml"],
     entry_points={"console_scripts": ["noma = noma.noma:main"]},
