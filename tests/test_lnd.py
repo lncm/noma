@@ -81,9 +81,9 @@ class LndCreateWalletTests(unittest.TestCase):
         """
 
         def exists(call):
-            if call == cfg.PASSWORD_FILE_PATH:
+            if call == str(cfg.PASSWORD_FILE_PATH):
                 return False
-            if call == cfg.SAVE_PASSWORD_CONTROL_FILE:
+            if call == str(cfg.SAVE_PASSWORD_CONTROL_FILE):
                 return True
             raise Unhappy(call)  # Should only have one of those calls
 
@@ -95,10 +95,10 @@ class LndCreateWalletTests(unittest.TestCase):
         with mock.patch("builtins.open", m_open):
             with self.assertRaises(TestComplete):
                 lnd.create_wallet()
-        m_exists.assert_any_call(cfg.PASSWORD_FILE_PATH)
-        m_exists.assert_any_call(cfg.SAVE_PASSWORD_CONTROL_FILE)
+        m_exists.assert_any_call(str(cfg.PASSWORD_FILE_PATH))
+        m_exists.assert_any_call(str(cfg.SAVE_PASSWORD_CONTROL_FILE))
         m_rpass.assert_called_with(string_length=15)
-        m_open.assert_called_with(cfg.PASSWORD_FILE_PATH, "w")
+        m_open.assert_called_with(str(cfg.PASSWORD_FILE_PATH), "w")
         handle.write.assert_called_with(m_rpass.return_value)
         handle.close.assert_called_with()
 
@@ -112,12 +112,12 @@ class LndCreateWalletTests(unittest.TestCase):
         """
 
         def exists(call):
-            if call == cfg.PASSWORD_FILE_PATH:
+            if call == str(cfg.PASSWORD_FILE_PATH):
                 return True
-            if call == cfg.SAVE_PASSWORD_CONTROL_FILE:
+            if call == str(cfg.SAVE_PASSWORD_CONTROL_FILE):
                 # Don't want to go into that logic either
                 return True
-            if call == cfg.SEED_FILENAME:
+            if call == str(cfg.SEED_FILENAME):
                 raise TestComplete
             raise Unhappy(call)  # Should only have one of those calls
 
@@ -126,10 +126,10 @@ class LndCreateWalletTests(unittest.TestCase):
         with mock.patch("builtins.open", m_open):
             with self.assertRaises(TestComplete):
                 lnd.create_wallet()
-        password_call = mock.call(cfg.PASSWORD_FILE_PATH, "r").read()
+        password_call = mock.call(str(cfg.PASSWORD_FILE_PATH), "r").read()
         self.assertIn(password_call, m_open.mock_calls)
-        m_exists.assert_any_call(cfg.PASSWORD_FILE_PATH)
-        m_open.assert_called_with(cfg.PASSWORD_FILE_PATH, "r")
+        m_exists.assert_any_call(str(cfg.PASSWORD_FILE_PATH))
+        m_open.assert_called_with(str(cfg.PASSWORD_FILE_PATH), "r")
 
     @mock.patch("noma.lnd.get")
     @mock.patch("os.path.exists")
@@ -141,12 +141,12 @@ class LndCreateWalletTests(unittest.TestCase):
         """
 
         def exists(call):
-            if call == cfg.PASSWORD_FILE_PATH:
+            if call == str(cfg.PASSWORD_FILE_PATH):
                 return True
-            if call == cfg.SAVE_PASSWORD_CONTROL_FILE:
+            if call == str(cfg.SAVE_PASSWORD_CONTROL_FILE):
                 # Don't want to go into that logic either
                 return True
-            if call == cfg.SEED_FILENAME:
+            if call == str(cfg.SEED_FILENAME):
                 return False
             raise Unhappy(call)  # Should only have one of those calls
 
@@ -156,7 +156,7 @@ class LndCreateWalletTests(unittest.TestCase):
         with mock.patch("builtins.open", m_open):
             with self.assertRaises(TestComplete):
                 lnd.create_wallet()
-        m_get.assert_called_with(cfg.URL_GENSEED, verify=cfg.TLS_CERT_PATH)
+        m_get.assert_called_with(cfg.URL_GENSEED, verify=str(cfg.TLS_CERT_PATH))
 
     @mock.patch("noma.lnd.post")
     @mock.patch("noma.lnd.get")
@@ -179,12 +179,12 @@ class LndCreateWalletTests(unittest.TestCase):
         """
 
         def exists(call):
-            if call == cfg.PASSWORD_FILE_PATH:
+            if call == str(cfg.PASSWORD_FILE_PATH):
                 return True
-            if call == cfg.SAVE_PASSWORD_CONTROL_FILE:
+            if call == str(cfg.SAVE_PASSWORD_CONTROL_FILE):
                 # Don't want to go into that logic either
                 return True
-            if call == cfg.SEED_FILENAME:
+            if call == str(cfg.SEED_FILENAME):
                 return False
             raise Unhappy(call)  # Should only have one of those calls
 
@@ -219,7 +219,7 @@ class LndCreateWalletTests(unittest.TestCase):
                             m_post.mock_calls,
                         )
                     )
-        m_get.assert_called_with(cfg.URL_GENSEED, verify=cfg.TLS_CERT_PATH)
+        m_get.assert_called_with(cfg.URL_GENSEED, verify=str(cfg.TLS_CERT_PATH))
         handle = m_open()
         for mne in mnemonic:
             handle.write.assert_any_call(mne + "\n")
@@ -245,12 +245,12 @@ class LndCreateWalletTests(unittest.TestCase):
         """
 
         def exists(call):
-            if call == cfg.PASSWORD_FILE_PATH:
+            if call == str(cfg.PASSWORD_FILE_PATH):
                 return True
-            if call == cfg.SAVE_PASSWORD_CONTROL_FILE:
+            if call == str(cfg.SAVE_PASSWORD_CONTROL_FILE):
                 # Don't want to go into that logic either
                 return True
-            if call == cfg.SEED_FILENAME:
+            if call == str(cfg.SEED_FILENAME):
                 return True
             raise Unhappy(call)  # Should only have one of those calls
 
@@ -263,11 +263,11 @@ class LndCreateWalletTests(unittest.TestCase):
             with self.assertRaises(TestComplete):
                 lnd.create_wallet()
         m_get.assert_not_called()
-        m_open.assert_called_with(cfg.SEED_FILENAME, "r")
+        m_open.assert_called_with(str(cfg.SEED_FILENAME), "r")
         post_call = m_post.mock_calls[-1]
         _, args, kwargs = post_call
         self.assertIn(cfg.URL_INITWALLET, args)
-        self.assertEqual(kwargs["verify"], cfg.TLS_CERT_PATH)
+        self.assertEqual(kwargs["verify"], str(cfg.TLS_CERT_PATH))
         data_json = kwargs["data"]
         data = json.loads(data_json)
         self.assertEqual(data["cipher_seed_mnemonic"], mnemonic)

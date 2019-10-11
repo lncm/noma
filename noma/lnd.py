@@ -85,7 +85,7 @@ def connectstring(
 def autounlock():
     """Auto-unlock lnd using password.txt, tls.cert"""
 
-    password_str = open(cfg.PASSWORD_FILE_PATH, "r").read().rstrip()
+    password_str = open(str(cfg.PASSWORD_FILE_PATH), "r").read().rstrip()
     password_bytes = str(password_str).encode("utf-8")
     data = {"wallet_password": base64.b64encode(password_bytes).decode()}
     try:
@@ -261,7 +261,7 @@ def _write_password(password_str):
         temp_password_file.close()
     else:
         # Use password.txt if password_control_file exists
-        password_file = open(cfg.PASSWORD_FILE_PATH, "w")
+        password_file = open(str(cfg.PASSWORD_FILE_PATH), "w")
         password_file.write(password_str)
         password_file.close()
 
