@@ -63,7 +63,7 @@ def start():
         print("Fetching compose from noma repo")
         get_source()
 
-    os.chdir(cfg.COMPOSE_MODE_PATH.as_posix())
+    os.chdir(str(cfg.COMPOSE_MODE_PATH))
     call(["docker-compose", "up", "-d"])
 
 
