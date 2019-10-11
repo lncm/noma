@@ -46,7 +46,10 @@ class LndCreateWalletTests(unittest.TestCase):
         """
 
         def exists(call):
-            if call in (cfg.SAVE_PASSWORD_CONTROL_FILE, cfg.PASSWORD_FILE_PATH):
+            if call in (
+                    str(cfg.SAVE_PASSWORD_CONTROL_FILE),
+                    str(cfg.PASSWORD_FILE_PATH),
+            ):
                 return False
             raise Unhappy(call)  # Should only have one of those calls
 
@@ -58,10 +61,10 @@ class LndCreateWalletTests(unittest.TestCase):
         with mock.patch("builtins.open", m_open):
             with self.assertRaises(TestComplete):
                 lnd.create_wallet()
-        m_exists.assert_any_call(cfg.PASSWORD_FILE_PATH)
-        m_exists.assert_any_call(cfg.SAVE_PASSWORD_CONTROL_FILE)
+        m_exists.assert_any_call(str(cfg.PASSWORD_FILE_PATH))
+        m_exists.assert_any_call(str(cfg.SAVE_PASSWORD_CONTROL_FILE))
         m_rpass.assert_called_with(string_length=15)
-        m_open.assert_called_with(cfg.PASSWORD_FILE_PATH, "w")
+        m_open.assert_called_with(str(cfg.PASSWORD_FILE_PATH), "w")
         handle.write.assert_called_with(m_rpass.return_value)
         handle.close.assert_called_with()
 
