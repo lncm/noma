@@ -301,7 +301,7 @@ def get_toml_kv(config_path, key, section=""):
 def set_toml_kv(config_path, key, value, section=""):
     """set toml key value"""
     config = toml.load(config_path)
-    if section:
+    if section in config:
         config = config[section]
     config[key] = value
     with open(config_path, "w") as toml_file:
