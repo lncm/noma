@@ -13,6 +13,7 @@ Usage:  noma start
         noma lnd savepeers
         noma lnd connectapp
         noma lnd connectstring
+        noma help [COMMAND]
         noma (-h|--help)
         noma --version
 
@@ -68,6 +69,9 @@ def node_fn(args):
 
     elif args["check"]:
         node.check()
+
+    elif args["help"]:
+        print("{} ??? HELP !!!". format(args['COMMAND'].upper()))
 
 
 def main():
