@@ -13,7 +13,7 @@ Usage:  noma start
         noma lnd savepeers
         noma lnd connectapp
         noma lnd connectstring
-        noma help [COMMAND]
+        noma help [COMMAND]...
         noma (-h|--help)
         noma --version
 
@@ -26,6 +26,37 @@ import os
 from docopt import docopt
 from noma import lnd
 from noma import node
+
+
+def _help(cmd):
+    """
+    Display help for a given command using docstrings.
+    TODO:
+    - do this using proper documentation instead of the current help() hack.
+      (currently it shows all kinds of non-public functions which are not
+      recognised commands if you do e.g `sudo noma help lnd`
+    - handle the discrepancy between `lnd create` and the called function
+      (lnd.check_wallet()) properly... this probably means renaming
+      lnd.check_wallet() to lnd.create()
+    - get rid of the hacky if-then logic
+    - come up with a more professional catch-all help expression.
+    """
+    if cmd:
+        base = cmd[0]
+        if base in dir(node):
+            help(getattr(node, cmd))
+            return
+        elif len(cmd) > 1:
+            cmd_2 = cmd[1]
+            if base == 'lnd' and cmd_2 in dir(lnd):
+                if cmd_2 == 'create':
+                    help(lnd.check_wallet)
+                else:
+                    help(getattr(lnd, cmd_2))
+                return
+        elif base == 'lnd':
+            help(lnd)
+    print("{} ??? HELP !!!". format(cmd))
 
 
 def lnd_fn(args):
@@ -71,7 +102,7 @@ def node_fn(args):
         node.check()
 
     elif args["help"]:
-        print("{} ??? HELP !!!". format(args['COMMAND'].upper()))
+        _help(args['COMMAND'])
 
 
 def main():
