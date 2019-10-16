@@ -123,7 +123,14 @@ sudo noma start
 ```
 Note: You may need to use `pip3` instead of `pip`
 
-For convenience `install.sh` may be used to bootstrap Python 3, Docker and Noma on Debian-based and Alpine systems.
+For convenience `install.sh` may be used to bootstrap Python 3, Docker and Noma on Debian-based and Alpine systems:
+```
+cd /media
+sudo chown -R $USER .
+git clone https://github.com/lncm/noma.git
+cd noma
+sudo ./install.sh
+```
 
 ### Windows
 

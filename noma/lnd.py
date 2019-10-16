@@ -85,7 +85,7 @@ def connectstring(
 def autounlock():
     """Auto-unlock lnd using password.txt, tls.cert"""
 
-    password_str = open(cfg.PASSWORD_FILE_PATH, "r").read().rstrip()
+    password_str = open(str(cfg.PASSWORD_FILE_PATH), "r").read().rstrip()
     password_bytes = str(password_str).encode("utf-8")
     data = {"wallet_password": base64.b64encode(password_bytes).decode()}
     try:
@@ -254,14 +254,14 @@ def _write_password(password_str):
     """Write a generated password to file, either the TEMP_PASSWORD_FILE_PATH
     or the PASSWORD_FILE_PATH depending on whether SAVE_PASSWORD_CONTROL_FILE
     exists."""
-    if not path.exists(cfg.SAVE_PASSWORD_CONTROL_FILE):
+    if not path.exists(str(cfg.SAVE_PASSWORD_CONTROL_FILE)):
         # Use temporary file if there is a password control file there
-        temp_password_file = open(cfg.PASSWORD_FILE_PATH, "w")
+        temp_password_file = open(str(cfg.PASSWORD_FILE_PATH), "w")
         temp_password_file.write(password_str)
         temp_password_file.close()
     else:
         # Use password.txt if password_control_file exists
-        password_file = open(cfg.PASSWORD_FILE_PATH, "w")
+        password_file = open(str(cfg.PASSWORD_FILE_PATH), "w")
         password_file.write(password_str)
         password_file.close()
 
@@ -270,24 +270,24 @@ def _wallet_password():
     """Either load the wallet password from PASSWORD_FILE_PATH, or generate a new
     password, save it to file, and in either case return the password"""
     # Check if there is an existing file, if not generate a random password
-    if not path.exists(cfg.PASSWORD_FILE_PATH):
+    if not path.exists(str(cfg.PASSWORD_FILE_PATH)):
         # password file doesnt exist
         password_str = randompass(string_length=15)
         _write_password(password_str)
     else:
         # Get password from file if password file already exists
-        password_str = open(cfg.PASSWORD_FILE_PATH, "r").read().rstrip()
+        password_str = open(str(cfg.PASSWORD_FILE_PATH), "r").read().rstrip()
     return password_str
 
 
 def _generate_and_save_seed():
     """Generate a wallet seed, save it to SEED_FILENAME, and return it"""
     mnemonic = None
-    return_data = get(cfg.URL_GENSEED, verify=cfg.TLS_CERT_PATH)
+    return_data = get(cfg.URL_GENSEED, verify=str(cfg.TLS_CERT_PATH))
     if return_data.status_code == 200:
         json_seed_creation = return_data.json()
         mnemonic = json_seed_creation["cipher_seed_mnemonic"]
-        seed_file = open(cfg.SEED_FILENAME, "w")
+        seed_file = open(str(cfg.SEED_FILENAME), "w")
         for word in mnemonic:
             seed_file.write(word + "\n")
         seed_file.close()
@@ -299,7 +299,7 @@ def _generate_and_save_seed():
 def _load_seed():
     """Load the wallet seed from SEED_FILENAME and return it"""
     # Seed exists
-    seed_file = open(cfg.SEED_FILENAME, "r")
+    seed_file = open(str(cfg.SEED_FILENAME), "r")
     seed_file_words = seed_file.readlines()
     mnemonic = []
     for importword in seed_file_words:
@@ -313,7 +313,7 @@ def _wallet_data(password_str):
     # Convert password to byte encoded
     password_bytes = str(password_str).encode("utf-8")
     # Send request to generate seed if seed file doesnt exist
-    if not path.exists(cfg.SEED_FILENAME):
+    if not path.exists(str(cfg.SEED_FILENAME)):
         mnemonic = _generate_and_save_seed()
     else:
         mnemonic = _load_seed()
@@ -347,7 +347,7 @@ def create_wallet():
     if data:
         # Data is defined so proceed
         return_data = post(
-            cfg.URL_INITWALLET, verify=cfg.TLS_CERT_PATH, data=dumps(data)
+            cfg.URL_INITWALLET, verify=str(cfg.TLS_CERT_PATH), data=dumps(data)
         )
         if return_data.status_code == 200:
             print("✅ Create wallet is successful")
