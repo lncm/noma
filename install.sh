@@ -35,6 +35,9 @@ debian_install() {
     # apt dependencies
     apt-get install -y python3-pip python3-cffi libffi-dev libssl-dev
 
+    # Some Debians come with an old version of requests
+    apt-get remove -y python3-requests
+
     # check if source keyword exists to guard against bashism
     if type source >/dev/null 2>&1; then
         # reload profile to update PATH
