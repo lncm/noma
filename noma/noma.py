@@ -48,14 +48,16 @@ def _help(cmd):
             return
         elif len(cmd) > 1:
             cmd_2 = cmd[1]
-            if base == 'lnd' and cmd_2 in dir(lnd):
+            if base == 'lnd':
                 if cmd_2 == 'create':
                     help(lnd.check_wallet)
-                else:
+                    return
+                elif cmd_2 in dir(lnd):
                     help(getattr(lnd, cmd_2))
-                return
+                    return
         elif base == 'lnd':
             help(lnd)
+            return
     print("{} ??? HELP !!!". format(cmd))
 
 
