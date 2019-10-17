@@ -48,17 +48,17 @@ def _help(cmd):
             return
         elif len(cmd) > 1:
             cmd_2 = cmd[1]
-            if base == 'lnd':
-                if cmd_2 == 'create':
+            if base == "lnd":
+                if cmd_2 == "create":
                     help(lnd.check_wallet)
                     return
                 elif cmd_2 in dir(lnd):
                     help(getattr(lnd, cmd_2))
                     return
-        elif base == 'lnd':
+        elif base == "lnd":
             help(lnd)
             return
-    print("{} ??? HELP !!!". format(cmd))
+    print("{} ??? HELP !!!".format(cmd))
 
 
 def lnd_fn(args):
@@ -104,7 +104,7 @@ def node_fn(args):
         node.check()
 
     elif args["help"]:
-        _help(args['COMMAND'])
+        _help(args["COMMAND"])
 
 
 def main():
