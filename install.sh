@@ -53,6 +53,9 @@ debian_install() {
 
     # noma
     python3 setup.py develop
+    
+    # Install manpage
+    docs/install_manpage.sh
 }
 
 start_noma() {
