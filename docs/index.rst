@@ -32,20 +32,18 @@ Command-line Usage
 
 **lnd**::
 
-  noma lnd (start|stop|info)
-  noma lnd logs [--tail]
-  noma lnd connect <address>
-  noma lnd (create|unlock|status|check)
-  noma lnd lncli [<command>...]
-  noma lnd get <key> [<section>] [<path>]
-  noma lnd set <key> <value> [<section>] [<path>]
+  noma lnd create
+  noma lnd backup
   noma lnd autounlock
   noma lnd autoconnect [<path>]
-  noma lnd lndconnectapp <hostport>
-  noma lnd lndconnectstring <hostport>
+  noma lnd savepeers
+  noma lnd connectapp <hostport>
+  noma lnd connectstring <hostport>
+
 
 **noma**::
 
+  noma help [COMMAND]
   noma (-h|--help)
   noma --version
 

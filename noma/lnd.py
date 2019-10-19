@@ -223,13 +223,17 @@ def backup():
         # scp options:
         # -B for non-interactive batch mode
         # -p to preserve modification & access time, modes
-        complete = run(["scp",
-                        "-B",
-                        "-i {}".format(cfg.SSH_IDENTITY),
-                        "-p",
-                        "-P {}".format(cfg.SSH_PORT),
-                        "{}".format(cfg.CHANNEL_BACKUP),
-                        "{}".format(cfg.SSH_TARGET)])
+        complete = run(
+            [
+                "scp",
+                "-B",
+                "-i {}".format(cfg.SSH_IDENTITY),
+                "-p",
+                "-P {}".format(cfg.SSH_PORT),
+                "{}".format(cfg.CHANNEL_BACKUP),
+                "{}".format(cfg.SSH_TARGET),
+            ]
+        )
         return complete.returncode
     print("Error: channel.backup not found")
     return exit(1)
@@ -331,12 +335,13 @@ def create_wallet():
     1. Check if there's already a wallet. If there is, then exit.
     2. Check for password.txt
     3. If doesn't exist then check for whether we should save the password
-    (SAVE_PASSWORD_CONTROL_FILE exists) or not
+       (SAVE_PASSWORD_CONTROL_FILE exists) or not
     4. If password.txt exists import password in.
     5. If password.txt doesn't exist and we don't save the password, create a
-    password and save it in temporary path as defined in PASSWORD_FILE_PATH
+       password and save it in temporary path as defined in PASSWORD_FILE_PATH
     6. Now start the wallet creation. Look for a seed defined in SEED_FILENAME,
-    if not existing then generate a wallet based on the seed by LND.
+       if not existing then generate a wallet based on the seed by LND.
+
     """
     password_str = _wallet_password()
 
