@@ -4,7 +4,15 @@ setup(
     name="noma",
     version="0.5.1",
     packages=["noma"],
-    install_requires=["psutil", "docopt", "requests", "docker-compose"],
+    install_requires=[
+        "psutil",
+        "docopt",
+        "requests",
+        "docker-compose",
+        "sphinx_rtd_theme",
+        "recommonmark",
+        "sphinx",
+    ],
     entry_points={"console_scripts": ["noma = noma.noma:main"]},
     # metadata to display on PyPI
     zip_safe=True,
