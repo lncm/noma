@@ -24,7 +24,7 @@ check_directory() {
 
 alpine_os() {
     if [ -f "/etc/alpine-release" ]; then
-        return 0
+        return
     fi
 }
 
@@ -39,6 +39,7 @@ cd docs
 sphinx-build . _build -b man
 install -g 0 -o 0 -m 0644 _build/$MANPAGE $MAN_DIR
 gzip ${MAN_DIR}/${MANPAGE}
+
 if [ ! alpine_os ]; then
     mandb
 fi
