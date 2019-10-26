@@ -10,7 +10,7 @@ from requests import get, post
 import noma.config as cfg
 
 
-def check_wallet():
+def create():
     """
     This will either import an existing seed (or our own generated one),
     or use LND to create one.
@@ -51,19 +51,13 @@ def encodemacaroons(macaroonfile=cfg.MACAROON_PATH, tlsfile=cfg.TLS_CERT_PATH):
         )
         tlsencoded = tlstrim.encode("utf-8")
 
-        return {
-            "status": "OK",
-            "certificate": tlsencoded,
-            "macaroon": macaroonencoded,
-        }
+        return {"status": "OK", "certificate": tlsencoded, "macaroon": macaroonencoded}
     else:
         return {"status": "File Not Found"}
 
 
 def connectstring(
-    hostname=cfg.URL_GRPC,
-    macaroonfile=cfg.MACAROON_PATH,
-    tlsfile=cfg.TLS_CERT_PATH,
+    hostname=cfg.URL_GRPC, macaroonfile=cfg.MACAROON_PATH, tlsfile=cfg.TLS_CERT_PATH
 ):
     """Show lndconnect string for remote wallets such as Zap"""
     result = encodemacaroons(macaroonfile, tlsfile)

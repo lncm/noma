@@ -12,6 +12,7 @@ setup(
         "sphinx_rtd_theme",
         "recommonmark",
         "sphinx",
+        "sphinxcontrib-napoleon",
     ],
     entry_points={"console_scripts": ["noma = noma.noma:main"]},
     # metadata to display on PyPI
