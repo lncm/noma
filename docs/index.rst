@@ -13,43 +13,7 @@ CLI utility and Python API to manage bitcoin lightning nodes.
 
 Command-line Usage
 ==================
-**node**::
-
-  noma (info|start|stop|restart|logs|check|status)
-  noma (temp|swap|ram)
-  noma (freq|memory|voltage) [<device>]
-  noma usb-setup
-  noma tunnel <port> <host>
-  noma (backup|restore|source|diff|devtools)
-  noma reinstall [--full]
-
-**bitcoind**::
-
-  noma bitcoind (start|stop|info|fastsync|status|check)
-  noma bitcoind get <key>
-  noma bitcoind set <key> <value>
-  noma bitcoind logs [--tail]
-
-**lnd**::
-
-  noma lnd create
-  noma lnd backup
-  noma lnd autounlock
-  noma lnd autoconnect [<path>]
-  noma lnd savepeers
-  noma lnd connectapp <hostport>
-  noma lnd connectstring <hostport>
-
-
-**noma**::
-
-  noma help [COMMAND]
-  noma (-h|--help)
-  noma --version
-
-   Options:
-  -h --help     Show this screen.
-  --version     Show version.
+.. automodule:: noma.noma
 
 API Modules
 ===========
@@ -57,32 +21,12 @@ API Modules
 node
 ----
 .. automodule:: noma.node
-   :members:
-
-bitcoind
---------
-.. automodule:: noma.bitcoind
-   :members:
+   :members: start, stop, check, logs, info
 
 lnd
 ---
 .. automodule:: noma.lnd
-   :members:
-
-install
--------
-.. automodule:: noma.install
-   :members:
-
-usb
----
-.. automodule:: noma.usb
-   :members:
-
-rpcauth
--------
-.. automodule:: noma.rpcauth
-   :members:
+   :members: create, backup, autounlock, autoconnect, savepeers, connectapp, connectstring
 
 Indices and tables
 ==================

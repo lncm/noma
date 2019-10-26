@@ -32,14 +32,11 @@ def _help(cmd):
     """
     Display help for a given command using docstrings.
     TODO:
-    - do this using proper documentation instead of the current help() hack.
-      (currently it shows all kinds of non-public functions which are not
-      recognised commands if you do e.g `sudo noma help lnd`
+    - figure out how to hide private functions
     - handle the discrepancy between `lnd create` and the called function
-      (lnd.check_wallet()) properly... this probably means renaming
-      lnd.check_wallet() to lnd.create()
+      (lnd.create()) properly... this probably means renaming
+      lnd.create() to lnd.create()
     - get rid of the hacky if-then logic
-    - come up with a more professional catch-all help expression.
     """
     if not cmd:
         help(node)
@@ -53,7 +50,7 @@ def _help(cmd):
             cmd_2 = cmd[1]
             if base == "lnd":
                 if cmd_2 == "create":
-                    help(lnd.check_wallet)
+                    help(lnd.create)
                     return
                 elif cmd_2 in dir(lnd):
                     help(getattr(lnd, cmd_2))
@@ -61,7 +58,7 @@ def _help(cmd):
         elif base == "lnd":
             help(lnd)
             return
-    print("{} ??? HELP !!!".format(cmd))
+    print("Unknown help option: {}".format(cmd))
 
 
 def lnd_fn(args):
@@ -69,7 +66,7 @@ def lnd_fn(args):
     lnd related functionality
     """
     if args["create"]:
-        lnd.check_wallet()
+        lnd.create()
 
     elif args["autounlock"]:
         lnd.autounlock()

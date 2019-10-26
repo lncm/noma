@@ -42,9 +42,7 @@ def move_cache(cache_dir="/media/mmcblk0p1/cache", var_cache="/var/cache/apk"):
         if setup.returncode == 0:
             print("setup-apkcache was successful")
         else:
-            raise OSError(
-                "setup-apkcache was not successful \n" + setup.stdout
-            )
+            raise OSError("setup-apkcache was not successful \n" + setup.stdout)
         return setup.returncode
 
 
@@ -79,18 +77,14 @@ def install_apk_deps():
 def mnt_ext4(device, path):
     """Mount device at path using ext4"""
     exitcode = call(
-        ["mount", "-t ext4", "/dev/" + device, path],
-        stdout=DEVNULL,
-        stdin=DEVNULL,
+        ["mount", "-t ext4", "/dev/" + device, path], stdout=DEVNULL, stdin=DEVNULL
     )
     return exitcode
 
 
 def mnt_any(device, path):
     """Mount device at path using any filesystem"""
-    exitcode = call(
-        ["mount", "/dev/" + device, path], stdout=DEVNULL, stdin=DEVNULL
-    )
+    exitcode = call(["mount", "/dev/" + device, path], stdout=DEVNULL, stdin=DEVNULL)
     return exitcode
 
 
@@ -118,11 +112,7 @@ def check_for_destruction(device, path):
     destroy = Path(path + "/DESTROY_ALL_DATA_ON_THIS_DEVICE/").is_dir()
     if destroy:
         print("Destruction flag found!")
-        print(
-            "Going to destroy all data on /dev/{} in 3 seconds...".format(
-                device
-            )
-        )
+        print("Going to destroy all data on /dev/{} in 3 seconds...".format(device))
         sleep(3)
         unmounted = call(["umount", "/dev/" + device])
         if unmounted and not usb.is_mounted(device):
@@ -130,9 +120,7 @@ def check_for_destruction(device, path):
             call(["mkfs.ext4", "-F", "/dev/" + device])
             if mnt_ext4(device, path) == 0 and usb.is_mounted(device):
                 print(
-                    "{d} formatted with ext4 successfully and mounted.".format(
-                        d=device
-                    )
+                    "{d} formatted with ext4 successfully and mounted.".format(d=device)
                 )
                 return True
         else:
@@ -176,17 +164,9 @@ def fallback_mount(partition, path):
     print("Attempting to mount with any filesystem...")
 
     if mnt_any(partition, path) == 0 and usb.is_mounted(partition):
-        print(
-            "{d} mounted at {p} with any filesystem".format(
-                d=partition, p=path
-            )
-        )
+        print("{d} mounted at {p} with any filesystem".format(d=partition, p=path))
         return True
-    print(
-        "Error: {} usb is not mountable with any supported format".format(
-            partition
-        )
-    )
+    print("Error: {} usb is not mountable with any supported format".format(partition))
     print("Cannot continue without all USB storage devices")
     return False
 
@@ -201,9 +181,7 @@ def setup_fstab(device, mount):
             )
             file.write(fstab)
     else:
-        print(
-            "Warning: {} usb does not seem to be ext4 formatted".format(device)
-        )
+        print("Warning: {} usb does not seem to be ext4 formatted".format(device))
         print("{} will not be added to /etc/fstab".format(device))
 
 
@@ -237,23 +215,18 @@ def create_swap():
 
         if dd.returncode != 0:
             # dd has non-zero exit code
-            raise OSError(
-                "Warning: dd cannot create swap file \n" + str(dd.stdout)
-            )
+            raise OSError("Warning: dd cannot create swap file \n" + str(dd.stdout))
         return True
 
     def mk_swap():
         mkswap = run(
-            ["mkswap", "/media/volatile/volatile/swap"],
-            stdout=PIPE,
-            stderr=STDOUT,
+            ["mkswap", "/media/volatile/volatile/swap"], stdout=PIPE, stderr=STDOUT
         )
 
         if mkswap.returncode != 0:
             # mkswap has non-zero exit code
             raise OSError(
-                "Warning: mkswap could not create swap file \n"
-                + str(mkswap.stdout)
+                "Warning: mkswap could not create swap file \n" + str(mkswap.stdout)
             )
         return True
 
@@ -343,16 +316,10 @@ def usb_setup():
                         # We confirmed device is mountable, readable, writable
                         setup_fstab(device, mountpoints[num])
             else:
-                print(
-                    "Mounting {d} with any filesystem unsuccessful".format(
-                        d=device
-                    )
-                )
+                print("Mounting {d} with any filesystem unsuccessful".format(d=device))
                 exit(1)
         else:
-            print(
-                "Error: {p} directory not available".format(p=mountpoints[num])
-            )
+            print("Error: {p} directory not available".format(p=mountpoints[num]))
             exit(1)
 
     def setup_volatile():
@@ -371,14 +338,12 @@ def usb_setup():
             noma.bitcoind.create()
             if noma.bitcoind.check():
                 noma.bitcoind.set_prune("550")
-                noma.bitcoind.set_rpcauth(
-                    "/media/archive/archive/bitcoin/bitcoin.conf"
-                )
+                noma.bitcoind.set_rpcauth("/media/archive/archive/bitcoin/bitcoin.conf")
 
             import noma.lnd
 
             print("Creating lnd files")
-            noma.lnd.check_wallet()
+            noma.lnd.create()
             if noma.lnd.check():
                 noma.lnd.setup_tor()
 
@@ -461,8 +426,8 @@ def install_box():
         noma.node.start()
         install_crontab()
         if noma.lnd.check():
-            print("Checking lnd wallet")
-            noma.lnd.check_wallet()
+            print("Creating lnd wallet")
+            noma.lnd.create()
 
     print("Removing post-install from default runlevel")
     call(["rc-update", "del", "lncm-post", "default"])
