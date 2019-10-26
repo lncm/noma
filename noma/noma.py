@@ -33,9 +33,6 @@ def _help(cmd):
     Display help for a given command using docstrings.
     TODO:
     - figure out how to hide private functions
-    - handle the discrepancy between `lnd create` and the called function
-      (lnd.create()) properly... this probably means renaming
-      lnd.create() to lnd.create()
     - get rid of the hacky if-then logic
     """
     if not cmd:
@@ -49,10 +46,7 @@ def _help(cmd):
         elif len(cmd) > 1:
             cmd_2 = cmd[1]
             if base == "lnd":
-                if cmd_2 == "create":
-                    help(lnd.create)
-                    return
-                elif cmd_2 in dir(lnd):
+                if cmd_2 in dir(lnd):
                     help(getattr(lnd, cmd_2))
                     return
         elif base == "lnd":
