@@ -44,7 +44,7 @@ def _help(cmd):
     if cmd:
         base = cmd[0]
         if base in dir(node):
-            help(getattr(node, cmd))
+            help(getattr(node, base))
             return
         elif len(cmd) > 1:
             cmd_2 = cmd[1]
