@@ -132,3 +132,6 @@ dmypy.json
 .pyre/
 
 \.DS_Store
+
+# Dropped by noma?
+public_html
