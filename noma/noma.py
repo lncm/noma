@@ -41,7 +41,10 @@ def _help(cmd):
     - get rid of the hacky if-then logic
     - come up with a more professional catch-all help expression.
     """
-    if cmd:
+    if not cmd:
+        help(node)
+        return
+    else:
         base = cmd[0]
         if base in dir(node):
             help(getattr(node, base))
